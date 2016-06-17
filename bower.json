@@ -1,0 +1,23 @@
+{
+  "name": "erickit",
+  "description": "",
+  "main": "dist/fgp.kit.bundle.js",
+  "authors": [
+    "eric.wang <flexdeviser@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "http://wwww.future-grid.com.au",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "1.5.7",
+    "jquery": "2.2.4",
+    "moment": "2.13.0",
+    "eric_dygraphs": "^1.0.0"
+  }
+}
