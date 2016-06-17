@@ -11,7 +11,7 @@ This is the first version of graph library that uses the v1.1.1 version of Dygra
 
 ### bower
 
-    bower install --save fgp-js-kit.js
+    bower install --save fgp-js-kit
 
 ### npm
 
