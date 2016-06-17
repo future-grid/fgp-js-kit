@@ -26,11 +26,11 @@ This is the first version of graph library that uses the v1.1.1 version of Dygra
 or copy the files from `dist/`. 
 
 Then add the sources to your code (adjust paths as needed) after 
-adding the dependencies for Angular and Chart.js first:
+adding the dependencies for Angular and Dygraphs first:
 
 ```html
 <head>
-  <link rel="stylesheet" href="bower_components/angular-chart.js/dist/angular-chart.css" />
+  
 <head>
 <body>
   ...
