@@ -1,6 +1,6 @@
 {
-  "name": "erickit",
-  "description": "",
+  "name": "fgp-js-kit",
+  "description": "this is a graph kit for our clients",
   "main": "dist/fgp.kit.bundle.js",
   "authors": [
     "eric.wang <flexdeviser@gmail.com>"
