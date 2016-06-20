@@ -1,6 +1,6 @@
 {
-  "name": "fgp-js-kit",
-  "description": "this is a graph kit for our clients",
+  "name": "erickit",
+  "description": "",
   "main": "dist/fgp.kit.bundle.js",
   "authors": [
     "eric.wang <flexdeviser@gmail.com>"
@@ -15,9 +15,11 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "1.5.7",
-    "jquery": "2.2.4",
-    "moment": "2.13.0",
-    "eric_dygraphs": "^1.0.0"
+    "eric_dygraphs": "^1.0.0",
+    "angular": "^1.5.0",
+    "chart.js": "^2.1.6",
+    "jquery": "^2.2.2",
+    "moment": "^2.13.0",
+    "ngmap": "^1.17.1"
   }
 }

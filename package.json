@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup src/index.js -c -m",
-    "min": "uglifyjs dist/fgp.kit.bundle.js -o dist/fgp.kit.bundle.min.js --source-map dist/fgp.kit.bundle.min.map --source-map-url fgp.kit.bundle.min.map -v -m -c"
+    "build": "rollup src/index.js -c -m && npm run min",
+    "min": "uglifyjs dist/fgp.kit.bundle.js -o dist/fgp.kit.bundle.min.js --source-map dist/fgp.kit.bundle.min.map --source-map-url fgp.kit.bundle.min.map"
   },
-  "author": "",
+  "author": "Eric Wang <flexdeviser@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "babel-cli": "^6.9.0",
@@ -21,8 +21,11 @@
   },
   "dependencies": {
     "angular": "^1.5.0",
+    "bootstrap": "^3.3.6",
+    "chart.js": "^2.1.6",
     "dygraphs": "^1.1.1",
     "jquery": "^2.2.2",
-    "moment": "^2.13.0"
+    "moment": "^2.13.0",
+    "ngmap": "^1.17.1"
   }
 }

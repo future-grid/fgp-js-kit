@@ -1,3 +1,4 @@
+import $ from 'jquery';
 /**
  * Created by ericwang on 15/06/2016.
  */
@@ -16,6 +17,95 @@ class dataAccessApi {
         this.deviceStores = $cacheFactory.get('deviceStores');
     }
 
+
+    /**
+     * sync using JQuery
+     * @param deviceName
+     * @param deviceKey
+     * @param applicationName
+     * @returns {*}
+     */
+    deviceInfo(host, deviceName, deviceKey, applicationName) {
+        var deferred = this._$q.defer();
+        var url = host + "/api/";
+
+        if (applicationName) {
+            url += "app/" + applicationName;
+        }
+
+        if (deviceName) {
+            url += '/devices/parameter/jsonp?name=' + deviceName
+        } else if (deviceKey) {
+            url += 'devices/parameter/jsonp?key=' + deviceKey
+        }
+
+        $.ajaxSettings.async = false;
+        $.ajax({
+            type: 'GET',
+            url: url,
+            jsonpCallback: 'jsonCallback',
+            async: true,
+            contentType: "application/json",
+            dataType: 'jsonp',
+            success: function (data) {
+                var url = host + "/api/";
+                if (applicationName) {
+                    url += "app/" + applicationName + "/devices/extension-types/jsonp?device_type=";
+                } else {
+                    url += "devices/extension-types/jsonp?device_type=";
+                }
+                $.ajaxSettings.async = false;
+                $.ajax({
+                    type: 'GET',
+                    url: url + data.type,
+                    async: true,
+                    jsonpCallback: 'jsonCallback',
+                    contentType: "application/json",
+                    dataType: 'jsonp',
+                    success: function (types) {
+                        angular.forEach(types, function (type) {
+                            Object.defineProperty(data, type.name, {
+                                get: function () {
+                                    var result = null;
+                                    var url = host + "/api/";
+                                    if (applicationName) {
+                                        url += "app/" + applicationName + "/devices/extensions/jsonp?device_name=";
+                                    } else {
+                                        url += "devices/extensions/jsonp?device_name=";
+                                    }
+                                    $.ajaxSettings.async = false;
+                                    $.ajax({
+                                        type: 'GET',
+                                        url: url + this.name + '&extension_type=' + type.name,
+                                        jsonpCallback: 'jsonCallback',
+                                        async: true,
+                                        contentType: "application/json",
+                                        dataType: 'jsonp',
+                                        success: function (field) {
+                                            result = field;
+                                        },
+                                        error: function (e) {
+                                            deferred.reject(e);
+                                        }
+                                    });
+                                    return result;
+                                }
+                            });
+                        });
+                    },
+                    error: function (e) {
+                        console.log(e.message);
+                    }
+                });
+
+                deferred.resolve(data);
+            },
+            error: function (e) {
+                deferred.reject(e);
+            }
+        });
+        return deferred.promise;
+    }
 
     /**
      *

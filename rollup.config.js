@@ -13,7 +13,7 @@ export default {
     globals: {
         angular: 'angular',
         dygraphs: 'Dygraph',
-        'angular-cache': 'CacheFactory',
+        ngmap:'ngMap',
         underscore: '_'
     },
     plugins: [buble()],

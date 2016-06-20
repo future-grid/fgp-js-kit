@@ -20,7 +20,7 @@ class fgpStage {
             '</div>';
     }
 
-    controller($scope, $element, $timeout, $rootScope, $compile) {
+    controller($scope, $element, $timeout, $rootScope, $compile, dataService) {
         $scope.showdata = {};
 
         $rootScope['applicationName'] = $scope.applicationName;
@@ -70,6 +70,16 @@ class fgpStage {
                 $element.append($compile(currentItem)($scope));
                 findChild(item.id, currentItem, $scope.configuration);
             }
+        });
+
+        /**
+         * get device information
+         */
+        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+            // send device info to all widget
+            $timeout(function () {
+                $scope.$broadcast('deviceInfoEvent', {device: data});
+            });
         });
 
 

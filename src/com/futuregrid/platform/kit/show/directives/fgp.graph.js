@@ -9,11 +9,6 @@ class fgpWidgetGraph {
         this.restrict = 'E';
         this.scope = {};
         this.$timeout = $timeout;
-        this._dataService = dataService;
-        this._$rootScope = $rootScope;
-        this._$interval = $interval;
-        this._$filter = $filter;
-        this._location = $location;
     }
 
     template(element, attrs) {

@@ -6,12 +6,13 @@
  * @overview fgp.kit.js is a useful toolkit for future-grid's clients.
  */
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('dygraphs')) :
-    typeof define === 'function' && define.amd ? define(['angular', 'dygraphs'], factory) :
-    (global.fgp_kit = factory(global.angular,global.Dygraph));
-}(this, function (angular$1,Dygraph) { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
+    typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
+    (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngMap,global.chart_js));
+}(this, function (angular$1,$,Dygraph,ngmap,chart_js) { 'use strict';
 
     angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
+    $ = 'default' in $ ? $['default'] : $;
     Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
 
     var fgpStage = function fgpStage() {
@@ -30,7 +31,7 @@
             '</div>';
     };
 
-    fgpStage.prototype.controller = function controller($scope, $element, $timeout, $rootScope, $compile) {
+    fgpStage.prototype.controller = function controller($scope, $element, $timeout, $rootScope, $compile, dataService) {
         $scope.showdata = {};
 
         $rootScope['applicationName'] = $scope.applicationName;
@@ -82,6 +83,16 @@
             }
         });
 
+        /**
+         * get device information
+         */
+        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+            // send device info to all widget
+            $timeout(function () {
+                $scope.$broadcast('deviceInfoEvent', {device: data});
+            });
+        });
+
 
         // all item created;
         $timeout(function () {
@@ -108,6 +119,95 @@
         this.deviceStores = $cacheFactory.get('deviceStores');
     };
 
+
+    /**
+     * sync using JQuery
+     * @param deviceName
+     * @param deviceKey
+     * @param applicationName
+     * @returns {*}
+     */
+    dataAccessApi.prototype.deviceInfo = function deviceInfo(host, deviceName, deviceKey, applicationName) {
+        var deferred = this._$q.defer();
+        var url = host + "/api/";
+
+        if (applicationName) {
+            url += "app/" + applicationName;
+        }
+
+        if (deviceName) {
+            url += '/devices/parameter/jsonp?name=' + deviceName
+        } else if (deviceKey) {
+            url += 'devices/parameter/jsonp?key=' + deviceKey
+        }
+
+        $.ajaxSettings.async = false;
+        $.ajax({
+            type: 'GET',
+            url: url,
+            jsonpCallback: 'jsonCallback',
+            async: true,
+            contentType: "application/json",
+            dataType: 'jsonp',
+            success: function (data) {
+                var url = host + "/api/";
+                if (applicationName) {
+                    url += "app/" + applicationName + "/devices/extension-types/jsonp?device_type=";
+                } else {
+                    url += "devices/extension-types/jsonp?device_type=";
+                }
+                $.ajaxSettings.async = false;
+                $.ajax({
+                    type: 'GET',
+                    url: url + data.type,
+                    async: true,
+                    jsonpCallback: 'jsonCallback',
+                    contentType: "application/json",
+                    dataType: 'jsonp',
+                    success: function (types) {
+                        angular.forEach(types, function (type) {
+                            Object.defineProperty(data, type.name, {
+                                get: function () {
+                                    var result = null;
+                                    var url = host + "/api/";
+                                    if (applicationName) {
+                                        url += "app/" + applicationName + "/devices/extensions/jsonp?device_name=";
+                                    } else {
+                                        url += "devices/extensions/jsonp?device_name=";
+                                    }
+                                    $.ajaxSettings.async = false;
+                                    $.ajax({
+                                        type: 'GET',
+                                        url: url + this.name + '&extension_type=' + type.name,
+                                        jsonpCallback: 'jsonCallback',
+                                        async: true,
+                                        contentType: "application/json",
+                                        dataType: 'jsonp',
+                                        success: function (field) {
+                                            result = field;
+                                        },
+                                        error: function (e) {
+                                            deferred.reject(e);
+                                        }
+                                    });
+                                    return result;
+                                }
+                            });
+                        });
+                    },
+                    error: function (e) {
+                        console.log(e.message);
+                    }
+                });
+
+                deferred.resolve(data);
+            },
+            error: function (e) {
+                deferred.reject(e);
+            }
+        });
+        return deferred.promise;
+    };
 
     /**
      *
@@ -470,11 +570,6 @@
         this.restrict = 'E';
         this.scope = {};
         this.$timeout = $timeout;
-        this._dataService = dataService;
-        this._$rootScope = $rootScope;
-        this._$interval = $interval;
-        this._$filter = $filter;
-        this._location = $location;
     };
 
     fgpWidgetGraph.prototype.template = function template(element, attrs) {
@@ -1944,7 +2039,410 @@
 
     fgpWidgetGraph.$inject = ['$timeout', 'dataService', '$rootScope', '$interval', '$filter', '$location'];
 
-    angular$1.module('fgp-kit', []).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory).directive('widgetContainer', fgpWidgetContainer.buildFactory).directive('widgetGraph', fgpWidgetGraph.buildFactory);
+    var fgpWidgetPageTitle = function fgpWidgetPageTitle() {
+        this.restrict = 'E';
+        this.scope = {};
+    };
+
+    fgpWidgetPageTitle.prototype.template = function template(element, attrs) {
+        var element_id = attrs.id;
+        //drag-channel  item means this widget accepts items
+        var dom_show = '<div class="" id="' + element_id + '">' +
+            '<div class="{{css.width}}" style="-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;">' +
+            '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
+            '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"">' +
+            '<h1>{{css.title.text}}</h1>' +
+            '<h3>{{css.subtitle.text}}</h3>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+        return dom_show;
+    };
+
+
+    fgpWidgetPageTitle.prototype.controller = function controller($scope, $element) {
+        var metadata = null;
+        var element_id = $element.attr("id");
+        var widgetData = null;
+        $scope.$emit('fetchWidgetMetadataEvent', {
+            id: element_id, callback: function (data) {
+                if (data) {
+                    widgetData = data;
+                }
+            }
+        });
+
+        if (widgetData.data && widgetData.from == "show") {
+            metadata = widgetData.data.metadata;
+            $scope.css = {};
+            $scope.css["color"] = metadata.css.color;
+            $scope.css["width"] = metadata.css.width;
+            $scope.css["minHeight"] = metadata.css.minHeight;
+            $scope.css["border"] = {};
+            $scope.css["border"]["color"] = metadata.css.border.color;
+            $scope.css["background"] = {};
+            $scope.css["background"]["color"] = metadata.css.background.color;
+            $scope.css["title"] = metadata.css.title;
+            $scope.css["title"]["color"] = metadata.css.title.color;
+            $scope.css["title"]["show"] = metadata.css.title.show;
+            $scope.css["subtitle"] = metadata.css.subtitle;
+            $scope.css["subtitle"]["color"] = metadata.css.subtitle.color;
+            $scope.css["subtitle"]["show"] = metadata.css.subtitle.show;
+
+            $scope.$on('deviceInfoEvent', function (event, data) {
+                var f = new Function("device", "with(device) { return " + $scope.css["title"].text + "}");
+                $scope.css["title"].text = f(data.device);
+                f = new Function("device", "with(device) { return " + $scope.css["subtitle"].text + "}");
+                $scope.css["subtitle"].text = f(data.device);
+            });
+        }
+
+
+
+
+    };
+
+    fgpWidgetPageTitle.buildFactory = function buildFactory() {
+        fgpWidgetPageTitle.instance = new fgpWidgetPageTitle();
+        return fgpWidgetPageTitle.instance;
+    };
+
+    var fgpWidgetMap = function fgpWidgetMap() {
+        this.restrict = 'E';
+        this.scope = {};
+    };
+
+    fgpWidgetMap.prototype.template = function template(element, attrs) {
+        var dom_show = '<div class = "{{css.width}}" style="padding:0px;height:{{css.height}}px;" map-lazy-load="https://maps.google.com/maps/api/js">' +
+            '<ng-map style="height: 100%;width: 100%;" center="{{center}}" zoom="15">' +
+            '<marker on-click="map.showInfoWindow(\'info_' + attrs.id + '\')" id="marker_' + attrs.id + '" ng-repeat="item in markers" icon="{{item.image}}" position="{{item.latitude}},{{item.longitude}}" title="{{item.name}}" animation="Animation.DROP" ></marker>' +
+            '</ng-map>' +
+            '</div>' +
+            '';
+        return dom_show;
+    };
+
+
+    fgpWidgetMap.prototype.controller = function controller($scope, $element) {
+        var metadata = null;
+        var element_id = $element.attr("id");
+        var widgetData = null;
+        $scope.$emit('fetchWidgetMetadataEvent', {
+            id: element_id, callback: function (data) {
+                if (data) {
+                    widgetData = data;
+                }
+            }
+        });
+
+        /**
+         * get device information
+         */
+        if (widgetData.data && widgetData.from == "show") {
+            $scope.$on('deviceInfoEvent', function (event, data) {
+                metadata = widgetData.data.metadata;
+
+                $scope.showdata = widgetData.data;
+
+                $scope.css = {
+                    width: "col-md-12",
+                    height: "400"
+                };
+                if ($scope.showdata.metadata.css) {
+                    $scope.css = $scope.showdata.metadata.css;
+                }
+
+                var location = {};
+                $scope.markers = [];
+                $scope.details = $scope.$parent.device;
+
+
+                // show one point.
+                var f = null;
+                angular$1.forEach($scope.showdata.metadata.data, function (item) {
+                    try {
+                        f = new Function("device", "with(device) { return " + item.value + ";}");
+                        var result = f(device);
+                        if (result) {
+                            location[item.label] = result;
+                        } else {
+                            location[item.label] = "";
+                        }
+                    } catch (error) {
+                        // show image
+                        if ("image" == item.label) {
+                            location[item.label] = item.value;
+                        } else {
+                            location[item.label] = "";
+                        }
+
+                    }
+                });
+
+
+                //do not show
+                if (location.latitude == "" || location.longitude == "") {
+                    //hard code. the location is Melbourne
+                    location.latitude = "-37.810000";
+                    location.longitude = "144.950000";
+                    $scope.center = [location.latitude, location.longitude];
+                    // $scope.markers.push(location);
+                } else {
+                    $scope.center = [location.latitude, location.longitude];
+                    $scope.markers.push(location);
+                }
+
+            });
+        }
+
+    };
+
+    fgpWidgetMap.buildFactory = function buildFactory() {
+        fgpWidgetMap.instance = new fgpWidgetMap();
+        return fgpWidgetMap.instance;
+    };
+
+    var fgpWidgetDeviceDetail = function fgpWidgetDeviceDetail() {
+        this.restrict = 'E';
+        this.scope = {};
+    };
+
+    fgpWidgetDeviceDetail.prototype.template = function template(element, attrs) {
+        return '<div class = "{{css.width}}" style="padding:0px;"><div class="row" style="height: {{css.height}}px;">' +
+            '<div class="row" ng-repeat="item in data">' +
+            '<div class="col-xs-4 col-md-4" style="text-align: right; font-weight: bold;line-height: 30px;">{{item.label}}</div><div class="col-xs-8 col-md-8" style="text-align: left;line-height: 30px;">{{item.value}}</div>' +
+            '</div>' +
+            '</div>' +
+            '<div id="detail_status_' + attrs.id + '" class="row" style="min-height: 50px;">' +
+            '</div>' +
+            '</div>';
+    };
+
+
+    fgpWidgetDeviceDetail.prototype.controller = function controller($scope, $element) {
+        var metadata = null;
+        var element_id = $element.attr("id");
+        var widgetData = null;
+        $scope.$emit('fetchWidgetMetadataEvent', {
+            id: element_id, callback: function (data) {
+                if (data) {
+                    widgetData = data;
+                }
+            }
+        });
+
+        /**
+         * get device information
+         */
+        if (widgetData.data && widgetData.from == "show") {
+
+            $scope.$on('deviceInfoEvent', function (event, data) {
+                metadata = widgetData.data.metadata;
+
+                $scope.showdata = widgetData.data;
+
+                $scope.css = {
+                    width: "col-md-12",
+                    height: "400"
+                };
+                if ($scope.showdata.metadata.css) {
+                    $scope.css = $scope.showdata.metadata.css;
+                }
+
+
+                $scope.data = [];
+                //get all columns
+                var f = null;
+                angular$1.forEach($scope.showdata.metadata.data, function (item) {
+                    try {
+                        f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
+                        item.value = f(device);
+                        $scope.data.push(item);
+                    } catch (error) {
+                        item.value = "";
+                        $scope.data.push(item);
+                    }
+                });
+
+
+            });
+
+        }
+
+    };
+
+
+    fgpWidgetDeviceDetail.buildFactory = function buildFactory() {
+        fgpWidgetDeviceDetail.instance = new fgpWidgetDeviceDetail();
+        return fgpWidgetDeviceDetail.instance;
+    };
+
+    /**
+     * Created by ericwang on 20/06/2016.
+     */
+    var fgpWidgetSpan = function fgpWidgetSpan() {
+        this.restrict = 'E';
+        this.scope = {};
+    };
+
+    fgpWidgetSpan.prototype.template = function template(scope, element) {
+        return '<div class = "{{css.width}}" style="padding:0px;"><div class="row" style="height: {{css.height}}px;">' +
+            '</div>';
+    };
+
+    fgpWidgetSpan.prototype.controller = function controller($scope, $element) {
+
+        var element_id = $element.attr("id");
+        var widgetData = null;
+        $scope.$emit('fetchWidgetMetadataEvent', {
+            id: element_id, callback: function (data) {
+                if (data) {
+                    widgetData = data;
+                }
+            }
+        });
+
+        $scope.showdata = widgetData.data;
+        $scope.css = {
+            width: "col-md-12",
+            height: "400"
+        };
+        if ($scope.showdata.metadata.css) {
+            $scope.css = $scope.showdata.metadata.css;
+        }
+    };
+
+    fgpWidgetSpan.buildFactory = function buildFactory() {
+        fgpWidgetSpan.instance = new fgpWidgetSpan();
+        return fgpWidgetSpan.instance;
+    };
+
+    var fgpWidgetPie = function fgpWidgetPie($timeout) {
+        this.restrict = 'E';
+        this.scope = {};
+        this.$timeout = $timeout;
+    };
+
+
+    fgpWidgetPie.prototype.template = function template(element, attrs) {
+        return '<div class = "{{css.width}}" ><div style="height: {{css.height}}px;">' +
+            '<canvas class="fgpPieChart"></canvas>' +
+            '</div>' +
+            '</div>';
+    };
+
+    fgpWidgetPie.prototype.link = function link(scope, element) {
+
+        this.$timeout(function () {
+            var ctx = element.find("canvas")[0];
+            scope.chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['1'],
+                    datasets: [
+                        {
+                            data: [1],
+                            backgroundColor: []
+                        }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    legend: {display: true}
+                }
+            });
+        });
+    };
+
+
+    fgpWidgetPie.prototype.controller = function controller($scope, $element, $timeout) {
+
+        var id = $element.attr("id");
+        var metadata = null;
+        var widgetData = null;
+
+        $scope.$emit('fetchWidgetMetadataEvent', {
+            id: id, callback: function (data) {
+                if (data) {
+                    widgetData = data;
+                }
+            }
+        });
+
+        if (widgetData.from == "show" && widgetData.data) {
+            $scope['defaultColors'] = [];
+            for (var i = 0; i < 300; i++) {
+                $scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
+            }
+            $scope.$on('deviceInfoEvent', function (event, data) {
+                metadata = widgetData.data.metadata;
+                $scope.showdata = widgetData.data;
+                $scope.css = {
+                    width: "col-md-12",
+                    height: "400"
+                };
+                if ($scope.showdata.metadata.css) {
+                    $scope.css = $scope.showdata.metadata.css;
+                }
+                $scope.data = [];
+                //get all columns
+                var f = null;
+                angular$1.forEach($scope.showdata.metadata.data, function (item) {
+                    try {
+                        f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
+                        item.value = f(device);
+                        $scope.data.push(item);
+                    } catch (error) {
+                        item.value = item.value;
+                        $scope.data.push(item);
+                    }
+                });
+                // timeout
+                $scope.pieData = {labels: [], value: []};
+                $timeout(function () {
+                    // create data
+                    angular$1.forEach($scope.data, function (item) {
+                        $scope.pieData.labels.push(item.label);
+                        $scope.pieData.value.push(item.value);
+                    });
+
+                    $scope.chart.data.labels = $scope.pieData.labels;
+                    $scope.chart.data.datasets[0].data = $scope.pieData.value;
+                    $scope.chart.data.datasets[0].backgroundColor = $scope.defaultColors.filter(function (item, index) {
+                        if (index < $scope.pieData.value.length - 1) {
+                            return item;
+                        }
+                    });
+                    // update chart
+                    $scope.chart.update();
+                });
+
+            });
+
+
+        }
+
+
+    };
+
+    fgpWidgetPie.buildFactory = function buildFactory($timeout) {
+        fgpWidgetPie.instance = new fgpWidgetPie($timeout);
+        return fgpWidgetPie.instance;
+    };
+    fgpWidgetPie.$inject = ['$timeout'];
+
+    // angular module
+    angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
+        .directive('widgetContainer', fgpWidgetContainer.buildFactory)
+        .directive('widgetGraph', fgpWidgetGraph.buildFactory)
+        .directive('widgetPageTitle', fgpWidgetPageTitle.buildFactory)
+        .directive('widgetMap', fgpWidgetMap.buildFactory)
+        .directive('widgetStatus', fgpStage.buildFactory)
+        .directive('widgetDeviceDetail', fgpWidgetDeviceDetail.buildFactory)
+        .directive('widgetDeviceSpan', fgpWidgetSpan.buildFactory)
+        .directive('widgetPie', fgpWidgetPie.buildFactory);
     var index = 'fgp-kit';
 
     return index;
