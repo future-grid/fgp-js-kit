@@ -98,7 +98,7 @@ class fgpWidgetPie {
                     $scope.chart.data.labels = $scope.pieData.labels;
                     $scope.chart.data.datasets[0].data = $scope.pieData.value;
                     $scope.chart.data.datasets[0].backgroundColor = $scope.defaultColors.filter(function (item, index) {
-                        if (index < $scope.pieData.value.length - 1) {
+                        if (index < $scope.pieData.value.length) {
                             return item;
                         }
                     });
