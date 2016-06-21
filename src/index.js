@@ -13,6 +13,7 @@ import fgpWidgetStatus from './com/futuregrid/platform/kit/show/directives/fgp.s
 import fgpWidgetDetail from './com/futuregrid/platform/kit/show/directives/fgp.device.detail';
 import fgpWidgetSpan from './com/futuregrid/platform/kit/show/directives/fgp.span';
 import fgpWidgetPie from './com/futuregrid/platform/kit/show/directives/fgp.pie';
+import fgpWidgetChartTable from './com/futuregrid/platform/kit/show/directives/fgp.chart.table';
 // angular module
 angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
@@ -22,5 +23,20 @@ angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory
     .directive('widgetStatus', fgpWidgetStatus.buildFactory)
     .directive('widgetDeviceDetail', fgpWidgetDetail.buildFactory)
     .directive('widgetDeviceSpan', fgpWidgetSpan.buildFactory)
-    .directive('widgetPie', fgpWidgetPie.buildFactory);
+    .directive('widgetPie', fgpWidgetPie.buildFactory)
+    .directive('widgetChartTable', fgpWidgetChartTable.buildFactory).filter('tableformatter', ['$filter', function ($filter) {
+    return function (input, obj, field, formatter) {
+        if (formatter) {
+            if (obj[field]) {
+                if ("date" == formatter) {
+                    return $filter('date')(new Date(obj[field]), 'd/M/yy h:mm a');
+                } else {
+                    return input;
+                }
+            }
+        } else {
+            return input;
+        }
+    };
+}]);
 export default 'fgp-kit';

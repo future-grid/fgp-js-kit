@@ -1,6 +1,7 @@
 /**
  * Created by ericwang on 15/06/2016.
  */
+import angular from 'angular';
 import Dygraph from "dygraphs";
 'use strict';
 class fgpWidgetGraph {
@@ -650,6 +651,8 @@ class fgpWidgetGraph {
 
             $scope.rangeData = [];
 
+            $scope.ordinalRangeData = [];
+
             var initChart = function (data) {
                 $scope.intevalforshow = [];
                 //
@@ -696,6 +699,7 @@ class fgpWidgetGraph {
                     newData.push({timestamp: timestamp + currentInterval});
                     allData = newData;
                 }
+                $scope.ordinalRangeData = allData;
                 // get configuration and make real data
                 updateChart(metadata, store, allData);
             };
@@ -892,7 +896,7 @@ class fgpWidgetGraph {
                 }
 
 
-            }
+            };
 
 
             var updateChildrenDetailChart = function (metadata, store, rangeData, allData) {
@@ -1035,7 +1039,7 @@ class fgpWidgetGraph {
                 }
 
 
-            }
+            };
 
 
             /**
@@ -1430,12 +1434,34 @@ class fgpWidgetGraph {
                     } else {
                         // if expected interval is the biggest, show range data
                         if (expectedInterval == conf[0].interval) {
+                            if (!($scope.chartDateWindow[0] instanceof Date)) {
+                                $scope.chartDateWindow[0] = new Date($scope.chartDateWindow[0]);
+                            }
+
+                            if (!($scope.chartDateWindow[1] instanceof Date)) {
+                                $scope.chartDateWindow[1] = new Date($scope.chartDateWindow[1]);
+                            }
                             $scope.rangeConfig["dateWindow"] = $scope.chartDateWindow;
                             // set valueRange
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             if ($scope.rangeSelectorBar && $scope.rangeSeries) {
                                 $scope.rangeSelectorBar.updateOptions({series: $scope.rangeSeries});
                             }
+                            // tell some other widgets, the graph is changed.
+                            $timeout(function () {
+                                $rootScope.$broadcast('chartDataChangeEvent', {
+                                    'id': element_id,
+                                    'group': 'device',
+                                    'data': {
+                                        'collection': conf[0].name,
+                                        'group': 'device',
+                                        'data': $scope.ordinalRangeData.filter(function (obj) {
+                                            return obj.timestamp >= $scope.rangeConfig["dateWindow"][0].getTime() && obj.timestamp <= $scope.rangeConfig["dateWindow"][1].getTime();
+                                        })
+                                    }
+                                });
+                            });
+
                             $scope.loadingShow = false;
                         } else {
                             // cal tree
@@ -1456,12 +1482,25 @@ class fgpWidgetGraph {
                                         });
                                         //get configuration
                                         updateDetailChart(metadata, tree.store, $scope.rangeData, showData);
+
+                                        // tell some other widgets, the graph is changed.
+                                        $timeout(function () {
+                                            $rootScope.$broadcast('chartDataChangeEvent', {
+                                                'id': element_id,
+                                                'group': 'device',
+                                                'data': {'collection': tree.store, 'group': 'device', 'data': showData}
+                                            });
+                                        });
+
                                     }, function (data) {
                                         console.info(data);
                                     });
                                 }
                             });
+
                         }
+
+
                     }
                     $scope.status = false;
                 }

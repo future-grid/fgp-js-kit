@@ -112,6 +112,21 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "parent": "edititem8956",
         "id": "item4372"
     }, {
+        "html": "<itemcontainer id=\"item9358\"></itemcontainer>",
+        "configTemplate": "",
+        "metadata": {
+            "css": {
+                "color": "green",
+                "width": "col-md-12",
+                "border": {"color": "#fff"},
+                "background": {"color": "#fff"},
+                "title": {"text": "info", "color": "#5cb85c", "show": true}
+            }, "other": {}
+        },
+        "html_render": "<widget-container id=\"item9358\" shown showTitle></widget-container>",
+        "parent": "workingArea",
+        "id": "item9358"
+    }, {
         "html": "<itemcontainer id=\"item6688\"></itemcontainer>",
         "configTemplate": "",
         "metadata": {
@@ -136,6 +151,53 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "html_render": "<widget-pie id=\"item3429\" shown></widget-pie>",
         "parent": "edititem6688",
         "id": "item3429"
+    }, {
+        "html": "<gridtable id=\"item6225\"></gridtable>",
+        "configTemplate": "",
+        "metadata": {
+            "css": {"width": "col-md-12", "height": "400"},
+            "data": {
+                "basic": {"range_show": true, "childrenChart": [], "parentChart": [], "zoom": true},
+                "source": {"store": "memory", "relation": "", "device_group": "platform_node", "relation_group": ""},
+                "groups": [{
+                    "name": "all",
+                    "leftYAxis": "Y1",
+                    "rightYAxis": "Y2",
+                    "collections": [{
+                        "name": "substation_va",
+                        "rows": [{"label": "label", "value": "value", "color": "#ff0033;", "yaxis": 0}]
+                    }]
+                }, {
+                    "name": "device",
+                    "leftYAxis": "Y1",
+                    "rightYAxis": "Y2",
+                    "collections": [{
+                        "name": "raw",
+                        "rows": [{"color": "#b85c5c", "label": "FREE", "value": "data.free", "yaxis": "0"}]
+                    }, {
+                        "name": "5min",
+                        "rows": [{
+                            "color": "#5cabb8",
+                            "label": "max free",
+                            "value": "data.maxFree",
+                            "yaxis": "0"
+                        }, {"color": "#009dff", "label": "avg", "value": "data.avgFree", "yaxis": "1"}]
+                    }]
+                }, {
+                    "name": "relation",
+                    "leftYAxis": "Y1",
+                    "rightYAxis": "Y2",
+                    "collections": [{
+                        "name": "substation_va",
+                        "rows": [{"label": "label", "value": "value", "color": "#ff1100;", "yaxis": 0}]
+                    }]
+                }],
+                "chartId": "item2715"
+            }
+        },
+        "html_render": "<widget-chart-table id=\"item6225\" shown></widget-chart-table>",
+        "parent": "edititem9358",
+        "id": "item6225"
     }];
 
 
