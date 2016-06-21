@@ -10,6 +10,7 @@ class fgpWidgetGraph {
         this.restrict = 'E';
         this.scope = {};
         this.$timeout = $timeout;
+        this._dataService = dataService;
     }
 
     template(element, attrs) {
@@ -33,10 +34,7 @@ class fgpWidgetGraph {
     }
 
     link(scope, element, attrs) {
-        scope['defaultColors'] = [];
-        for (var i = 0; i < 300; i++) {
-            scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
-        }
+        scope['defaultColors'] = this._dataService.defaultColors();
         scope.status = true;
         var timeOut = this.$timeout;
         this.$timeout(function () {
@@ -517,10 +515,7 @@ class fgpWidgetGraph {
         var element_id = $element.attr("id");
         $scope.elementId = element_id;
 
-        $scope['defaultColors'] = [];
-        for (var i = 0; i < 300; i++) {
-            $scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
-        }
+        $scope['defaultColors'] = dataService.defaultColors();
         var metadata = null;
         var widgetData = null;
         $scope.emptyDataShow = false;

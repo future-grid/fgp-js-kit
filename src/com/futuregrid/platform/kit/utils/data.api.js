@@ -383,6 +383,21 @@ class dataAccessApi {
 
 
     }
+    
+    defaultColors() {
+        if (!this.colors) {
+            this['colors'] = [];
+            for (var i = 0; i < 300; i++) {
+                this.colors.push('#' + (function co(lor) {
+                        return (lor +=
+                            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)])
+                        && (lor.length == 6) ? lor : co(lor);
+                    })(''));
+            }
+        }
+        return this.colors;
+
+    }
 
 
     static buildFactory($http, $q, $cacheFactory) {

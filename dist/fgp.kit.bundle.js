@@ -485,6 +485,23 @@
 
 
     };
+        
+    dataAccessApi.prototype.defaultColors = function defaultColors() {
+            var this$1 = this;
+
+        if (!this.colors) {
+            this['colors'] = [];
+            for (var i = 0; i < 300; i++) {
+                this$1.colors.push('#' + (function co(lor) {
+                        return (lor +=
+                            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)])
+                        && (lor.length == 6) ? lor : co(lor);
+                    })(''));
+            }
+        }
+        return this.colors;
+
+    };
 
 
     dataAccessApi.buildFactory = function buildFactory($http, $q, $cacheFactory) {
@@ -570,6 +587,7 @@
         this.restrict = 'E';
         this.scope = {};
         this.$timeout = $timeout;
+        this._dataService = dataService;
     };
 
     fgpWidgetGraph.prototype.template = function template(element, attrs) {
@@ -593,10 +611,7 @@
     };
 
     fgpWidgetGraph.prototype.link = function link(scope, element, attrs) {
-        scope['defaultColors'] = [];
-        for (var i = 0; i < 300; i++) {
-            scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
-        }
+        scope['defaultColors'] = this._dataService.defaultColors();
         scope.status = true;
         var timeOut = this.$timeout;
         this.$timeout(function () {
@@ -1077,10 +1092,7 @@
         var element_id = $element.attr("id");
         $scope.elementId = element_id;
 
-        $scope['defaultColors'] = [];
-        for (var i = 0; i < 300; i++) {
-            $scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
-        }
+        $scope['defaultColors'] = dataService.defaultColors();
         var metadata = null;
         var widgetData = null;
         $scope.emptyDataShow = false;
@@ -2410,10 +2422,6 @@
         });
 
         if (widgetData.from == "show" && widgetData.data) {
-            $scope['defaultColors'] = [];
-            for (var i = 0; i < 300; i++) {
-                $scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
-            }
             $scope.$on('deviceInfoEvent', function (event, data) {
                 metadata = widgetData.data.metadata;
                 $scope.showdata = widgetData.data;
@@ -2425,6 +2433,7 @@
                     $scope.css = $scope.showdata.metadata.css;
                 }
                 $scope.data = [];
+                var colors = [];
                 //get all columns
                 var f = null;
                 angular$1.forEach($scope.showdata.metadata.data, function (item) {
@@ -2435,6 +2444,15 @@
                     } catch (error) {
                         item.value = item.value;
                         $scope.data.push(item);
+                    }
+                    if (item.color) {
+                        colors.push(item.color);
+                    } else {
+                        colors.push('#' + (function co(lor) {
+                                return (lor +=
+                                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)])
+                                && (lor.length == 6) ? lor : co(lor);
+                            })(''));
                     }
                 });
                 // timeout
@@ -2448,11 +2466,7 @@
 
                     $scope.chart.data.labels = $scope.pieData.labels;
                     $scope.chart.data.datasets[0].data = $scope.pieData.value;
-                    $scope.chart.data.datasets[0].backgroundColor = $scope.defaultColors.filter(function (item, index) {
-                        if (index < $scope.pieData.value.length) {
-                            return item;
-                        }
-                    });
+                    $scope.chart.data.datasets[0].backgroundColor = colors;
                     // update chart
                     $scope.chart.update();
                 });

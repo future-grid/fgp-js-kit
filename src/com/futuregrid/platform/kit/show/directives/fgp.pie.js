@@ -59,10 +59,6 @@ class fgpWidgetPie {
         });
 
         if (widgetData.from == "show" && widgetData.data) {
-            $scope['defaultColors'] = [];
-            for (var i = 0; i < 300; i++) {
-                $scope.defaultColors.push('#' + Math.floor(Math.random() * 16777215).toString(16));
-            }
             $scope.$on('deviceInfoEvent', function (event, data) {
                 metadata = widgetData.data.metadata;
                 $scope.showdata = widgetData.data;
@@ -74,6 +70,7 @@ class fgpWidgetPie {
                     $scope.css = $scope.showdata.metadata.css;
                 }
                 $scope.data = [];
+                var colors = [];
                 //get all columns
                 var f = null;
                 angular.forEach($scope.showdata.metadata.data, function (item) {
@@ -84,6 +81,15 @@ class fgpWidgetPie {
                     } catch (error) {
                         item.value = item.value;
                         $scope.data.push(item);
+                    }
+                    if (item.color) {
+                        colors.push(item.color);
+                    } else {
+                        colors.push('#' + (function co(lor) {
+                                return (lor +=
+                                    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)])
+                                && (lor.length == 6) ? lor : co(lor);
+                            })(''));
                     }
                 });
                 // timeout
@@ -97,11 +103,7 @@ class fgpWidgetPie {
 
                     $scope.chart.data.labels = $scope.pieData.labels;
                     $scope.chart.data.datasets[0].data = $scope.pieData.value;
-                    $scope.chart.data.datasets[0].backgroundColor = $scope.defaultColors.filter(function (item, index) {
-                        if (index < $scope.pieData.value.length) {
-                            return item;
-                        }
-                    });
+                    $scope.chart.data.datasets[0].backgroundColor = colors;
                     // update chart
                     $scope.chart.update();
                 });

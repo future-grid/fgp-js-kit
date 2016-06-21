@@ -81,6 +81,21 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "parent": "edititem7953",
         "id": "item2715"
     }, {
+        "html": "<itemcontainer id=\"item9358\"></itemcontainer>",
+        "configTemplate": "",
+        "metadata": {
+            "css": {
+                "color": "green",
+                "width": "col-md-12",
+                "border": {"color": "#2cc80b"},
+                "background": {"color": "#fff"},
+                "title": {"text": "info", "color": "#5cb85c", "show": true}
+            }, "other": {}
+        },
+        "html_render": "<widget-container id=\"item9358\" shown showTitle></widget-container>",
+        "parent": "workingArea",
+        "id": "item9358"
+    }, {
         "html": "<itemcontainer id=\"item8956\"></itemcontainer>",
         "configTemplate": "",
         "metadata": {
@@ -112,33 +127,18 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "parent": "edititem8956",
         "id": "item4372"
     }, {
-        "html": "<itemcontainer id=\"item9358\"></itemcontainer>",
-        "configTemplate": "",
-        "metadata": {
-            "css": {
-                "color": "green",
-                "width": "col-md-12",
-                "border": {"color": "#fff"},
-                "background": {"color": "#fff"},
-                "title": {"text": "info", "color": "#5cb85c", "show": true}
-            }, "other": {}
-        },
-        "html_render": "<widget-container id=\"item9358\" shown showTitle></widget-container>",
-        "parent": "workingArea",
-        "id": "item9358"
-    }, {
         "html": "<itemcontainer id=\"item6688\"></itemcontainer>",
         "configTemplate": "",
         "metadata": {
             "css": {
                 "color": "green",
                 "width": "col-md-12",
-                "border": {"color": "#fff"},
+                "border": {"color": "#1de403"},
                 "background": {"color": "#fff"},
-                "title": {"text": "title", "color": "#5cb85c", "show": false}
+                "title": {"text": "title", "color": "#5cb85c", "show": true}
             }, "other": {}
         },
-        "html_render": "<widget-container shown id=\"item6688\"></widget-container>",
+        "html_render": "<widget-container id=\"item6688\" shown showTitle></widget-container>",
         "parent": "workingArea",
         "id": "item6688"
     }, {
@@ -146,7 +146,11 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "configTemplate": "",
         "metadata": {
             "css": {"width": "col-md-6", "height": "200"},
-            "data": [{"label": "totalVah", "value": "30"}, {"label": "current", "value": "40"}]
+            "data": [{"label": "totalVah", "value": "30", "color": "#ff0084"}, {
+                "label": "current",
+                "value": "40",
+                "color": "#89ff00"
+            }]
         },
         "html_render": "<widget-pie id=\"item3429\" shown></widget-pie>",
         "parent": "edititem6688",
