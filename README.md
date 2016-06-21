@@ -5,7 +5,7 @@ Reactive, responsive Graph. using [Dygraphs](http://dygraphs.com).
 
 # v1.0.* - fgp-js-kit
 
-This is the first version of graph library that uses the v1.1.1 version of Dygraphs.
+This is the first version of graph library that uses the v1.1.1 version of Dygraphs. You can also use "eric_dygraphs".
 
 # Installation
 
