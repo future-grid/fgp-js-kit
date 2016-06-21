@@ -115,8 +115,8 @@
         this._$http = $http;
         this._$q = $q;
         // get cache
-        this.indexCache = $cacheFactory.get('indexCache');
-        this.deviceStores = $cacheFactory.get('deviceStores');
+        this.indexCache = $cacheFactory('indexCache');
+        this.deviceStores = $cacheFactory('deviceStores');
     };
 
 
