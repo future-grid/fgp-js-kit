@@ -28,7 +28,7 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
                 "width": "col-md-12",
                 "border": {"color": "#218d13"},
                 "background": {"color": "#fff"},
-                "title": {"text": "Hello", "color": "#5cb85c", "show": true}
+                "title": {"text": "Graphs", "color": "#5cb85c", "show": true}
             }, "other": {}
         },
         "html_render": "<widget-container id=\"item7953\" shown showTitle></widget-container>",
@@ -40,7 +40,7 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "metadata": {
             "css": {"width": "col-md-6", "height": "400"},
             "data": {
-                "basic": {"range_show": true, "childrenChart": [], "parentChart": [], "zoom": true},
+                "basic": {"range_show": true, "childrenChart": ["item2899"], "parentChart": [], "zoom": true},
                 "source": {"store": "memory", "relation": "", "device_group": "platform_node", "relation_group": ""},
                 "groups": [{
                     "name": "all",
@@ -89,7 +89,7 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
                 "width": "col-md-12",
                 "border": {"color": "#2cc80b"},
                 "background": {"color": "#fff"},
-                "title": {"text": "info", "color": "#5cb85c", "show": true}
+                "title": {"text": "Data from Graph", "color": "#5cb85c", "show": true}
             }, "other": {}
         },
         "html_render": "<widget-container id=\"item9358\" shown showTitle></widget-container>",
@@ -102,12 +102,12 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
             "css": {
                 "color": "green",
                 "width": "col-md-12",
-                "border": {"color": "#fff"},
+                "border": {"color": "#3d920e"},
                 "background": {"color": "#fff"},
-                "title": {"text": "title", "color": "#5cb85c", "show": false}
+                "title": {"text": "Device Location", "color": "#5cb85c", "show": true}
             }, "other": {}
         },
-        "html_render": "<widget-container shown id=\"item8956\"></widget-container>",
+        "html_render": "<widget-container id=\"item8956\" shown showTitle></widget-container>",
         "parent": "workingArea",
         "id": "item8956"
     }, {
@@ -133,12 +133,12 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
             "css": {
                 "color": "green",
                 "width": "col-md-12",
-                "border": {"color": "#1de403"},
+                "border": {"color": "#167b09"},
                 "background": {"color": "#fff"},
-                "title": {"text": "title", "color": "#5cb85c", "show": false}
+                "title": {"text": "Pie Chart", "color": "#5cb85c", "show": true}
             }, "other": {}
         },
-        "html_render": "<widget-container shown id=\"item6688\"></widget-container>",
+        "html_render": "<widget-container id=\"item6688\" shown showTitle></widget-container>",
         "parent": "workingArea",
         "id": "item6688"
     }, {
@@ -215,6 +215,46 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "html_render": "<widget-pie id=\"item4756\" shown></widget-pie>",
         "parent": "edititem6688",
         "id": "item4756"
+    }, {
+        "html": "<line-chart-dygraphs-cache id=\"item2899\" style=\"height: 100%;\" type=\"line\"></line-chart-dygraphs-cache>",
+        "metadata": {
+            "css": {"width": "col-md-6", "height": "400"},
+            "data": {
+                "basic": {"range_show": false, "childrenChart": [], "parentChart": [], "zoom": false},
+                "source": {"store": "memory", "relation": "", "device_group": "platform_node", "relation_group": ""},
+                "groups": [{
+                    "name": "all",
+                    "leftYAxis": "Y1",
+                    "rightYAxis": "Y2",
+                    "collections": [{
+                        "name": "substation_va",
+                        "rows": [{"label": "label", "value": "value", "color": "#ff0033;", "yaxis": 0}]
+                    }]
+                }, {
+                    "name": "device",
+                    "leftYAxis": "Y1",
+                    "rightYAxis": "Y2",
+                    "collections": [{
+                        "name": "raw",
+                        "rows": [{"color": "#ff00ef", "label": "Free", "value": "data.free", "yaxis": "0"}]
+                    }, {
+                        "name": "5min",
+                        "rows": [{"color": "#1eff00", "label": "free", "value": "data.free", "yaxis": "0"}]
+                    }]
+                }, {
+                    "name": "relation",
+                    "leftYAxis": "Y1",
+                    "rightYAxis": "Y2",
+                    "collections": [{
+                        "name": "substation_va",
+                        "rows": [{"label": "label", "value": "value", "color": "#ff1100;", "yaxis": 0}]
+                    }]
+                }]
+            }
+        },
+        "html_render": "<widget-graph id=\"item2899\" shown type=line></widget-graph>",
+        "parent": "edititem7953",
+        "id": "item2899"
     }];
 
 

@@ -55,8 +55,8 @@ class fgpWidgetChartTable {
 
         $scope.$on('chartDataChangeEvent', function (event, chartData) {
             var chartId = chartData.id;
-            $scope.sampledata = {};
             if ($scope.showdata.metadata.data.chartId === chartId && chartData.group == "device") {
+                $scope.sampledata = {};
                 // make data
                 var collectionName = chartData.data.collection;
                 var groupName = chartData.group;
