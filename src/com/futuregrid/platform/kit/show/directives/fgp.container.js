@@ -21,7 +21,7 @@ class fgpWidgetContainer {
             '</div>' +
             '</div></div>';
         var dom_show_notitle = '<div class="" id="' + element_id + '">' +
-            '<div class="{{css.width}}">' +
+            '<div class="{{css.width}}" style="margin-bottom:15px;">' +
             '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
             '</div>' +
