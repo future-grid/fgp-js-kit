@@ -38,7 +38,7 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "html": "<line-chart-dygraphs-cache id=\"item2715\" style=\"height: 100%;\" type=\"line\"></line-chart-dygraphs-cache>",
         "configTemplate": "",
         "metadata": {
-            "css": {"width": "col-md-12", "height": "400"},
+            "css": {"width": "col-md-6", "height": "400"},
             "data": {
                 "basic": {"range_show": true, "childrenChart": [], "parentChart": [], "zoom": true},
                 "source": {"store": "memory", "relation": "", "device_group": "platform_node", "relation_group": ""},
@@ -135,10 +135,10 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
                 "width": "col-md-12",
                 "border": {"color": "#1de403"},
                 "background": {"color": "#fff"},
-                "title": {"text": "title", "color": "#5cb85c", "show": true}
+                "title": {"text": "title", "color": "#5cb85c", "show": false}
             }, "other": {}
         },
-        "html_render": "<widget-container id=\"item6688\" shown showTitle></widget-container>",
+        "html_render": "<widget-container shown id=\"item6688\"></widget-container>",
         "parent": "workingArea",
         "id": "item6688"
     }, {
@@ -146,7 +146,7 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "configTemplate": "",
         "metadata": {
             "css": {"width": "col-md-6", "height": "200"},
-            "data": [{"label": "totalVah", "value": "30", "color": "#ff0084"}, {
+            "data": [{"label": "totalVah", "value": "30", "color": "#ffcd00"}, {
                 "label": "current",
                 "value": "40",
                 "color": "#89ff00"
@@ -202,6 +202,19 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
         "html_render": "<widget-chart-table id=\"item6225\" shown></widget-chart-table>",
         "parent": "edititem9358",
         "id": "item6225"
+    }, {
+        "html": "<piechart id=\"item4756\"></piechart>",
+        "metadata": {
+            "css": {"width": "col-md-6", "height": "200"},
+            "data": [{"label": "totalVah", "value": "10", "color": "#7aff00"}, {
+                "label": "current",
+                "value": "70",
+                "color": "#00daff"
+            }]
+        },
+        "html_render": "<widget-pie id=\"item4756\" shown></widget-pie>",
+        "parent": "edititem6688",
+        "id": "item4756"
     }];
 
 
