@@ -583,7 +583,7 @@ class fgpWidgetGraph {
                             });
 
                             // show children view
-                            dataService.childrenDevicesInitInfo($rootScope.applicationName, $rootScope.device, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels).then(function (data) {
+                            dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, $rootScope.device, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels).then(function (data) {
                                 // get all device trees
                                 if (data != null && data.length > 0) {
                                     initChildrenChart(data);

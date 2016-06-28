@@ -139,7 +139,7 @@ class dataAccessApi {
      */
     childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels) {
         var deferred = this._$q.defer();
-        this._$http.jsonp(host + '/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
+        this._$http.jsonp(host + '/api/app/' + application + '/store/index/jsonp/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
             params: {
                 relationType: relationType,
                 relationDeviceType: relationDeviceType,
