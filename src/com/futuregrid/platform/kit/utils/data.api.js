@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import angular from 'angular';
 /**
  * Created by ericwang on 15/06/2016.
  */
@@ -139,7 +140,7 @@ class dataAccessApi {
      */
     childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels) {
         var deferred = this._$q.defer();
-        this._$http.jsonp(host + '/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
+        this._$http.jsonp(host + '/api/app/' + application + '/store/index/jsonp/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
             params: {
                 relationType: relationType,
                 relationDeviceType: relationDeviceType,
@@ -281,10 +282,11 @@ class dataAccessApi {
 
         var bucketsData = [];
         var devicesNullBucket = [];
-
+        var calTree = this.calTree;
+        var fillChildrenTree = this.fillChildrenTree;
         angular.forEach(deviceInfo, function (device, index) {
             var bucketKeys = [];
-            this.calTree(bucketKeys, device.tree, start, end);
+            calTree(bucketKeys, device.tree, start, end);
             var nullBucket = [];
             // get null buckets
             angular.forEach(bucketKeys, function (bucket) {
@@ -308,7 +310,7 @@ class dataAccessApi {
             var deferred = this._$q.defer();
             this._$http.jsonp(host + '/api/app/' + application + '/store/index/devices/store/data/jsonp/' + storeSchema + '/' + store, {
                 params: {
-                    bucketKeys: devicesNullBucket,
+                    deviceBucketKeys: JSON.stringify(devicesNullBucket),
                     callback: 'JSON_CALLBACK'
                 }
             }).then(
@@ -345,8 +347,9 @@ class dataAccessApi {
 
     deviceStoreData(host, application, deviceKey, storeSchema, store, tree, start, end) {
         var fillTree = this.fillTree;
+        var calTree = this.calTree;
         var bucketKeys = [];
-        this.calTree(bucketKeys, tree, start, end);
+        calTree(bucketKeys, tree, start, end);
         var nullBucket = [];
         // get null buckets
         angular.forEach(bucketKeys, function (bucket) {
@@ -383,7 +386,7 @@ class dataAccessApi {
 
 
     }
-    
+
     defaultColors() {
         if (!this.colors) {
             this['colors'] = [];
