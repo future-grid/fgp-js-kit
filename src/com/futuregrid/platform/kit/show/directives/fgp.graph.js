@@ -1388,8 +1388,8 @@ class fgpWidgetGraph {
                         if (expectedInterval == conf[0].interval) {
                             // set valueRange;
                             // re cal max and min
-                            $scope.childrenRangeConfig["dateWindow"] = $scope.chartDateWindow;
-                            $scope.currentChart.updateOptions($scope.childrenRangeConfig);
+                            // $scope.childrenRangeConfig["dateWindow"] = $scope.chartDateWindow;
+                            $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
                             if ($scope.rangeSelectorBar) {
                                 $scope.rangeSelectorBar.updateOptions({series: $scope.childRangeSeries});
                             }

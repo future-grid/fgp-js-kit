@@ -165,7 +165,7 @@
                     contentType: "application/json",
                     dataType: 'jsonp',
                     success: function (types) {
-                        angular.forEach(types, function (type) {
+                        angular$1.forEach(types, function (type) {
                             Object.defineProperty(data, type.name, {
                                 get: function () {
                                     var result = null;
@@ -273,13 +273,13 @@
 
         if (tree.children[0] == null && tree.children[1] == null) {
 
-            angular.forEach(buckets, function (value, key) {
+            angular$1.forEach(buckets, function (value, key) {
                 if (key == tree.id && value != null) {
                     tree.data = value.array;
                     tree['size'] = value.size;
 
                     var flag = false;
-                    angular.forEach(showData, function (data) {
+                    angular$1.forEach(showData, function (data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
                             tree['size'] = value.size;
@@ -306,13 +306,13 @@
         }
 
         if (tree.children[0] == null && tree.children[1] == null) {
-            angular.forEach(buckets, function (value, key) {
+            angular$1.forEach(buckets, function (value, key) {
                 if (key == tree.id) {
                     tree.data = value.array;
                     tree['size'] = value.size;
 
                     var flag = false;
-                    angular.forEach(showData, function (data) {
+                    angular$1.forEach(showData, function (data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
                             tree['size'] = value.size;
@@ -383,13 +383,14 @@
 
         var bucketsData = [];
         var devicesNullBucket = [];
-
-        angular.forEach(deviceInfo, function (device, index) {
+        var calTree = this.calTree;
+        var fillChildrenTree = this.fillChildrenTree;
+        angular$1.forEach(deviceInfo, function (device, index) {
             var bucketKeys = [];
-            this.calTree(bucketKeys, device.tree, start, end);
+            calTree(bucketKeys, device.tree, start, end);
             var nullBucket = [];
             // get null buckets
-            angular.forEach(bucketKeys, function (bucket) {
+            angular$1.forEach(bucketKeys, function (bucket) {
                 if (bucket.data == null) {
                     nullBucket.push(bucket.id);
                 }
@@ -410,19 +411,19 @@
             var deferred = this._$q.defer();
             this._$http.jsonp(host + '/api/app/' + application + '/store/index/devices/store/data/jsonp/' + storeSchema + '/' + store, {
                 params: {
-                    bucketKeys: devicesNullBucket,
+                    deviceBucketKeys: JSON.stringify(devicesNullBucket),
                     callback: 'JSON_CALLBACK'
                 }
             }).then(
                 function (response) {
                     // response.data
-                    angular.forEach(response.data, function (deviceData) {
+                    angular$1.forEach(response.data, function (deviceData) {
 
                         var currentBucketShowData = null;
-                        angular.forEach(bucketsData, function (showData) {
+                        angular$1.forEach(bucketsData, function (showData) {
                             if (showData.device == deviceData.device) {
                                 currentBucketShowData = showData.data; //  bucketKeys
-                                angular.forEach(deviceInfo, function (device, index) {
+                                angular$1.forEach(deviceInfo, function (device, index) {
                                     if (deviceData.device == device.name) {
                                         fillChildrenTree(deviceData.data, device.tree, currentBucketShowData);
                                     }
@@ -447,11 +448,12 @@
 
     dataAccessApi.prototype.deviceStoreData = function deviceStoreData(host, application, deviceKey, storeSchema, store, tree, start, end) {
         var fillTree = this.fillTree;
+        var calTree = this.calTree;
         var bucketKeys = [];
-        this.calTree(bucketKeys, tree, start, end);
+        calTree(bucketKeys, tree, start, end);
         var nullBucket = [];
         // get null buckets
-        angular.forEach(bucketKeys, function (bucket) {
+        angular$1.forEach(bucketKeys, function (bucket) {
             if (bucket.data == null) {
                 nullBucket.push(bucket.id);
             }
@@ -485,7 +487,7 @@
 
 
     };
-        
+
     dataAccessApi.prototype.defaultColors = function defaultColors() {
             var this$1 = this;
 
@@ -1965,8 +1967,8 @@
                         if (expectedInterval == conf[0].interval) {
                             // set valueRange;
                             // re cal max and min
-                            $scope.childrenRangeConfig["dateWindow"] = $scope.chartDateWindow;
-                            $scope.currentChart.updateOptions($scope.childrenRangeConfig);
+                            // $scope.childrenRangeConfig["dateWindow"] = $scope.chartDateWindow;
+                            $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
                             if ($scope.rangeSelectorBar) {
                                 $scope.rangeSelectorBar.updateOptions({series: $scope.childRangeSeries});
                             }
