@@ -1388,7 +1388,7 @@
                             }
                             labels.push(key);
                             // make a line
-                            var f = new Function("data", "with(data) { if(" + collection.rows[0].value + ")return " + collection.rows[0].value + ";return null;}");
+                            var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                             // add value
                             angular$1.forEach(allLines, function (realLine, index) {
 
@@ -1788,7 +1788,7 @@
                                 showY2axis = true;
                             }
 
-                            var f = new Function("data", "with(data) { if(" + row.value + ")return " + row.value + ";return null;}");
+                            var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
                             // add value
                             var counter = 0;
                             angular$1.forEach(allLines, function (realLine) {
