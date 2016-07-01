@@ -608,7 +608,7 @@
                 '<h1>Empty Data!</h1>' +
                 '</div></div>';
 
-            return '<div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><span class="relationBtn">R</span></a><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'h:mm a MMMM d, y\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'h:mm a MMMM d, y\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
+            return '<div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><span class="relationBtn">R</span></a><div class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'h:mm a MMMM d, y\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'h:mm a MMMM d, y\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
         }
     };
 
@@ -1122,6 +1122,97 @@
             if (widgetData.data.metadata.css) {
                 $scope.css = widgetData.data.metadata.css;
             }
+
+            //fix interval
+            $scope.fixInterval = false;
+            var noneFixed = [];
+            $scope.fixGraphWithGap = function () {
+                if ($scope.currentChart && $scope.fixInterval) {
+                    var currentInterval = -1;
+                    angular$1.forEach($scope.intevals.device, function (item) {
+                        if (item.name === $scope.currentIntervalName) {
+                            currentInterval = item.interval;
+                        }
+                    });
+                    if (noneFixed && noneFixed.length > 0) {
+                        //fix
+                        //get first one
+                        var fixed = [noneFixed[0]];
+                        var tempDate = fixed[0][0].getTime() + currentInterval;
+                        while (tempDate <= noneFixed[noneFixed.length - 1][0].getTime()) {
+                            var flag = false;
+                            // add new
+                            for (var i = 0; i < noneFixed.length; i++) {
+                                if (noneFixed[i][0].getTime() == tempDate) {
+                                    flag = true;
+                                    fixed.push(noneFixed[i]);
+                                    break;
+                                }
+                            }
+
+                            if (!flag) {
+                                var obj = [new Date(tempDate)];
+                                // add NaN
+                                for (var j = 0; j < $scope.currentChart.attributes_.labels_.length; j++) {
+                                    obj.push(NaN);
+                                }
+                                fixed.push(obj);
+                            }
+                            tempDate += currentInterval;
+                        }
+                        $scope.currentChart.updateOptions({file: fixed});
+                    }
+                } else if ($scope.currentChart && !$scope.fixInterval) {
+                    noneFixed = [];
+                    angular$1.copy($scope.currentChart.file_, noneFixed);
+                    $scope.currentChart.updateOptions({file: noneFixed});
+                }
+
+            };
+            $scope.fixGraphWithGap_click = function () {
+                if ($scope.currentChart && !$scope.fixInterval) {
+                    noneFixed = [];
+                    angular$1.copy($scope.currentChart.file_, noneFixed);
+                    var currentInterval = -1;
+                    angular$1.forEach($scope.intevals.device, function (item) {
+                        if (item.name === $scope.currentIntervalName) {
+                            currentInterval = item.interval;
+                        }
+                    });
+                    if (noneFixed && noneFixed.length > 0) {
+                        //fix
+                        //get first one
+                        var fixed = [noneFixed[0]];
+                        var tempDate = fixed[0][0].getTime() + currentInterval;
+                        while (tempDate <= noneFixed[noneFixed.length - 1][0].getTime()) {
+                            var flag = false;
+                            // add new
+                            for (var i = 0; i < noneFixed.length; i++) {
+                                if (noneFixed[i][0].getTime() == tempDate) {
+                                    flag = true;
+                                    fixed.push(noneFixed[i]);
+                                    break;
+                                }
+                            }
+
+                            if (!flag) {
+                                var obj = [new Date(tempDate)];
+                                // add NaN
+                                for (var j = 0; j < $scope.currentChart.attributes_.labels_.length; j++) {
+                                    obj.push(NaN);
+                                }
+                                fixed.push(obj);
+                            }
+                            tempDate += currentInterval;
+                        }
+                        $scope.currentChart.updateOptions({file: fixed});
+                    }
+                } else if ($scope.currentChart && $scope.fixInterval) {
+                    $scope.currentChart.updateOptions({file: noneFixed});
+                }
+
+            };
+
             metadata = widgetData.data.metadata;
             $scope.basicInfo = metadata.data.basic;
             $scope.currentView = -1; // -1 is device view and 1 is scatter view
@@ -1174,10 +1265,9 @@
                                 console.error(error)
                             });
                         }
-
-
                     }
                 }
+                $scope.fixInterval = false;
 
             });
 
@@ -2004,7 +2094,7 @@
                                 console.info(data);
                             });
                         }
-
+                        $scope.fixGraphWithGap();
                     } else {
                         // if expected interval is the biggest, show range data
                         if (expectedInterval == conf[0].interval) {
@@ -2071,10 +2161,8 @@
                                     });
                                 }
                             });
-
                         }
-
-
+                        $scope.fixGraphWithGap();
                     }
                     $scope.status = false;
                 }
