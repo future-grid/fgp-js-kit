@@ -949,33 +949,69 @@ class fgpWidgetGraph {
 
                 if ($scope.currentChart) {
                     $scope.rangeChildrenData = allLines;
-                    $scope.childrenRangeConfig = {
-                        'file': allLines,
-                        'labels': ['x'].concat(labels),
-                        'ylabel': leftAndRight.left,
-                        'y2label': leftAndRight.right,
-                        'series': series,
-                        'colors': colors,
-                        'axes': {
-                            'y': {valueRange: [yRange.min, yRange.max]}
-                        }
-                        // showRangeSelector: true
-                    };
+
+                    if (showY2axis) {
+                        $scope.childrenRangeConfig = {
+                            'file': allLines,
+                            'labels': ['x'].concat(labels),
+                            'ylabel': leftAndRight.left,
+                            'y2label': leftAndRight.right,
+                            'series': series,
+                            'colors': colors,
+                            'axes': {
+                                'y': {valueRange: [yRange.min, yRange.max]}
+                            }
+                            // showRangeSelector: true
+                        };
+                    } else {
+                        var newLines = [];
+                        angular.copy(allLines, newLines);
+                        angular.forEach(newLines, function (line) {
+                            line.push(NaN);
+                        });
+                        series["span_y2"] = {'axis': 'y2'};
+                        $scope.childrenRangeConfig = {
+                            'file': newLines,
+                            'labels': ['x'].concat(labels).concat(['span_y2']),
+                            'ylabel': leftAndRight.left,
+                            'y2label': "",
+                            'series': series,
+                            'colors': colors,
+                            'axes': {
+                                'y': {valueRange: [yRange.min, yRange.max]},
+                                'y2': {
+                                    axisLabelFormatter: function (d) {
+                                        return '';
+                                    }
+                                }
+                            }
+                            // showRangeSelector: true
+                        };
+                    }
+
 
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
 
-                    if ($scope.rangeSelectorBar) {
-                        $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
-                        var series_range = {'l0': {axis: 'y1'}};
-                        if (showY2axis) {
-                            //noinspection JSDuplicatedDeclaration
-                            series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}}
-                        }
-                        $scope.rangeSelectorBar.updateOptions({
-                            'series': series_range
-                        });
-                        $scope.childRangeSeries = series_range;
-                    }
+                    // if ($scope.rangeSelectorBar) {
+                    //     $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
+                    //     var series_range = {'l0': {axis: 'y1'}};
+                    //     if (showY2axis) {
+                    //         //noinspection JSDuplicatedDeclaration
+                    //         series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
+                    //         $scope.rangeSelectorBar.updateOptions({
+                    //             'series': series_range
+                    //         });
+                    //     } else {
+                    //         series_range["span_y2"] = {axis: 'y2'};
+                    //         $scope.rangeSelectorBar.updateOptions({
+                    //             'series': series_range,
+                    //             'axes': {
+                    //                 'y2': {}
+                    //             }
+                    //         });
+                    //     }
+                    //
+                    // }
 
                     $scope.loadingShow = false;
                 }
@@ -1092,31 +1128,67 @@ class fgpWidgetGraph {
                     $scope.loadingShow = false;
                 } else {
                     if ($scope.currentChart) {
-                        $scope.currentChart.updateOptions({
-                            'file': chartData,
-                            'labels': ['x'].concat(labels),
-                            'ylabel': leftAndRight.left,
-                            'y2label': leftAndRight.right,
-                            'series': series,
-                            'colors': colors,
-                            'axes': {
-                                'y': {valueRange: [yRange.min, yRange.max]}
-                            }
-                            // showRangeSelector: true
-                        });
 
-
-                        if ($scope.rangeSelectorBar) {
-                            $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
-                            var series_range = {'l0': {axis: 'y1'}};
-                            if (showY2axis) {
-                                //noinspection JSDuplicatedDeclaration
-                                series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}}
-                            }
-                            $scope.rangeSelectorBar.updateOptions({
-                                'series': series_range
+                        if (showY2axis) {
+                            $scope.currentChart.updateOptions({
+                                'file': chartData,
+                                'labels': ['x'].concat(labels),
+                                'ylabel': leftAndRight.left,
+                                'y2label': leftAndRight.right,
+                                'series': series,
+                                'colors': colors,
+                                'axes': {
+                                    'y': {valueRange: [yRange.min, yRange.max]}
+                                }
+                                // showRangeSelector: true
+                            });
+                        } else {
+                            var newLines = [];
+                            angular.copy(chartData, newLines);
+                            angular.forEach(newLines, function (line) {
+                                line.push(NaN);
+                            });
+                            series["span_y2"] = {axis: 'y2'};
+                            $scope.currentChart.updateOptions({
+                                'file': newLines,
+                                'labels': ['x'].concat(labels).concat(["span_y2"]),
+                                'ylabel': leftAndRight.left,
+                                'y2label': "",
+                                'series': series,
+                                'colors': colors,
+                                'axes': {
+                                    'y': {valueRange: [yRange.min, yRange.max]},
+                                    "y2": {
+                                        axisLabelFormatter: function (d) {
+                                            return '';
+                                        }
+                                    }
+                                }
+                                // showRangeSelector: true
                             });
                         }
+
+
+                        // if ($scope.rangeSelectorBar) {
+                        //     $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
+                        //     var series_range = {'l0': {axis: 'y1'}};
+                        //     if (showY2axis) {
+                        //         //noinspection JSDuplicatedDeclaration
+                        //         series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
+                        //         $scope.rangeSelectorBar.updateOptions({
+                        //             'series': series_range
+                        //         });
+                        //     } else {
+                        //         series_range["span_y2"] = {axis: 'y2'};
+                        //         $scope.rangeSelectorBar.updateOptions({
+                        //             'series': series_range,
+                        //             'axes': {
+                        //                 'y2': {}
+                        //             }
+                        //         });
+                        //     }
+                        //
+                        // }
 
 
                         $scope.loadingShow = false;
@@ -1228,30 +1300,70 @@ class fgpWidgetGraph {
                             $scope.loadingShow = false;
                         } else {
                             if ($scope.currentChart) {
-                                $scope.currentChart.updateOptions({
-                                    'file': allLines,
-                                    'labels': ['x'].concat(labels),
-                                    'ylabel': leftAndRight.left,
-                                    'y2label': leftAndRight.right,
-                                    'series': series,
-                                    'axes': {
-                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                        'y2': {valueRange: [yRanges[1].min, yRanges[1].max]}
-                                    },
-                                    'colors': colors,
-                                    // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
-                                });
-                                if ($scope.rangeSelectorBar) {
-                                    $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
-                                    var series_range = {'l0': {axis: 'y1'}};
-                                    if (showY2axis) {
-                                        //noinspection JSDuplicatedDeclaration
-                                        series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}}
-                                    }
-                                    $scope.rangeSelectorBar.updateOptions({
-                                        'series': series_range
+
+                                if (showY2axis) {
+                                    $scope.currentChart.updateOptions({
+                                        'file': allLines,
+                                        'labels': ['x'].concat(labels),
+                                        'ylabel': leftAndRight.left,
+                                        'y2label': leftAndRight.right,
+                                        'series': series,
+                                        'axes': {
+                                            'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
+                                            'y2': {valueRange: [yRanges[1].min, yRanges[1].max]}
+                                        },
+                                        'colors': colors
+                                        // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
+                                    });
+                                } else {
+
+                                    var newLines = [];
+                                    angular.copy(allLines, newLines);
+                                    angular.forEach(newLines, function (line) {
+                                        line.push(NaN);
+                                    });
+
+                                    series["span-Y2"] = {axis: 'y2'};
+                                    $scope.currentChart.updateOptions({
+                                        'file': newLines,
+                                        'labels': ['x'].concat(labels).concat(['span_y2']),
+                                        'ylabel': leftAndRight.left,
+                                        'y2label': "",
+                                        'series': series,
+                                        'axes': {
+                                            'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
+                                            'y2': {
+                                                axisLabelFormatter: function (d) {
+                                                    return '';
+                                                }
+                                            }
+                                        },
+                                        'colors': colors
+                                        // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                     });
                                 }
+
+
+                                // if ($scope.rangeSelectorBar) {
+                                //     $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
+                                //     var series_range = {'l0': {axis: 'y1'}};
+                                //     if (showY2axis) {
+                                //         //noinspection JSDuplicatedDeclaration
+                                //         series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
+                                //         $scope.rangeSelectorBar.updateOptions({
+                                //             'series': series_range
+                                //         });
+                                //     } else {
+                                //         series_range["span_y2"] = {axis: 'y2'};
+                                //         $scope.rangeSelectorBar.updateOptions({
+                                //             'series': series_range,
+                                //             'axes': {
+                                //                 'y2': {}
+                                //             }
+                                //         });
+                                //     }
+                                //
+                                // }
                                 $scope.loadingShow = false;
                             }
                         }
@@ -1359,16 +1471,30 @@ class fgpWidgetGraph {
                                 var series_range = {'l0': {axis: 'y1'}};
                                 if (showY2axis) {
                                     //noinspection JSDuplicatedDeclaration
-                                    series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}}
+                                    series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
+                                    $scope.rangeSeries = series_range;
+
+                                    $scope.rangeSelectorBar.updateOptions({
+                                        'file': allLines,
+                                        'labels': ['x'].concat(rangeBarLabels),
+                                        'series': series_range
+                                    });
+                                } else {
+                                    series_range["span_y2"] = {axis: 'y2'};
+                                    $scope.rangeSeries = series_range;
+                                    var newLines = [];
+                                    angular.copy(allLines, newLines);
+                                    angular.forEach(newLines, function (line) {
+                                        line.push(NaN);
+                                    });
+                                    $scope.rangeSelectorBar.updateOptions({
+                                        'file': newLines,
+                                        'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
+                                        'series': series_range
+                                    });
                                 }
 
-                                $scope.rangeSeries = series_range;
 
-                                $scope.rangeSelectorBar.updateOptions({
-                                    'file': allLines,
-                                    'labels': ['x'].concat(rangeBarLabels),
-                                    'series': series_range
-                                });
                             }
 
                             angular.forEach(yRanges, function (yrange) {
@@ -1380,21 +1506,53 @@ class fgpWidgetGraph {
 
 
                             // if graph has 2 yAxis or a yAxis
-                            $scope.rangeConfig = {
-                                'file': allLines,
-                                'labels': ['x'].concat(labels),
-                                'ylabel': leftAndRight.left,
-                                'y2label': leftAndRight.right,
-                                'series': series,
-                                'colors': colors,
-                                'axes': {
-                                    'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                    'y2': {valueRange: [yRanges[1].min, yRanges[1].max]}
-                                },
-                                'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
-                                // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
-                                // showRangeSelector: true
-                            };
+
+
+                            if (showY2axis) {
+                                $scope.rangeConfig = {
+                                    'file': allLines,
+                                    'labels': ['x'].concat(labels),
+                                    'ylabel': leftAndRight.left,
+                                    'y2label': leftAndRight.right,
+                                    'series': series,
+                                    'colors': colors,
+                                    'axes': {
+                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
+                                        'y2': {valueRange: [yRanges[1].min, yRanges[1].max]}
+                                    },
+                                    'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
+                                    // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
+                                    // showRangeSelector: true
+                                };
+                            } else {
+                                series['span_y2'] = {axis: 'y2'};
+                                var newLines = [];
+                                angular.copy(allLines, newLines);
+                                angular.forEach(newLines, function (line) {
+                                    line.push(NaN);
+                                });
+                                $scope.rangeConfig = {
+                                    'file': newLines,
+                                    'labels': ['x'].concat(labels).concat(['span_y2']),
+                                    'ylabel': leftAndRight.left,
+                                    'y2label': "",
+                                    'series': series,
+                                    'colors': colors,
+                                    'axes': {
+                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
+                                        'y2': {
+                                            axisLabelFormatter: function (d) {
+                                                return '';
+                                            }
+                                        }
+                                    },
+                                    'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
+                                    // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
+                                    // showRangeSelector: true
+                                };
+                            }
+
+
                             if (basicInfo && basicInfo.range_show) {
                                 Dygraph.synchronize([$scope.rangeSelectorBar, $scope.currentChart], {
                                     zoom: true,
