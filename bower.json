@@ -20,7 +20,6 @@
     "Chart.js": "^2.1.6",
     "jquery": "^2.2.2",
     "moment": "^2.13.0",
-    "ngmap": "^1.17.1",
-    "erickit": "fgp-js-kit#^1.0.11"
+    "ngmap": "^1.17.1"
   }
 }
