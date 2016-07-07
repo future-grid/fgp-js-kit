@@ -356,6 +356,8 @@ class fgpWidgetGraph {
 
                 //init configuration
                 var configuration = {
+                    drawGapEdgePoints: true,
+                    'pointSize': 3,
                     labelsKMB: true,
                     // data formate
                     labels: ['x'].concat(sampleData.labels),
@@ -428,6 +430,8 @@ class fgpWidgetGraph {
                     var basicInfo = scope.basicInfo;
                     if (basicInfo && basicInfo.range_show) {
                         scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
+                                drawGapEdgePoints: true,
+                                pointSize: 3,
                                 labelsKMB: true,
                                 xAxisHeight: 0,
                                 axes: {
@@ -972,6 +976,8 @@ class fgpWidgetGraph {
                         });
                         series["span_y2"] = {'axis': 'y2'};
                         $scope.childrenRangeConfig = {
+                            'drawGapEdgePoints': true,
+                            'pointSize': 3,
                             'labelsKMB': true,
                             'file': newLines,
                             'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -1133,6 +1139,8 @@ class fgpWidgetGraph {
 
                         if (showY2axis) {
                             $scope.currentChart.updateOptions({
+                                'drawGapEdgePoints': true,
+                                'pointSize': 3,
                                 'labelsKMB': true,
                                 'file': chartData,
                                 'labels': ['x'].concat(labels),
@@ -1153,6 +1161,8 @@ class fgpWidgetGraph {
                             });
                             series["span_y2"] = {axis: 'y2'};
                             $scope.currentChart.updateOptions({
+                                'drawGapEdgePoints': true,
+                                'pointSize': 3,
                                 'labelsKMB': true,
                                 'file': newLines,
                                 'labels': ['x'].concat(labels).concat(["span_y2"]),
@@ -1307,6 +1317,8 @@ class fgpWidgetGraph {
 
                                 if (showY2axis) {
                                     $scope.currentChart.updateOptions({
+                                        'drawGapEdgePoints': true,
+                                        'pointSize': 3,
                                         'labelsKMB': true,
                                         'file': allLines,
                                         'labels': ['x'].concat(labels),
@@ -1330,6 +1342,8 @@ class fgpWidgetGraph {
 
                                     series["span-Y2"] = {axis: 'y2'};
                                     $scope.currentChart.updateOptions({
+                                        'drawGapEdgePoints': true,
+                                        'pointSize': 3,
                                         'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -1477,10 +1491,15 @@ class fgpWidgetGraph {
                                 var series_range = {'l0': {axis: 'y1'}};
                                 if (showY2axis) {
                                     //noinspection JSDuplicatedDeclaration
-                                    series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
+                                    series_range = {
+                                        'l0': {axis: 'y1'},
+                                        'l0': {axis: 'y2'}
+                                    };
                                     $scope.rangeSeries = series_range;
 
                                     $scope.rangeSelectorBar.updateOptions({
+                                        'drawGapEdgePoints': true,
+                                        'pointSize': 3,
                                         'labelsKMB': true,
                                         'file': allLines,
                                         'labels': ['x'].concat(rangeBarLabels),
@@ -1495,6 +1514,8 @@ class fgpWidgetGraph {
                                         line.push(NaN);
                                     });
                                     $scope.rangeSelectorBar.updateOptions({
+                                        'drawGapEdgePoints': true,
+                                        'pointSize': 3,
                                         'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
@@ -1518,6 +1539,8 @@ class fgpWidgetGraph {
 
                             if (showY2axis) {
                                 $scope.rangeConfig = {
+                                    'drawGapEdgePoints': true,
+                                    'pointSize': 3,
                                     'labelsKMB': true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
@@ -1527,7 +1550,7 @@ class fgpWidgetGraph {
                                     'colors': colors,
                                     'axes': {
                                         'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                        'y2': {'labelsKMB': true,valueRange: [yRanges[1].min, yRanges[1].max]}
+                                        'y2': {'labelsKMB': true, valueRange: [yRanges[1].min, yRanges[1].max]}
                                     },
                                     'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
@@ -1541,6 +1564,8 @@ class fgpWidgetGraph {
                                     line.push(NaN);
                                 });
                                 $scope.rangeConfig = {
+                                    'drawGapEdgePoints': true,
+                                    'pointSize': 3,
                                     'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
