@@ -935,6 +935,7 @@
 
                 //init configuration
                 var configuration = {
+                    labelsKMB: true,
                     // data formate
                     labels: ['x'].concat(sampleData.labels),
                     highlightCircleSize: 2,
@@ -971,9 +972,7 @@
                         },
                         y2: {
                             // set axis-related properties here
-                            axisLabelFormatter: function (y) {
-                                return y.toFixed(1);
-                            },
+                            'labelsKMB': true,
                             valueRange: [0, 1]
                         },
                         x: {
@@ -1008,6 +1007,7 @@
                     var basicInfo = scope.basicInfo;
                     if (basicInfo && basicInfo.range_show) {
                         scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
+                                labelsKMB: true,
                                 xAxisHeight: 0,
                                 axes: {
                                     x: {
@@ -1531,6 +1531,7 @@
 
                     if (showY2axis) {
                         $scope.childrenRangeConfig = {
+                            'labelsKMB': true,
                             'file': allLines,
                             'labels': ['x'].concat(labels),
                             'ylabel': leftAndRight.left,
@@ -1550,6 +1551,7 @@
                         });
                         series["span_y2"] = {'axis': 'y2'};
                         $scope.childrenRangeConfig = {
+                            'labelsKMB': true,
                             'file': newLines,
                             'labels': ['x'].concat(labels).concat(['span_y2']),
                             'ylabel': leftAndRight.left,
@@ -1710,6 +1712,7 @@
 
                         if (showY2axis) {
                             $scope.currentChart.updateOptions({
+                                'labelsKMB': true,
                                 'file': chartData,
                                 'labels': ['x'].concat(labels),
                                 'ylabel': leftAndRight.left,
@@ -1729,6 +1732,7 @@
                             });
                             series["span_y2"] = {axis: 'y2'};
                             $scope.currentChart.updateOptions({
+                                'labelsKMB': true,
                                 'file': newLines,
                                 'labels': ['x'].concat(labels).concat(["span_y2"]),
                                 'ylabel': leftAndRight.left,
@@ -1882,6 +1886,7 @@
 
                                 if (showY2axis) {
                                     $scope.currentChart.updateOptions({
+                                        'labelsKMB': true,
                                         'file': allLines,
                                         'labels': ['x'].concat(labels),
                                         'ylabel': leftAndRight.left,
@@ -1889,7 +1894,7 @@
                                         'series': series,
                                         'axes': {
                                             'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                            'y2': {valueRange: [yRanges[1].min, yRanges[1].max]}
+                                            'y2': {'labelsKMB': true, valueRange: [yRanges[1].min, yRanges[1].max]}
                                         },
                                         'colors': colors
                                         // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
@@ -1904,6 +1909,7 @@
 
                                     series["span-Y2"] = {axis: 'y2'};
                                     $scope.currentChart.updateOptions({
+                                        'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(labels).concat(['span_y2']),
                                         'ylabel': leftAndRight.left,
@@ -2054,6 +2060,7 @@
                                     $scope.rangeSeries = series_range;
 
                                     $scope.rangeSelectorBar.updateOptions({
+                                        'labelsKMB': true,
                                         'file': allLines,
                                         'labels': ['x'].concat(rangeBarLabels),
                                         'series': series_range
@@ -2067,6 +2074,7 @@
                                         line.push(NaN);
                                     });
                                     $scope.rangeSelectorBar.updateOptions({
+                                        'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
                                         'series': series_range
@@ -2089,6 +2097,7 @@
 
                             if (showY2axis) {
                                 $scope.rangeConfig = {
+                                    'labelsKMB': true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
                                     'ylabel': leftAndRight.left,
@@ -2097,7 +2106,7 @@
                                     'colors': colors,
                                     'axes': {
                                         'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                        'y2': {valueRange: [yRanges[1].min, yRanges[1].max]}
+                                        'y2': {'labelsKMB': true,valueRange: [yRanges[1].min, yRanges[1].max]}
                                     },
                                     'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
@@ -2111,6 +2120,7 @@
                                     line.push(NaN);
                                 });
                                 $scope.rangeConfig = {
+                                    'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
                                     'ylabel': leftAndRight.left,
