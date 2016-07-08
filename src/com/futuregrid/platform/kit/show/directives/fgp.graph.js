@@ -430,9 +430,6 @@ class fgpWidgetGraph {
                     var basicInfo = scope.basicInfo;
                     if (basicInfo && basicInfo.range_show) {
                         scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
-                                drawGapEdgePoints: true,
-                                pointSize: 3,
-                                labelsKMB: true,
                                 xAxisHeight: 0,
                                 axes: {
                                     x: {
@@ -964,7 +961,8 @@ class fgpWidgetGraph {
                             'series': series,
                             'colors': colors,
                             'axes': {
-                                'y': {valueRange: [yRange.min, yRange.max]}
+                                'y': {valueRange: [yRange.min, yRange.max]},
+                                'y2': {}
                             }
                             // showRangeSelector: true
                         };
@@ -996,31 +994,7 @@ class fgpWidgetGraph {
                             // showRangeSelector: true
                         };
                     }
-
-
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
-
-                    // if ($scope.rangeSelectorBar) {
-                    //     $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
-                    //     var series_range = {'l0': {axis: 'y1'}};
-                    //     if (showY2axis) {
-                    //         //noinspection JSDuplicatedDeclaration
-                    //         series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
-                    //         $scope.rangeSelectorBar.updateOptions({
-                    //             'series': series_range
-                    //         });
-                    //     } else {
-                    //         series_range["span_y2"] = {axis: 'y2'};
-                    //         $scope.rangeSelectorBar.updateOptions({
-                    //             'series': series_range,
-                    //             'axes': {
-                    //                 'y2': {}
-                    //             }
-                    //         });
-                    //     }
-                    //
-                    // }
-
                     $scope.loadingShow = false;
                 }
 
@@ -1181,30 +1155,6 @@ class fgpWidgetGraph {
                                 // showRangeSelector: true
                             });
                         }
-
-
-                        // if ($scope.rangeSelectorBar) {
-                        //     $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
-                        //     var series_range = {'l0': {axis: 'y1'}};
-                        //     if (showY2axis) {
-                        //         //noinspection JSDuplicatedDeclaration
-                        //         series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
-                        //         $scope.rangeSelectorBar.updateOptions({
-                        //             'series': series_range
-                        //         });
-                        //     } else {
-                        //         series_range["span_y2"] = {axis: 'y2'};
-                        //         $scope.rangeSelectorBar.updateOptions({
-                        //             'series': series_range,
-                        //             'axes': {
-                        //                 'y2': {}
-                        //             }
-                        //         });
-                        //     }
-                        //
-                        // }
-
-
                         $scope.loadingShow = false;
                     }
                 }
@@ -1361,29 +1311,9 @@ class fgpWidgetGraph {
                                         'colors': colors
                                         // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                     });
+
                                 }
 
-
-                                // if ($scope.rangeSelectorBar) {
-                                //     $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
-                                //     var series_range = {'l0': {axis: 'y1'}};
-                                //     if (showY2axis) {
-                                //         //noinspection JSDuplicatedDeclaration
-                                //         series_range = {'l0': {axis: 'y1'}, 'l0': {axis: 'y2'}};
-                                //         $scope.rangeSelectorBar.updateOptions({
-                                //             'series': series_range
-                                //         });
-                                //     } else {
-                                //         series_range["span_y2"] = {axis: 'y2'};
-                                //         $scope.rangeSelectorBar.updateOptions({
-                                //             'series': series_range,
-                                //             'axes': {
-                                //                 'y2': {}
-                                //             }
-                                //         });
-                                //     }
-                                //
-                                // }
                                 $scope.loadingShow = false;
                             }
                         }
@@ -1498,9 +1428,6 @@ class fgpWidgetGraph {
                                     $scope.rangeSeries = series_range;
 
                                     $scope.rangeSelectorBar.updateOptions({
-                                        'drawGapEdgePoints': true,
-                                        'pointSize': 3,
-                                        'labelsKMB': true,
                                         'file': allLines,
                                         'labels': ['x'].concat(rangeBarLabels),
                                         'series': series_range
@@ -1514,9 +1441,6 @@ class fgpWidgetGraph {
                                         line.push(NaN);
                                     });
                                     $scope.rangeSelectorBar.updateOptions({
-                                        'drawGapEdgePoints': true,
-                                        'pointSize': 3,
-                                        'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
                                         'series': series_range
@@ -1673,9 +1597,9 @@ class fgpWidgetGraph {
                             // re cal max and min
                             // $scope.childrenRangeConfig["dateWindow"] = $scope.chartDateWindow;
                             $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
-                            if ($scope.rangeSelectorBar) {
-                                $scope.rangeSelectorBar.updateOptions({series: $scope.childRangeSeries});
-                            }
+                            // if ($scope.rangeSelectorBar) {
+                            //     $scope.rangeSelectorBar.updateOptions({series: $scope.childRangeSeries});
+                            // }
                             $scope.loadingShow = false;
                         } else {
                             var deviceInfo = [];
