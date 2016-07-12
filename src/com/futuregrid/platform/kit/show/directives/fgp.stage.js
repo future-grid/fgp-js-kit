@@ -1,6 +1,7 @@
 /**
  * Created by ericwang on 10/06/2016.
  */
+import angular from 'angular';
 'use strict';
 class fgpStage {
 
@@ -75,12 +76,14 @@ class fgpStage {
         /**
          * get device information
          */
-        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-            // send device info to all widget
-            $timeout(function () {
-                $scope.$broadcast('deviceInfoEvent', {device: data});
+        if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+                // send device info to all widget
+                $timeout(function () {
+                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                });
             });
-        });
+        }
 
 
         // all item created;
