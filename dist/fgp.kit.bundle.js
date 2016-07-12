@@ -9,9 +9,9 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
     typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
     (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngMap,global.chart_js));
-}(this, function (angular$1,$,Dygraph,ngmap,chart_js) { 'use strict';
+}(this, function (angular,$,Dygraph,ngmap,chart_js) { 'use strict';
 
-    angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
+    angular = 'default' in angular ? angular['default'] : angular;
     $ = 'default' in $ ? $['default'] : $;
     Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
 
@@ -148,7 +148,6 @@
             type: 'GET',
             url: url,
             jsonpCallback: 'jsonCallback',
-            async: true,
             contentType: "application/json",
             dataType: 'jsonp',
             success: function (data) {
@@ -162,12 +161,11 @@
                 $.ajax({
                     type: 'GET',
                     url: url + data.type,
-                    async: true,
                     jsonpCallback: 'jsonCallback',
                     contentType: "application/json",
                     dataType: 'jsonp',
                     success: function (types) {
-                        angular$1.forEach(types, function (type) {
+                        angular.forEach(types, function (type) {
                             Object.defineProperty(data, type.name, {
                                 get: function () {
                                     var result = null;
@@ -182,7 +180,6 @@
                                         type: 'GET',
                                         url: url + this.name + '&extension_type=' + type.name,
                                         jsonpCallback: 'jsonCallback',
-                                        async: true,
                                         contentType: "application/json",
                                         dataType: 'jsonp',
                                         success: function (field) {
@@ -275,13 +272,13 @@
 
         if (tree.children[0] == null && tree.children[1] == null) {
 
-            angular$1.forEach(buckets, function (value, key) {
+            angular.forEach(buckets, function (value, key) {
                 if (key == tree.id && value != null) {
                     tree.data = value.array;
                     tree['size'] = value.size;
 
                     var flag = false;
-                    angular$1.forEach(showData, function (data) {
+                    angular.forEach(showData, function (data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
                             tree['size'] = value.size;
@@ -308,13 +305,13 @@
         }
 
         if (tree.children[0] == null && tree.children[1] == null) {
-            angular$1.forEach(buckets, function (value, key) {
+            angular.forEach(buckets, function (value, key) {
                 if (key == tree.id) {
                     tree.data = value.array;
                     tree['size'] = value.size;
 
                     var flag = false;
-                    angular$1.forEach(showData, function (data) {
+                    angular.forEach(showData, function (data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
                             tree['size'] = value.size;
@@ -387,12 +384,12 @@
         var devicesNullBucket = [];
         var calTree = this.calTree;
         var fillChildrenTree = this.fillChildrenTree;
-        angular$1.forEach(deviceInfo, function (device, index) {
+        angular.forEach(deviceInfo, function (device, index) {
             var bucketKeys = [];
             calTree(bucketKeys, device.tree, start, end);
             var nullBucket = [];
             // get null buckets
-            angular$1.forEach(bucketKeys, function (bucket) {
+            angular.forEach(bucketKeys, function (bucket) {
                 if (bucket.data == null) {
                     nullBucket.push(bucket.id);
                 }
@@ -419,13 +416,13 @@
             }).then(
                 function (response) {
                     // response.data
-                    angular$1.forEach(response.data, function (deviceData) {
+                    angular.forEach(response.data, function (deviceData) {
 
                         var currentBucketShowData = null;
-                        angular$1.forEach(bucketsData, function (showData) {
+                        angular.forEach(bucketsData, function (showData) {
                             if (showData.device == deviceData.device) {
                                 currentBucketShowData = showData.data; //  bucketKeys
-                                angular$1.forEach(deviceInfo, function (device, index) {
+                                angular.forEach(deviceInfo, function (device, index) {
                                     if (deviceData.device == device.name) {
                                         fillChildrenTree(deviceData.data, device.tree, currentBucketShowData);
                                     }
@@ -455,7 +452,7 @@
         calTree(bucketKeys, tree, start, end);
         var nullBucket = [];
         // get null buckets
-        angular$1.forEach(bucketKeys, function (bucket) {
+        angular.forEach(bucketKeys, function (bucket) {
             if (bucket.data == null) {
                 nullBucket.push(bucket.id);
             }
@@ -835,7 +832,7 @@
                     } else {
 
                         var ranges = [];
-                        angular$1.forEach(g.xAxisRange(), function (range) {
+                        angular.forEach(g.xAxisRange(), function (range) {
                             if (range instanceof Date) {
                                 ranges.push(range.getTime());
                             } else {
@@ -1067,7 +1064,7 @@
                     });
 
                     scope.$on('bindFatherGraphEvent', function (event, data) {
-                        angular$1.forEach(data.children, function (child) {
+                        angular.forEach(data.children, function (child) {
                             if (child == attrs.id) {
                                 Dygraph.synchronize([scope.currentChart].concat(data.parent), {
                                     zoom: true,
@@ -1153,7 +1150,7 @@
             $scope.fixGraphWithGap = function () {
                 if ($scope.currentChart && $scope.fixInterval) {
                     var currentInterval = -1;
-                    angular$1.forEach($scope.intevals.device, function (item) {
+                    angular.forEach($scope.intevals.device, function (item) {
                         if (item.name === $scope.currentIntervalName) {
                             currentInterval = item.interval;
                         }
@@ -1188,7 +1185,7 @@
                     }
                 } else if ($scope.currentChart && !$scope.fixInterval) {
                     noneFixed = [];
-                    angular$1.copy($scope.currentChart.file_, noneFixed);
+                    angular.copy($scope.currentChart.file_, noneFixed);
                     $scope.currentChart.updateOptions({file: noneFixed});
                 }
 
@@ -1196,9 +1193,9 @@
             $scope.fixGraphWithGap_click = function () {
                 if ($scope.currentChart && !$scope.fixInterval) {
                     noneFixed = [];
-                    angular$1.copy($scope.currentChart.file_, noneFixed);
+                    angular.copy($scope.currentChart.file_, noneFixed);
                     var currentInterval = -1;
-                    angular$1.forEach($scope.intevals.device, function (item) {
+                    angular.forEach($scope.intevals.device, function (item) {
                         if (item.name === $scope.currentIntervalName) {
                             currentInterval = item.interval;
                         }
@@ -1265,7 +1262,7 @@
                         if (nObj == -1) {
                             var rangeLevel = null;
                             var otherLevels = [];
-                            angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                            angular.forEach(metadata.data.groups[1].collections, function (level) {
                                 if (level.rows.length > 0) {
                                     if (rangeLevel != null) {
                                         otherLevels.push(rangeLevel);
@@ -1289,7 +1286,7 @@
                             } else {
                                 var rangeLevel = null;
                                 var otherLevels = [];
-                                angular$1.forEach(metadata.data.groups[2].collections, function (level) {
+                                angular.forEach(metadata.data.groups[2].collections, function (level) {
                                     if (level.rows.length > 0) {
                                         if (rangeLevel != null) {
                                             otherLevels.push(rangeLevel);
@@ -1326,7 +1323,7 @@
                         //device first level
                         var rangeLevel = null;
                         var otherLevels = [];
-                        angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                        angular.forEach(metadata.data.groups[1].collections, function (level) {
                             if (level.rows.length > 0) {
                                 if (rangeLevel != null) {
                                     otherLevels.push(rangeLevel);
@@ -1370,7 +1367,7 @@
                         }
                         $scope.currentIntervalName = "";
 
-                        angular$1.forEach(conf, function (config) {
+                        angular.forEach(conf, function (config) {
                             if (config.interval == expectedInterval) {
                                 $scope.currentIntervalName = config.name;
                             }
@@ -1391,8 +1388,8 @@
                                 var deviceInfo = [];
                                 var currentStore = "";
                                 // has problem....
-                                angular$1.forEach($scope.childTrees, function (device) {
-                                    angular$1.forEach(device.trees, function (tree, index) {
+                                angular.forEach($scope.childTrees, function (device) {
+                                    angular.forEach(device.trees, function (tree, index) {
                                         if (expectedInterval == tree.frequency && index != 0) {
                                             currentStore = tree.store;
                                             deviceInfo.push({name: device.name, tree: tree.tree});
@@ -1402,9 +1399,9 @@
 
                                 dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end).then(function (data) {
                                     var showData = [];
-                                    angular$1.forEach(data, function (arr) {
+                                    angular.forEach(data, function (arr) {
                                         var deviceData = [];
-                                        angular$1.forEach(arr.data, function (bucket) {
+                                        angular.forEach(arr.data, function (bucket) {
                                             if (bucket.data != null) {
                                                 Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
                                             }
@@ -1453,13 +1450,13 @@
                                 $scope.loadingShow = false;
                             } else {
                                 // cal tree
-                                angular$1.forEach($scope.trees, function (tree, index) {
+                                angular.forEach($scope.trees, function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         // send request
                                         dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end).then(function (data) {
                                             // udpate chart
                                             var showData = [];
-                                            angular$1.forEach(data, function (arr) {
+                                            angular.forEach(data, function (arr) {
                                                 Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
                                             });
                                             showData = showData.filter(function (obj) {
@@ -1529,7 +1526,7 @@
                 var trees = data.trees;
                 $scope.trees = trees;
                 var rangeTree = null;
-                angular$1.forEach(trees, function (tree) {
+                angular.forEach(trees, function (tree) {
                     if (tree.range) {
                         rangeTree = tree;
                     }
@@ -1578,18 +1575,18 @@
                 $scope.intevals.device = [];
                 //range data with all device
                 $scope.childTrees = [];
-                angular$1.forEach(deviceDatas, function (deviceData) {
+                angular.forEach(deviceDatas, function (deviceData) {
                     var device = deviceData.device;
                     var trees = deviceData.trees;
                     $scope.childTrees.push({name: device.name, trees: trees});
                     var rangeTree = null;
-                    angular$1.forEach(trees, function (tree) {
+                    angular.forEach(trees, function (tree) {
                         if (tree.range) {
                             rangeTree = tree;
                         }
 
                         var flag = false;
-                        angular$1.forEach($scope.intevals.device, function (interval) {
+                        angular.forEach($scope.intevals.device, function (interval) {
                             if (interval.name == tree.store && interval.interval == tree.frequency) {
                                 // has same one
                                 flag = true;
@@ -1636,10 +1633,10 @@
                 var leftAndRight = {left: relationConfig.leftYAxis, right: relationConfig.rightYAxis};
                 var allLines = [];
                 var allXLabels = [];
-                angular$1.forEach(devicesInfo, function (device, key) {
-                    angular$1.forEach(device.data, function (item) {
+                angular.forEach(devicesInfo, function (device, key) {
+                    angular.forEach(device.data, function (item) {
                         var flag = false;
-                        angular$1.forEach(allXLabels, function (label) {
+                        angular.forEach(allXLabels, function (label) {
                             if (label.getTime() == item.timestamp) {
                                 flag = true;
                             }
@@ -1657,7 +1654,7 @@
                 });
 
                 // make all line
-                angular$1.forEach(allXLabels, function (label) {
+                angular.forEach(allXLabels, function (label) {
                     allLines.push([label]);
                 });
 
@@ -1665,11 +1662,11 @@
                 var yRange = {min: null, max: null};
                 var showY2axis = false;
                 var counter = 0;
-                angular$1.forEach(devicesInfo, function (device, key) {
+                angular.forEach(devicesInfo, function (device, key) {
                     colors.push($scope.defaultColors[counter]);
                     counter++;
 
-                    angular$1.forEach(collections, function (collection) {
+                    angular.forEach(collections, function (collection) {
                         if (collection.name == device.range.store) {
                             $scope.currentIntervalName = device.range.store;
                             var originalData = device.data;
@@ -1685,10 +1682,10 @@
                             // make a line
                             var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                             // add value
-                            angular$1.forEach(allLines, function (realLine, index) {
+                            angular.forEach(allLines, function (realLine, index) {
 
                                 var flag = false;
-                                angular$1.forEach(originalData, function (odata) {
+                                angular.forEach(originalData, function (odata) {
                                     if (realLine[0].getTime() == odata.timestamp) {
                                         try {
                                             var value = f(odata);
@@ -1751,8 +1748,8 @@
                         };
                     } else {
                         var newLines = [];
-                        angular$1.copy(allLines, newLines);
-                        angular$1.forEach(newLines, function (line) {
+                        angular.copy(allLines, newLines);
+                        angular.forEach(newLines, function (line) {
                             line.push(NaN);
                         });
                         series["span_y2"] = {'axis': 'y2'};
@@ -1799,13 +1796,13 @@
                 var yRange = {min: null, max: null};
                 var counter = 0;
                 var showY2axis = null;
-                angular$1.forEach(allData, function (device) {
+                angular.forEach(allData, function (device) {
                     colors.push($scope.defaultColors[counter]);
                     counter++;
 
                     if (device.data.length > 0) {
                         labels.push(device.device);
-                        angular$1.forEach(collections, function (collection) {
+                        angular.forEach(collections, function (collection) {
                             if (collection.name == store) {
                                 $scope.currentIntervalName = store;
                                 if (collection.rows[0].yaxis == 0) {
@@ -1818,7 +1815,7 @@
                                 var tempData = [];
                                 var tempTime = [];
                                 // make data
-                                angular$1.forEach(device.data, function (data) {
+                                angular.forEach(device.data, function (data) {
                                     var dateTime = new Date(data.timestamp);
                                     try {
                                         var value = f(data);
@@ -1856,13 +1853,13 @@
 
                 var chartData = [];
 
-                angular$1.forEach(newTime, function (nt) {
+                angular.forEach(newTime, function (nt) {
                     chartData.push([new Date(nt)]);
                 });
 
 
-                angular$1.forEach(newLines, function (line) {
-                    angular$1.forEach(chartData, function (timeTicket) {
+                angular.forEach(newLines, function (line) {
+                    angular.forEach(chartData, function (timeTicket) {
                         // line data
                         var flag = false;
                         var lineData = line.data;
@@ -1912,8 +1909,8 @@
                             });
                         } else {
                             var newLines = [];
-                            angular$1.copy(chartData, newLines);
-                            angular$1.forEach(newLines, function (line) {
+                            angular.copy(chartData, newLines);
+                            angular.forEach(newLines, function (line) {
                                 line.push(NaN);
                             });
                             series["span_y2"] = {axis: 'y2'};
@@ -1963,15 +1960,15 @@
                 var allLines = [];
                 //0 for y  1 for y2
                 var yRanges = [{min: null, max: null}, {min: null, max: null}];
-                angular$1.forEach(collections, function (collection) {
+                angular.forEach(collections, function (collection) {
                     if (collection.name == store) {
-                        angular$1.forEach(allData, function (line) {
+                        angular.forEach(allData, function (line) {
                             allLines.push([new Date(line.timestamp)]);
                         });
 
                         // var yRange = {'min': null, 'max': null};
                         var showY2axis = false;
-                        angular$1.forEach(collection.rows, function (row) {
+                        angular.forEach(collection.rows, function (row) {
                             labels.push(row.label);
                             colors.push(row.color);
 
@@ -1984,7 +1981,7 @@
                             var f = new Function("data", "with(data) { if(" + row.value + ")return " + row.value + ";return null;}");
                             // add value
                             var counter = 0;
-                            angular$1.forEach(allLines, function (realLine) {
+                            angular.forEach(allLines, function (realLine) {
                                 try {
                                     var value = f(allData[counter]);
                                     realLine.push(value);
@@ -2029,7 +2026,7 @@
 
                         });
 
-                        angular$1.forEach(yRanges, function (yrange) {
+                        angular.forEach(yRanges, function (yrange) {
                             if (yrange.min == yrange.max && yrange.min != null && yrange.max != null) {
                                 yrange.min = yrange.min - (yrange.min) * 0.10;
                                 yrange.max = yrange.max + (yrange.max) * 0.10;
@@ -2068,8 +2065,8 @@
                                 } else {
 
                                     var newLines = [];
-                                    angular$1.copy(allLines, newLines);
-                                    angular$1.forEach(newLines, function (line) {
+                                    angular.copy(allLines, newLines);
+                                    angular.forEach(newLines, function (line) {
                                         line.push(NaN);
                                     });
 
@@ -2124,16 +2121,16 @@
                 var allLines = [];
                 //0 for y  1 for y2
                 var yRanges = [{min: null, max: null}, {min: null, max: null}];
-                angular$1.forEach(collections, function (collection) {
+                angular.forEach(collections, function (collection) {
                     if (collection.name == store) {
                         $scope.currentIntervalName = store;
-                        angular$1.forEach(allData, function (line) {
+                        angular.forEach(allData, function (line) {
                             allLines.push([new Date(line.timestamp)]);
                         });
 
                         $scope.rangeSeriesNumber = collection.rows.length;
                         var showY2axis = false;
-                        angular$1.forEach(collection.rows, function (row) {
+                        angular.forEach(collection.rows, function (row) {
                             labels.push(row.label);
                             colors.push(row.color);
 
@@ -2147,7 +2144,7 @@
                             var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
                             // add value
                             var counter = 0;
-                            angular$1.forEach(allLines, function (realLine) {
+                            angular.forEach(allLines, function (realLine) {
                                 try {
                                     var value = f(allData[counter]);
                                     realLine.push(value);
@@ -2219,8 +2216,8 @@
                                     series_range["span_y2"] = {axis: 'y2'};
                                     $scope.rangeSeries = series_range;
                                     var newLines = [];
-                                    angular$1.copy(allLines, newLines);
-                                    angular$1.forEach(newLines, function (line) {
+                                    angular.copy(allLines, newLines);
+                                    angular.forEach(newLines, function (line) {
                                         line.push(NaN);
                                     });
                                     $scope.rangeSelectorBar.updateOptions({
@@ -2233,7 +2230,7 @@
 
                             }
 
-                            angular$1.forEach(yRanges, function (yrange) {
+                            angular.forEach(yRanges, function (yrange) {
                                 if (yrange.min == yrange.max && yrange.min != null && yrange.max != null) {
                                     yrange.min = yrange.min - (yrange.min) * 0.10;
                                     yrange.max = yrange.max + (yrange.max) * 0.10;
@@ -2266,8 +2263,8 @@
                             } else {
                                 series['span_y2'] = {axis: 'y2'};
                                 var newLines = [];
-                                angular$1.copy(allLines, newLines);
-                                angular$1.forEach(newLines, function (line) {
+                                angular.copy(allLines, newLines);
+                                angular.forEach(newLines, function (line) {
                                     line.push(NaN);
                                 });
                                 $scope.rangeConfig = {
@@ -2500,7 +2497,7 @@
 
                 // show one point.
                 var f = null;
-                angular$1.forEach($scope.showdata.metadata.data, function (item) {
+                angular.forEach($scope.showdata.metadata.data, function (item) {
                     try {
                         f = new Function("device", "with(device) { return " + item.value + ";}");
                         var result = f(deviceData.device);
@@ -2608,7 +2605,7 @@
                 $scope.data = [];
                 //get all columns
                 var f = null;
-                angular$1.forEach($scope.showdata.metadata.data, function (item) {
+                angular.forEach($scope.showdata.metadata.data, function (item) {
                     try {
                         f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
                         item.value = f(deviceData.device);
@@ -2753,7 +2750,7 @@
                 var colors = [];
                 //get all columns
                 var f = null;
-                angular$1.forEach($scope.showdata.metadata.data, function (item) {
+                angular.forEach($scope.showdata.metadata.data, function (item) {
                     try {
                         f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
                         item.value = f(deviceData.device);
@@ -2776,7 +2773,7 @@
                 $scope.pieData = {labels: [], value: []};
                 $timeout(function () {
                     // create data
-                    angular$1.forEach($scope.data, function (item) {
+                    angular.forEach($scope.data, function (item) {
                         $scope.pieData.labels.push(item.label);
                         $scope.pieData.value.push(item.value);
                     });
@@ -2858,9 +2855,9 @@
                 var groupName = chartData.group;
                 var columns = [];
                 //get group and collection configuration
-                angular$1.forEach($scope.showdata.metadata.data.groups, function (group) {
+                angular.forEach($scope.showdata.metadata.data.groups, function (group) {
                     if (group.name == groupName) {
-                        angular$1.forEach(group.collections, function (collection) {
+                        angular.forEach(group.collections, function (collection) {
                             if (collection.name === collectionName) {
                                 columns = collection.rows;
                             }
@@ -2871,13 +2868,13 @@
 
                 $scope.sampledata.columns = [];
 
-                angular$1.forEach(columns, function (column) {
+                angular.forEach(columns, function (column) {
                     $scope.sampledata.columns.push({label: column.label, formatter: column.formatter});
                 });
                 $scope.sampledata.values = [];
-                angular$1.forEach(columns, function (column) {
+                angular.forEach(columns, function (column) {
                     var f = new Function("data", "with(data) { if(" + column.value + ") return " + column.value + ";return '';}");
-                    angular$1.forEach(chartData.data.data, function (record, index) {
+                    angular.forEach(chartData.data.data, function (record, index) {
                         if ($scope.sampledata.values.length < chartData.data.data.length) {
                             //add new one
                             var item = {};
@@ -2890,9 +2887,9 @@
                 });
 
                 var cleanData = [];
-                angular$1.forEach($scope.sampledata.values, function (value, index) {
+                angular.forEach($scope.sampledata.values, function (value, index) {
                     var flag = false;
-                    angular$1.forEach(columns, function (column) {
+                    angular.forEach(columns, function (column) {
                         if (value[column.label] && value[column.label] != "") {
                             flag = true;
                         }
@@ -2921,7 +2918,7 @@
     };
 
     // angular module
-    angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
+    angular.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
         .directive('widgetContainer', fgpWidgetContainer.buildFactory)
         .directive('widgetGraph', fgpWidgetGraph.buildFactory)
         .directive('widgetPageTitle', fgpWidgetPageTitle.buildFactory)
