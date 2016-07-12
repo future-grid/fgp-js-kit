@@ -45,7 +45,6 @@ class dataAccessApi {
             type: 'GET',
             url: url,
             jsonpCallback: 'jsonCallback',
-            async: true,
             contentType: "application/json",
             dataType: 'jsonp',
             success: function (data) {
@@ -59,7 +58,6 @@ class dataAccessApi {
                 $.ajax({
                     type: 'GET',
                     url: url + data.type,
-                    async: true,
                     jsonpCallback: 'jsonCallback',
                     contentType: "application/json",
                     dataType: 'jsonp',
@@ -79,7 +77,6 @@ class dataAccessApi {
                                         type: 'GET',
                                         url: url + this.name + '&extension_type=' + type.name,
                                         jsonpCallback: 'jsonCallback',
-                                        async: true,
                                         contentType: "application/json",
                                         dataType: 'jsonp',
                                         success: function (field) {
