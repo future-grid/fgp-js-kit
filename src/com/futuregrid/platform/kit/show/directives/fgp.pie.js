@@ -59,7 +59,20 @@ class fgpWidgetPie {
         });
 
         if (widgetData.from == "show" && widgetData.data) {
-            $scope.$on('deviceInfoEvent', function (event, data) {
+            $scope.data_from = "application";
+            $scope.parent_container = widgetData.data.parent;
+
+            $scope.$on('deviceInfoEvent', function (event, deviceData) {
+                // if the parent container sends a device to here, ignore global device.
+                if ($scope.data_from != "application" && deviceData.from == "application") {
+                    return;
+                } else if (deviceData.from != "application") {
+                    if ($scope.parent_container != "edit" + deviceData.from) {
+                        return;
+                    } else {
+                        $scope.data_from = deviceData.from;
+                    }
+                }
                 metadata = widgetData.data.metadata;
                 $scope.showdata = widgetData.data;
                 $scope.css = {
@@ -76,7 +89,7 @@ class fgpWidgetPie {
                 angular.forEach($scope.showdata.metadata.data, function (item) {
                     try {
                         f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
-                        item.value = f(device);
+                        item.value = f(deviceData.device);
                         $scope.data.push(item);
                     } catch (error) {
                         item.value = item.value;

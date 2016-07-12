@@ -54,11 +54,24 @@ export default class fgpWidgetPageTitle {
             $scope.css["subtitle"]["color"] = metadata.css.subtitle.color;
             $scope.css["subtitle"]["show"] = metadata.css.subtitle.show;
 
-            $scope.$on('deviceInfoEvent', function (event, data) {
+            $scope.data_from = "application";
+            $scope.parent_container = widgetData.data.parent;
+
+            $scope.$on('deviceInfoEvent', function (event, deviceData) {
+                // if the parent container sends a device to here, ignore global device.
+                if ($scope.data_from != "application" && deviceData.from == "application") {
+                    return;
+                } else if (deviceData.from != "application") {
+                    if ($scope.parent_container != "edit" + deviceData.from) {
+                        return;
+                    } else {
+                        $scope.data_from = deviceData.from;
+                    }
+                }
                 var f = new Function("device", "with(device) { return " + $scope.css["title"].text + "}");
-                $scope.css["title"].text = f(data.device);
+                $scope.css["title"].text = f(deviceData.device);
                 f = new Function("device", "with(device) { return " + $scope.css["subtitle"].text + "}");
-                $scope.css["subtitle"].text = f(data.device);
+                $scope.css["subtitle"].text = f(deviceData.device);
             });
         }
 

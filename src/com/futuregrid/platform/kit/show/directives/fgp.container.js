@@ -39,7 +39,7 @@ class fgpWidgetContainer {
 
     }
 
-    controller($scope, $element) {
+    controller($scope, $element, dataService, $rootScope, $timeout) {
         // only show
         var element_id = $element.attr("id");
 
@@ -66,6 +66,27 @@ class fgpWidgetContainer {
         $scope.css["title"] = metadata.css.title;
         $scope.css["title"]["color"] = metadata.css.title.color;
         $scope.css["title"]["show"] = metadata.css.title.show;
+
+        $scope.data = {};
+        if (metadata.data) {
+            $scope.data["source"] = metadata.data.source;
+            if ($scope.data && $scope.data.source.device && $scope.data.source.device != -1) {
+
+                if ($scope.data.source.device) {
+                    /**
+                     * get device information
+                     */
+                    dataService.deviceInfo($rootScope.host, JSON.parse($scope.data.source.device).name, null, $rootScope.applicationName).then(function (data) {
+                        // send device info to all widget
+                        $timeout(function () {
+                            $rootScope.$broadcast('deviceInfoEvent', {device: data, from: element_id});
+                        });
+                    });
+                }
+
+            }
+        }
+
     }
 
 
