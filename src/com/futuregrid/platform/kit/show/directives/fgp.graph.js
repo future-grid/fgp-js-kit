@@ -375,6 +375,7 @@ class fgpWidgetGraph {
                         'position': 'relative',
                         'display': 'inline-block'
                     },
+                    yRangePad: 10,
                     // x label y label
                     ylabel: 'Value',
                     xlabel: 'Date',
