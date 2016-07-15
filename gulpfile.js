@@ -29,6 +29,7 @@ gulp.task('clean', function () {
 
 gulp.task('js', ['clean'], () => {
     return gulp.src(paths.javascriptRoot)
+        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(rollup({
             entry: 'src/index.js',
             sourceMap: true,
@@ -54,26 +55,7 @@ gulp.task('js', ['clean'], () => {
         }).on('error', e => {
             console.error(`${e.stack}`);
         }))
-        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(buble({presets: ['es2015']}))
-        .pipe(concat(moduleName + '.bundle.js'))
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.distRoot + "/src"));
-});
-
-gulp.task('less', ['clean'], () => {
-    return gulp.src(paths.stylesheetRoot)
-        .pipe(sourcemaps.init())
-        .pipe(less())
-        .pipe(concat(moduleName + '.bundle.css'))
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.distRoot + "/src"));
-});
-
-
-gulp.task('min', ['less', 'js'], function () {
-    var js = gulp.src(['dist/src/fgp.kit.bundle.js'])
-        .pipe(sourcemaps.init())
         .pipe(uglify({
             mangle: false,
             compress: false,
@@ -81,16 +63,18 @@ gulp.task('min', ['less', 'js'], function () {
         }))
         .pipe(concat(moduleName + '.bundle.min.js'))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest('dist'));
+        .pipe(gulp.dest(paths.distRoot));
+});
 
-    var css = gulp.src(['dist/src/fgp.kit.bundle.css'])
+gulp.task('less', ['clean'], () => {
+    return gulp.src(paths.stylesheetRoot)
         .pipe(sourcemaps.init())
+        .pipe(less())
         .pipe(cleanCSS())
         .pipe(concat(moduleName + '.bundle.min.css'))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest('dist'));
-    return [js, css];
+        .pipe(gulp.dest(paths.distRoot));
 });
 
 
-gulp.task('default', ['min']);
+gulp.task('default', ['less', 'js']);
