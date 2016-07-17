@@ -26,7 +26,9 @@ gulp.task('clean', function () {
     return del(['dist']);
 });
 
-
+/**
+ * build javascript
+ */
 gulp.task('js', ['clean'], () => {
     return gulp.src(paths.javascriptRoot)
         .pipe(sourcemaps.init({loadMaps: true}))
@@ -39,7 +41,7 @@ gulp.task('js', ['clean'], () => {
             ' * fgp-kit\n' +
             ' * @version 1.0 - Homepage <http://www.future-grid.com.au>\n' +
             ' * @copyright (c) 2013-2016 Eric.Wang <flexdeviser@gmail.com>\n' +
-            ' * @license Apache. \n' +
+            ' * @license Apache2. \n' +
             ' * @overview fgp.kit.js is a useful toolkit for future-grid\'s clients.\n' +
             ' */',
             globals: {
@@ -66,6 +68,9 @@ gulp.task('js', ['clean'], () => {
         .pipe(gulp.dest(paths.distRoot));
 });
 
+/**
+ * build css
+ */
 gulp.task('less', ['clean'], () => {
     return gulp.src(paths.stylesheetRoot)
         .pipe(sourcemaps.init())
@@ -76,5 +81,7 @@ gulp.task('less', ['clean'], () => {
         .pipe(gulp.dest(paths.distRoot));
 });
 
-
+/**
+ * default task
+ */
 gulp.task('default', ['less', 'js']);

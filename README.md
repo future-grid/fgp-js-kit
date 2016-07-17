@@ -30,7 +30,7 @@ adding the dependencies for Angular and Dygraphs first:
 
 ```html
 <head>
-  
+  // css fgp.kit.bundle.min.css
 <head>
 <body>
   ...
@@ -42,7 +42,7 @@ adding the dependencies for Angular and Dygraphs first:
    <script src="bower_components/eric_dygraphs/dygraph-combined-dev.js"></script>
    <script src="bower_components/eric_dygraphs/extras/synchronizer.js"></script>
    -->
-  <script src="bower_components/fgp-js-kit/dist/fgp.kit.bundle.js"></script>
+  <script src="bower_components/fgp-js-kit/dist/fgp.kit.bundle.min.js"></script>
 ```
 
 # Utilisation
