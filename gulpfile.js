@@ -58,12 +58,7 @@ gulp.task('js', ['clean'], () => {
             console.error(`${e.stack}`);
         }))
         .pipe(buble({presets: ['es2015']}))
-        .pipe(uglify({
-            mangle: false,
-            compress: false,
-            output: {beautify: false}
-        }))
-        .pipe(concat(moduleName + '.bundle.min.js'))
+        .pipe(concat(moduleName + '.bundle.js'))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(paths.distRoot));
 });
@@ -75,8 +70,28 @@ gulp.task('less', ['clean'], () => {
     return gulp.src(paths.stylesheetRoot)
         .pipe(sourcemaps.init())
         .pipe(less())
+        .pipe(concat(moduleName + '.bundle.css'))
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest(paths.distRoot));
+});
+
+
+gulp.task('min', ['less', 'js'], ()=> {
+    var css = gulp.src(paths.distRoot + "/*.css")
+        .pipe(sourcemaps.init())
         .pipe(cleanCSS())
         .pipe(concat(moduleName + '.bundle.min.css'))
+        .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest(paths.distRoot));
+
+    var js = gulp.src(paths.distRoot + "/*.js")
+        .pipe(sourcemaps.init())
+        .pipe(uglify({
+            mangle: false,
+            compress: false,
+            output: {beautify: false}
+        }))
+        .pipe(concat(moduleName + '.bundle.min.js'))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(paths.distRoot));
 });
@@ -84,4 +99,4 @@ gulp.task('less', ['clean'], () => {
 /**
  * default task
  */
-gulp.task('default', ['less', 'js']);
+gulp.task('default', ['min']);
