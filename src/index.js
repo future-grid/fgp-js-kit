@@ -7,13 +7,13 @@ import fgpStage from './com/futuregrid/platform/kit/show/directives/fgp.stage.js
 import dataApi from './com/futuregrid/platform/kit/utils/data.api.js';
 import fgpWidgetContainer from './com/futuregrid/platform/kit/show/directives/fgp.container.js';
 import fgpWidgetGraph from './com/futuregrid/platform/kit/show/directives/fgp.graph.js';
-import fgpWidgetPageTitle from './com/futuregrid/platform/kit/show/directives/fgp.page.title';
-import fgpWidgetMap from './com/futuregrid/platform/kit/show/directives/fgp.map';
-import fgpWidgetStatus from './com/futuregrid/platform/kit/show/directives/fgp.stage';
-import fgpWidgetDetail from './com/futuregrid/platform/kit/show/directives/fgp.device.detail';
-import fgpWidgetSpan from './com/futuregrid/platform/kit/show/directives/fgp.span';
-import fgpWidgetPie from './com/futuregrid/platform/kit/show/directives/fgp.pie';
-import fgpWidgetChartTable from './com/futuregrid/platform/kit/show/directives/fgp.chart.table';
+import fgpWidgetPageTitle from './com/futuregrid/platform/kit/show/directives/fgp.page.title.js';
+import fgpWidgetMap from './com/futuregrid/platform/kit/show/directives/fgp.map.js';
+import fgpWidgetStatus from './com/futuregrid/platform/kit/show/directives/fgp.stage.js';
+import fgpWidgetDetail from './com/futuregrid/platform/kit/show/directives/fgp.device.detail.js';
+import fgpWidgetSpan from './com/futuregrid/platform/kit/show/directives/fgp.span.js';
+import fgpWidgetPie from './com/futuregrid/platform/kit/show/directives/fgp.pie.js';
+import fgpWidgetChartTable from './com/futuregrid/platform/kit/show/directives/fgp.chart.table.js';
 // angular module
 angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
