@@ -396,7 +396,10 @@ class dataAccessApi {
             }
         }
         return this.colors;
+    }
 
+    setColors(colors) {
+        this.colors = colors;
     }
 
 

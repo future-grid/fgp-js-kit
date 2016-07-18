@@ -38,478 +38,477 @@ class fgpWidgetGraph {
         scope.status = true;
         var timeOut = this.$timeout;
         this.$timeout(function () {
-                var getData = function (numSeries, numRows, name) {
-                    var result = {labels: null, data: null};
-                    var data = [];
-                    var labels = [];
-                    //init date
-                    var initDate = new Date("2014/01/01 00:00:00");
+            var getData = function (numSeries, numRows, name) {
+                var result = {labels: null, data: null};
+                var data = [];
+                var labels = [];
+                //init date
+                var initDate = new Date("2014/01/01 00:00:00");
+                for (var j = 0; j < numRows; ++j) {
+                    data[j] = [new Date(initDate.getTime() + 900000)];
+                    initDate = new Date(initDate.getTime() + 900000);
+                }
+                for (var i = 0; i < numSeries; ++i) {
+                    labels.push(name + i);
+                    var val = 0;
                     for (var j = 0; j < numRows; ++j) {
-                        data[j] = [new Date(initDate.getTime() + 900000)];
-                        initDate = new Date(initDate.getTime() + 900000);
+                        val += Math.random() - 0.5;
+                        data[j][i + 1] = val;
                     }
-                    for (var i = 0; i < numSeries; ++i) {
-                        labels.push(name + i);
-                        var val = 0;
-                        for (var j = 0; j < numRows; ++j) {
-                            val += Math.random() - 0.5;
-                            data[j][i + 1] = val;
+                }
+                result.labels = labels;
+                result.data = data;
+                return result;
+            };
+
+
+            var sampleData = getData(1, 10, 'Device');
+
+            function movePan(event, g, context, side) {
+
+                context.dragEndX = Dygraph.dragGetX_(event, context);
+                context.dragEndY = Dygraph.dragGetY_(event, context);
+
+
+                // y-axis scaling is automatic unless this is a full 2D pan.
+                if (context.is2DPan) {
+
+                    var pixelsDragged = context.dragEndY - context.dragStartY;
+                    // Adjust each axis appropriately.
+                    if (side == "r") {
+                        var axis = g.axes_[0];
+                        var axis_data = context.axes[0];
+                        var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
+
+                        var boundedValue = context.boundedValues ? context.boundedValues[0] : null;
+
+                        // In log scale, maxValue and minValue are the logs of those values.
+                        var maxValue = axis_data.initialTopValue + unitsDragged;
+                        if (boundedValue) {
+                            maxValue = Math.min(maxValue, boundedValue[1]);
                         }
-                    }
-                    result.labels = labels;
-                    result.data = data;
-                    return result;
-                };
-
-
-                var sampleData = getData(1, 10, 'Device');
-
-                function movePan(event, g, context, side) {
-
-                    context.dragEndX = Dygraph.dragGetX_(event, context);
-                    context.dragEndY = Dygraph.dragGetY_(event, context);
-
-
-                    // y-axis scaling is automatic unless this is a full 2D pan.
-                    if (context.is2DPan) {
-
-                        var pixelsDragged = context.dragEndY - context.dragStartY;
-                        // Adjust each axis appropriately.
-                        if (side == "r") {
-                            var axis = g.axes_[0];
-                            var axis_data = context.axes[0];
-                            var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
-
-                            var boundedValue = context.boundedValues ? context.boundedValues[0] : null;
-
-                            // In log scale, maxValue and minValue are the logs of those values.
-                            var maxValue = axis_data.initialTopValue + unitsDragged;
-                            if (boundedValue) {
-                                maxValue = Math.min(maxValue, boundedValue[1]);
+                        var minValue = maxValue - axis_data.dragValueRange;
+                        if (boundedValue) {
+                            if (minValue < boundedValue[0]) {
+                                // Adjust maxValue, and recompute minValue.
+                                maxValue = maxValue - (minValue - boundedValue[0]);
+                                minValue = maxValue - axis_data.dragValueRange;
                             }
-                            var minValue = maxValue - axis_data.dragValueRange;
-                            if (boundedValue) {
-                                if (minValue < boundedValue[0]) {
-                                    // Adjust maxValue, and recompute minValue.
-                                    maxValue = maxValue - (minValue - boundedValue[0]);
-                                    minValue = maxValue - axis_data.dragValueRange;
-                                }
-                            }
-                            if (g.attributes_.getForAxis("logscale", 0)) {
-                                axis.valueWindow = [Math.pow(Dygraph.LOG_SCALE, minValue),
-                                    Math.pow(Dygraph.LOG_SCALE, maxValue)];
-                                axis.valueRange = [Math.pow(Dygraph.LOG_SCALE, minValue),
-                                    Math.pow(Dygraph.LOG_SCALE, maxValue)];
-                            } else {
-                                axis.valueWindow = [minValue, maxValue];
-                                axis.valueRange = [minValue, maxValue];
-                            }
-                        } else if (side == 'l') {
-                            var axis = g.axes_[1];
-                            var axis_data = context.axes[1];
-                            var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
-
-                            var boundedValue = context.boundedValues ? context.boundedValues[1] : null;
-
-                            // In log scale, maxValue and minValue are the logs of those values.
-                            var maxValue = axis_data.initialTopValue + unitsDragged;
-                            if (boundedValue) {
-                                maxValue = Math.min(maxValue, boundedValue[1]);
-                            }
-                            var minValue = maxValue - axis_data.dragValueRange;
-                            if (boundedValue) {
-                                if (minValue < boundedValue[0]) {
-                                    // Adjust maxValue, and recompute minValue.
-                                    maxValue = maxValue - (minValue - boundedValue[0]);
-                                    minValue = maxValue - axis_data.dragValueRange;
-                                }
-                            }
-                            if (g.attributes_.getForAxis("logscale", 1)) {
-                                axis.valueWindow = [Math.pow(Dygraph.LOG_SCALE, minValue),
-                                    Math.pow(Dygraph.LOG_SCALE, maxValue)];
-                                axis.valueRange = [Math.pow(Dygraph.LOG_SCALE, minValue),
-                                    Math.pow(Dygraph.LOG_SCALE, maxValue)];
-                            } else {
-                                axis.valueWindow = [minValue, maxValue];
-                                axis.valueRange = [minValue, maxValue];
-                            }
+                        }
+                        if (g.attributes_.getForAxis("logscale", 0)) {
+                            axis.valueWindow = [Math.pow(Dygraph.LOG_SCALE, minValue),
+                                Math.pow(Dygraph.LOG_SCALE, maxValue)];
+                            axis.valueRange = [Math.pow(Dygraph.LOG_SCALE, minValue),
+                                Math.pow(Dygraph.LOG_SCALE, maxValue)];
                         } else {
-                            var minDate = context.initialLeftmostDate -
-                                (context.dragEndX - context.dragStartX) * context.xUnitsPerPixel;
-                            if (context.boundedDates) {
-                                minDate = Math.max(minDate, context.boundedDates[0]);
-                            }
-                            var maxDate = minDate + context.dateRange;
-                            if (context.boundedDates) {
-                                if (maxDate > context.boundedDates[1]) {
-                                    // Adjust minDate, and recompute maxDate.
-                                    minDate = minDate - (maxDate - context.boundedDates[1]);
-                                    maxDate = minDate + context.dateRange;
-                                }
-                            }
-                            var zoomRange = g.xAxisZoomRange;
-                            if (g.xAxisZoomRange[0] instanceof Date) {
-                                zoomRange[0] = g.xAxisZoomRange[0].getTime();
-                            }
-                            if (g.xAxisZoomRange[1] instanceof Date) {
-                                zoomRange[1] = g.xAxisZoomRange[1].getTime();
-                            }
+                            axis.valueWindow = [minValue, maxValue];
+                            axis.valueRange = [minValue, maxValue];
+                        }
+                    } else if (side == 'l') {
+                        var axis = g.axes_[1];
+                        var axis_data = context.axes[1];
+                        var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
 
-                            if (minDate < zoomRange[0] || maxDate > zoomRange[1]) {
-                                return;
-                            }
+                        var boundedValue = context.boundedValues ? context.boundedValues[1] : null;
 
-                            if (g.getOptionForAxis("logscale", "x")) {
-                                g.dateWindow_ = [Math.pow(Dygraph.LOG_SCALE, minDate),
-                                    Math.pow(Dygraph.LOG_SCALE, maxDate)];
-                            } else {
-                                g.dateWindow_ = [minDate, maxDate];
+                        // In log scale, maxValue and minValue are the logs of those values.
+                        var maxValue = axis_data.initialTopValue + unitsDragged;
+                        if (boundedValue) {
+                            maxValue = Math.min(maxValue, boundedValue[1]);
+                        }
+                        var minValue = maxValue - axis_data.dragValueRange;
+                        if (boundedValue) {
+                            if (minValue < boundedValue[0]) {
+                                // Adjust maxValue, and recompute minValue.
+                                maxValue = maxValue - (minValue - boundedValue[0]);
+                                minValue = maxValue - axis_data.dragValueRange;
                             }
                         }
+                        if (g.attributes_.getForAxis("logscale", 1)) {
+                            axis.valueWindow = [Math.pow(Dygraph.LOG_SCALE, minValue),
+                                Math.pow(Dygraph.LOG_SCALE, maxValue)];
+                            axis.valueRange = [Math.pow(Dygraph.LOG_SCALE, minValue),
+                                Math.pow(Dygraph.LOG_SCALE, maxValue)];
+                        } else {
+                            axis.valueWindow = [minValue, maxValue];
+                            axis.valueRange = [minValue, maxValue];
+                        }
+                    } else {
+                        var minDate = context.initialLeftmostDate -
+                            (context.dragEndX - context.dragStartX) * context.xUnitsPerPixel;
+                        if (context.boundedDates) {
+                            minDate = Math.max(minDate, context.boundedDates[0]);
+                        }
+                        var maxDate = minDate + context.dateRange;
+                        if (context.boundedDates) {
+                            if (maxDate > context.boundedDates[1]) {
+                                // Adjust minDate, and recompute maxDate.
+                                minDate = minDate - (maxDate - context.boundedDates[1]);
+                                maxDate = minDate + context.dateRange;
+                            }
+                        }
+                        var zoomRange = g.xAxisZoomRange;
+                        if (g.xAxisZoomRange[0] instanceof Date) {
+                            zoomRange[0] = g.xAxisZoomRange[0].getTime();
+                        }
+                        if (g.xAxisZoomRange[1] instanceof Date) {
+                            zoomRange[1] = g.xAxisZoomRange[1].getTime();
+                        }
+
+                        if (minDate < zoomRange[0] || maxDate > zoomRange[1]) {
+                            return;
+                        }
+
+                        if (g.getOptionForAxis("logscale", "x")) {
+                            g.dateWindow_ = [Math.pow(Dygraph.LOG_SCALE, minDate),
+                                Math.pow(Dygraph.LOG_SCALE, maxDate)];
+                        } else {
+                            g.dateWindow_ = [minDate, maxDate];
+                        }
+                    }
+                }
+                g.drawGraph_(false);
+            }
+
+
+            function offsetToPercentage(g, offsetX, offsetY) {
+                // This is calculating the pixel offset of the leftmost date.
+                var xOffset = g.toDomCoords(g.xAxisRange()[0], null)[0];
+                var yar0 = g.yAxisRange(0);
+
+                // This is calculating the pixel of the higest value. (Top pixel)
+                var yOffset = g.toDomCoords(null, yar0[1])[1];
+
+                // x y w and h are relative to the corner of the drawing area,
+                // so that the upper corner of the drawing area is (0, 0).
+                var x = offsetX - xOffset;
+                var y = offsetY - yOffset;
+
+                // This is computing the rightmost pixel, effectively defining the
+                // width.
+                var w = g.toDomCoords(g.xAxisRange()[1], null)[0] - xOffset;
+
+                // This is computing the lowest pixel, effectively defining the height.
+                var h = g.toDomCoords(null, yar0[0])[1] - yOffset;
+
+                // Percentage from the left.
+                var xPct = w == 0 ? 0 : (x / w);
+                // Percentage from the top.
+                var yPct = h == 0 ? 0 : (y / h);
+
+                // The (1-) part below changes it from "% distance down from the top"
+                // to "% distance up from the bottom".
+                return [xPct, (1 - yPct)];
+            }
+
+
+            function zoom(g, zoomInPercentage, xBias, yBias, direction, side) {
+                if (scope.basicInfo && !scope.basicInfo.zoom) {
+                    return;
+                }
+
+                function adjustAxis(axis, zoomInPercentage, bias) {
+                    var delta = axis[1] - axis[0];
+                    var increment = delta * zoomInPercentage;
+                    var foo = [increment * bias, increment * (1 - bias)];
+                    return [axis[0] + foo[0], axis[1] - foo[1]];
+                }
+
+                xBias = xBias || 0.5;
+                yBias = yBias || 0.5;
+                var yAxes = g.axes_;
+                var newYAxes = [];
+                for (var i = 0; i < g.numAxes(); i++) {
+                    newYAxes[i] = adjustAxis(yAxes[i].valueRange, zoomInPercentage, yBias);
+                }
+                if ('v' == direction) {
+                    if ('l' == side) {
+                        yAxes[0]['valueRange'] = newYAxes[0];
+                        yAxes[0]['valueWindow'] = newYAxes[0];
+                    } else if ('r' == side && g.numAxes() == 2) {
+                        yAxes[1]['valueRange'] = newYAxes[1];
+                        yAxes[1]['valueWindow'] = newYAxes[1];
                     }
                     g.drawGraph_(false);
-                }
+                } else {
 
-
-                function offsetToPercentage(g, offsetX, offsetY) {
-                    // This is calculating the pixel offset of the leftmost date.
-                    var xOffset = g.toDomCoords(g.xAxisRange()[0], null)[0];
-                    var yar0 = g.yAxisRange(0);
-
-                    // This is calculating the pixel of the higest value. (Top pixel)
-                    var yOffset = g.toDomCoords(null, yar0[1])[1];
-
-                    // x y w and h are relative to the corner of the drawing area,
-                    // so that the upper corner of the drawing area is (0, 0).
-                    var x = offsetX - xOffset;
-                    var y = offsetY - yOffset;
-
-                    // This is computing the rightmost pixel, effectively defining the
-                    // width.
-                    var w = g.toDomCoords(g.xAxisRange()[1], null)[0] - xOffset;
-
-                    // This is computing the lowest pixel, effectively defining the height.
-                    var h = g.toDomCoords(null, yar0[0])[1] - yOffset;
-
-                    // Percentage from the left.
-                    var xPct = w == 0 ? 0 : (x / w);
-                    // Percentage from the top.
-                    var yPct = h == 0 ? 0 : (y / h);
-
-                    // The (1-) part below changes it from "% distance down from the top"
-                    // to "% distance up from the bottom".
-                    return [xPct, (1 - yPct)];
-                }
-
-
-                function zoom(g, zoomInPercentage, xBias, yBias, direction, side) {
-                    if (scope.basicInfo && !scope.basicInfo.zoom) {
-                        return;
-                    }
-
-                    function adjustAxis(axis, zoomInPercentage, bias) {
-                        var delta = axis[1] - axis[0];
-                        var increment = delta * zoomInPercentage;
-                        var foo = [increment * bias, increment * (1 - bias)];
-                        return [axis[0] + foo[0], axis[1] - foo[1]];
-                    }
-
-                    xBias = xBias || 0.5;
-                    yBias = yBias || 0.5;
-                    var yAxes = g.axes_;
-                    var newYAxes = [];
-                    for (var i = 0; i < g.numAxes(); i++) {
-                        newYAxes[i] = adjustAxis(yAxes[i].valueRange, zoomInPercentage, yBias);
-                    }
-                    if ('v' == direction) {
-                        if ('l' == side) {
-                            yAxes[0]['valueRange'] = newYAxes[0];
-                            yAxes[0]['valueWindow'] = newYAxes[0];
-                        } else if ('r' == side && g.numAxes() == 2) {
-                            yAxes[1]['valueRange'] = newYAxes[1];
-                            yAxes[1]['valueWindow'] = newYAxes[1];
-                        }
-                        g.drawGraph_(false);
-                    } else {
-
-                        var ranges = [];
-                        angular.forEach(g.xAxisRange(), function (range) {
-                            if (range instanceof Date) {
-                                ranges.push(range.getTime());
-                            } else {
-                                ranges.push(range);
-                            }
-                        });
-
-                        var newZoomRange = adjustAxis(ranges, zoomInPercentage, xBias);
-                        // do not bigger than range data
-                        var zoomRange = [];
-                        if (g.hasOwnProperty("xAxisZoomRange") && g.xAxisZoomRange) {
-                            zoomRange[0] = g.xAxisZoomRange[0];
-                            zoomRange[1] = g.xAxisZoomRange[1];
+                    var ranges = [];
+                    angular.forEach(g.xAxisRange(), function (range) {
+                        if (range instanceof Date) {
+                            ranges.push(range.getTime());
                         } else {
-                            zoomRange[0] = g.xAxisExtremes()[0];
-                            zoomRange[1] = g.xAxisExtremes()[1];
+                            ranges.push(range);
                         }
-                        if (newZoomRange[0] < zoomRange[0] && newZoomRange[1] > zoomRange[1]) {
-                            return;
-                        } else if (newZoomRange[0] >= newZoomRange[1]) {
-                            return;
-                        } else if (newZoomRange[0] <= zoomRange[0] && newZoomRange[1] < zoomRange[1]) {
-                            g.updateOptions({
-                                dateWindow: [zoomRange[0], newZoomRange[1]]
-                            });
-                        } else if (newZoomRange[0] > zoomRange[0] && newZoomRange[1] >= zoomRange[1]) {
-                            g.updateOptions({
-                                dateWindow: [newZoomRange[0], zoomRange[1]]
-                            });
-                        } else {
-                            g.updateOptions({
-                                dateWindow: newZoomRange
-                            });
-                        }
-                    }
-                }
-
-                var zoomTimer = null;
-                var scroll = function (e, g, context) {
-
-                    if (scope.basicInfo && !scope.basicInfo.zoom) {
-                        return;
-                    }
-
-                    if (zoomTimer) {
-                        timeOut.cancel(zoomTimer);
-                    }
-                    var normal = e.detail ? e.detail * -1 : e.wheelDelta / 40;
-                    // For me the normalized value shows 0.075 for one click. If I took
-                    // that verbatim, it would be a 7.5%.
-                    var percentage = normal / 50;
-
-                    if (!(e.offsetX && e.offsetY)) {
-                        e.offsetX = e.layerX - e.target.offsetLeft;
-                        e.offsetY = e.layerY - e.target.offsetTop;
-                    }
-                    var percentages = offsetToPercentage(g, e.offsetX, e.offsetY);
-                    var xPct = percentages[0];
-                    var yPct = percentages[1];
-                    //
-                    if (e.offsetX <= (g.plotter_.area.x)) {
-                        // console.info("v", "l")
-                        // left zoom
-                        zoom(g, percentage, xPct, yPct, 'v', 'l');
-                    } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
-                        // right zoom
-                        // console.info("v", "r")
-                        zoom(g, percentage, xPct, yPct, 'v', 'r');
-                    } else {
-                        // middle zoom
-                        // console.info("h")
-                        zoom(g, percentage, xPct, yPct, 'h', null);
-                    }
-
-                    Dygraph.cancelEvent(e);
-                    timeOut(function () {
-                        scope.chartDateWindow = g.xAxisRange();
                     });
 
-                };
-
-                var firstPoint = null;
-                var mousedownHandler = function (e, g, context) {
-                    if (scope.basicInfo && !scope.basicInfo.zoom) {
-                        return;
+                    var newZoomRange = adjustAxis(ranges, zoomInPercentage, xBias);
+                    // do not bigger than range data
+                    var zoomRange = [];
+                    if (g.hasOwnProperty("xAxisZoomRange") && g.xAxisZoomRange) {
+                        zoomRange[0] = g.xAxisZoomRange[0];
+                        zoomRange[1] = g.xAxisZoomRange[1];
+                    } else {
+                        zoomRange[0] = g.xAxisExtremes()[0];
+                        zoomRange[1] = g.xAxisExtremes()[1];
                     }
-                    context.initializeMouseDown(e, g, context);
-                    firstPoint = e.clientX;
-                    Dygraph.startPan(e, g, context);
-                };
-                var mousemoveHandler = function (e, g, context) {
-                    if (context.isPanning) {
-                        if (event.offsetX <= (g.plotter_.area.x)) {
-                            movePan(event, g, context, 'r');
-                        } else if (event.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
-                            movePan(event, g, context, 'l');
-                        } else {
-                            movePan(event, g, context, 'h');
+                    if (newZoomRange[0] < zoomRange[0] && newZoomRange[1] > zoomRange[1]) {
+                        return;
+                    } else if (newZoomRange[0] >= newZoomRange[1]) {
+                        return;
+                    } else if (newZoomRange[0] <= zoomRange[0] && newZoomRange[1] < zoomRange[1]) {
+                        g.updateOptions({
+                            dateWindow: [zoomRange[0], newZoomRange[1]]
+                        });
+                    } else if (newZoomRange[0] > zoomRange[0] && newZoomRange[1] >= zoomRange[1]) {
+                        g.updateOptions({
+                            dateWindow: [newZoomRange[0], zoomRange[1]]
+                        });
+                    } else {
+                        g.updateOptions({
+                            dateWindow: newZoomRange
+                        });
+                    }
+                }
+            }
+
+            var zoomTimer = null;
+            var scroll = function (e, g, context) {
+
+                if (scope.basicInfo && !scope.basicInfo.zoom) {
+                    return;
+                }
+
+                if (zoomTimer) {
+                    timeOut.cancel(zoomTimer);
+                }
+                var normal = e.detail ? e.detail * -1 : e.wheelDelta / 40;
+                // For me the normalized value shows 0.075 for one click. If I took
+                // that verbatim, it would be a 7.5%.
+                var percentage = normal / 50;
+
+                if (!(e.offsetX && e.offsetY)) {
+                    e.offsetX = e.layerX - e.target.offsetLeft;
+                    e.offsetY = e.layerY - e.target.offsetTop;
+                }
+                var percentages = offsetToPercentage(g, e.offsetX, e.offsetY);
+                var xPct = percentages[0];
+                var yPct = percentages[1];
+                //
+                if (e.offsetX <= (g.plotter_.area.x)) {
+                    // console.info("v", "l")
+                    // left zoom
+                    zoom(g, percentage, xPct, yPct, 'v', 'l');
+                } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
+                    // right zoom
+                    // console.info("v", "r")
+                    zoom(g, percentage, xPct, yPct, 'v', 'r');
+                } else {
+                    // middle zoom
+                    // console.info("h")
+                    zoom(g, percentage, xPct, yPct, 'h', null);
+                }
+
+                Dygraph.cancelEvent(e);
+                timeOut(function () {
+                    scope.chartDateWindow = g.xAxisRange();
+                });
+
+            };
+
+            var firstPoint = null;
+            var mousedownHandler = function (e, g, context) {
+                if (scope.basicInfo && !scope.basicInfo.zoom) {
+                    return;
+                }
+                context.initializeMouseDown(e, g, context);
+                firstPoint = e.clientX;
+                Dygraph.startPan(e, g, context);
+            };
+            var mousemoveHandler = function (e, g, context) {
+                if (context.isPanning) {
+                    if (event.offsetX <= (g.plotter_.area.x)) {
+                        movePan(event, g, context, 'r');
+                    } else if (event.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
+                        movePan(event, g, context, 'l');
+                    } else {
+                        movePan(event, g, context, 'h');
+                    }
+                    timeOut(function () {
+                        scope.chartDateWindow = scope.currentChart.xAxisRange();
+                    });
+                }
+            };
+
+            var mouseupHandler = function (e, g, context) {
+                if (context.isPanning) {
+                    Dygraph.endPan(e, g, context);
+                }
+            };
+
+            var interactionModel = {
+                'mousewheel': scroll,
+                'DOMMouseScroll': scroll,
+                'mousedown': mousedownHandler,
+                'mousemove': mousemoveHandler,
+                'mouseup': mouseupHandler
+            };
+
+
+            //init configuration
+            var configuration = {
+                drawGapEdgePoints: true,
+                'pointSize': 3,
+                labelsKMB: true,
+                // data formate
+                labels: ['x'].concat(sampleData.labels),
+                highlightCircleSize: 2,
+                strokeWidth: 1,
+                highlightSeriesOpts: {
+                    strokeWidth: 2,
+                    strokeBorderWidth: 1,
+                    highlightCircleSize: 2
+                },
+                drawPoints: false,
+                drawAxesAtZero: false,
+                labelsDivStyles: {
+                    'text-align': 'right',
+                    'position': 'relative',
+                    'display': 'inline-block'
+                },
+                yRangePad: 10,
+                // x label y label
+                ylabel: 'Value',
+                xlabel: 'Date',
+                colors: scope.defaultColors,
+                // multiple Y axis
+                series: {
+                    'Device0': {
+                        axis: 'y2'
+                    },
+                    'Device4': {
+                        axis: 'y2'
+                    }
+                },
+                // showRangeSelector: true,
+                axes: {
+                    y: {
+                        valueRange: [0, 1]
+                    },
+                    y2: {
+                        // set axis-related properties here
+                        'labelsKMB': true,
+                        valueRange: [0, 1]
+                    },
+                    x: {
+                        // datetime format
+                        valueFormatter: function (y) {
+                            return moment(y).format('LLLL'); //Hide legend label
                         }
+                    }
+                },
+                pointClickCallback: function (e, p) {
+                    if (scope.currentView != -1) {
+                        scope.showOne(p.name);
+                    }
+                },
+                drawCallback: function (g, isInit) {
+                    timeOut(function () {
+                        if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
+                            scope.refersh(g);
+                        }
+                    });
+                },
+                'interactionModel': interactionModel
+            };
+
+            scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
+            element.find("canvas").css("zIndex", 99);
+
+
+            if (attrs.hasOwnProperty("shown")) {
+
+
+                var basicInfo = scope.basicInfo;
+                if (basicInfo && basicInfo.range_show) {
+                    scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
+                            xAxisHeight: 0,
+                            axes: {
+                                x: {
+                                    drawAxis: false
+                                }
+                            },
+                            showRangeSelector: true,
+                            rangeSelectorHeight: 30
+                        }
+                    );
+                    scope.chartDateWindow = scope.rangeSelectorBar.xAxisRange();
+                }
+
+
+                var status = false;
+                // add mouse up event to range select
+                element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mouseup', function (event) {
+                    status = false;
+                    timeOut(function () {
+                        var finalDateRagne = scope.currentChart.xAxisRange();
+                        scope.chartDateTime = {begin: finalDateRagne[0], end: finalDateRagne[1]};
+                    });
+                });
+
+                scope.$on('mouseUpMessage', function ($scope, e) {
+                    if ("mouseup" === e.type && status) {
+                        status = false;
+                        timeOut(function () {
+                            var finalDateRange = scope.currentChart.xAxisRange();
+                            scope.chartDateTime = {begin: finalDateRange[0], end: finalDateRange[1]};
+                        });
+                    }
+                });
+
+                scope.$on('bindFatherGraphEvent', function (event, data) {
+                    angular.forEach(data.children, function (child) {
+                        if (child == attrs.id) {
+                            Dygraph.synchronize([scope.currentChart].concat(data.parent), {
+                                zoom: true,
+                                selection: false,
+                                range: false
+                            });
+                            scope.currentChart.updateOptions({
+                                drawCallback: function (g, isInit) {
+                                    timeOut(function () {
+                                        scope.refersh(g);
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+
+                });
+
+
+                element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function (event) {
+                    if (status) {
                         timeOut(function () {
                             scope.chartDateWindow = scope.currentChart.xAxisRange();
                         });
                     }
-                };
+                });
 
-                var mouseupHandler = function (e, g, context) {
-                    if (context.isPanning) {
-                        Dygraph.endPan(e, g, context);
+                element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousedown', function (event) {
+                    status = true;
+                });
+
+                //bind chart
+                if (basicInfo && basicInfo.childrenChart.length > 0) {
+                    var param = {'graphs': [scope.currentChart], children: basicInfo.childrenChart};
+                    if (scope.rangeSelectorBar) {
+                        param.graphs.push(scope.rangeSelectorBar);
                     }
-                };
-
-                var interactionModel = {
-                    'mousewheel': scroll,
-                    'DOMMouseScroll': scroll,
-                    'mousedown': mousedownHandler,
-                    'mousemove': mousemoveHandler,
-                    'mouseup': mouseupHandler
-                };
-
-
-                //init configuration
-                var configuration = {
-                    drawGapEdgePoints: true,
-                    'pointSize': 3,
-                    labelsKMB: true,
-                    // data formate
-                    labels: ['x'].concat(sampleData.labels),
-                    highlightCircleSize: 2,
-                    strokeWidth: 1,
-                    highlightSeriesOpts: {
-                        strokeWidth: 2,
-                        strokeBorderWidth: 1,
-                        highlightCircleSize: 2
-                    },
-                    drawPoints: false,
-                    drawAxesAtZero: false,
-                    labelsDivStyles: {
-                        'text-align': 'right',
-                        'position': 'relative',
-                        'display': 'inline-block'
-                    },
-                    yRangePad: 10,
-                    // x label y label
-                    ylabel: 'Value',
-                    xlabel: 'Date',
-                    colors: scope.defaultColors,
-                    // multiple Y axis
-                    series: {
-                        'Device0': {
-                            axis: 'y2'
-                        },
-                        'Device4': {
-                            axis: 'y2'
-                        }
-                    },
-                    // showRangeSelector: true,
-                    axes: {
-                        y: {
-                            valueRange: [0, 1]
-                        },
-                        y2: {
-                            // set axis-related properties here
-                            'labelsKMB': true,
-                            valueRange: [0, 1]
-                        },
-                        x: {
-                            // datetime format
-                            valueFormatter: function (y) {
-                                return moment(y).format('LLLL'); //Hide legend label
-                            }
-                        }
-                    },
-                    pointClickCallback: function (e, p) {
-                        if (scope.currentView != -1) {
-                            scope.showOne(p.name);
-                        }
-                    },
-                    drawCallback: function (g, isInit) {
-                        timeOut(function () {
-                            if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                                scope.refersh(g);
-                            }
-                        });
-                    },
-                    'interactionModel': interactionModel
-                };
-
-                scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
-                element.find("canvas").css("zIndex", 99);
-
-
-                if (attrs.hasOwnProperty("shown")) {
-
-
-                    var basicInfo = scope.basicInfo;
-                    if (basicInfo && basicInfo.range_show) {
-                        scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
-                                xAxisHeight: 0,
-                                axes: {
-                                    x: {
-                                        drawAxis: false
-                                    }
-                                },
-                                showRangeSelector: true,
-                                rangeSelectorHeight: 30
-                            }
-                        );
-                        scope.chartDateWindow = scope.rangeSelectorBar.xAxisRange();
-                    }
-
-
-                    var status = false;
-                    // add mouse up event to range select
-                    element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mouseup', function (event) {
-                        status = false;
-                        timeOut(function () {
-                            var finalDateRagne = scope.currentChart.xAxisRange();
-                            scope.chartDateTime = {begin: finalDateRagne[0], end: finalDateRagne[1]};
-                        });
-                    });
-
-                    scope.$on('mouseUpMessage', function ($scope, e) {
-                        if ("mouseup" === e.type && status) {
-                            status = false;
-                            timeOut(function () {
-                                var finalDateRange = scope.currentChart.xAxisRange();
-                                scope.chartDateTime = {begin: finalDateRange[0], end: finalDateRange[1]};
-                            });
-                        }
-                    });
-
-                    scope.$on('bindFatherGraphEvent', function (event, data) {
-                        angular.forEach(data.children, function (child) {
-                            if (child == attrs.id) {
-                                Dygraph.synchronize([scope.currentChart].concat(data.parent), {
-                                    zoom: true,
-                                    selection: false,
-                                    range: false
-                                });
-                                scope.currentChart.updateOptions({
-                                    drawCallback: function (g, isInit) {
-                                        timeOut(function () {
-                                            scope.refersh(g);
-                                        });
-                                    }
-                                });
-                            }
-                        });
-
-
-                    });
-
-
-                    element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function (event) {
-                        if (status) {
-                            timeOut(function () {
-                                scope.chartDateWindow = scope.currentChart.xAxisRange();
-                            });
-                        }
-                    });
-
-                    element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousedown', function (event) {
-                        status = true;
-                    });
-
-                    //bind chart
-                    if (basicInfo && basicInfo.childrenChart.length > 0) {
-                        var param = {'graphs': [scope.currentChart], children: basicInfo.childrenChart};
-                        if (scope.rangeSelectorBar) {
-                            param.graphs.push(scope.rangeSelectorBar);
-                        }
-                        scope.$emit('bindChildChartEvent', param);
-                    }
+                    scope.$emit('bindChildChartEvent', param);
                 }
-            }, 0
-        );
+            }
+        }, 0);
     }
 
     //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
@@ -1065,7 +1064,11 @@ class fgpWidgetGraph {
                 var showY2axis = false;
                 var counter = 0;
                 angular.forEach(devicesInfo, function (device, key) {
-                    colors.push($scope.defaultColors[counter]);
+                    if ($scope.defaultColors[counter]) {
+                        colors.push($scope.defaultColors[counter]);
+                    } else {
+                        colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                    }
                     counter++;
 
                     angular.forEach(collections, function (collection) {
@@ -1199,7 +1202,11 @@ class fgpWidgetGraph {
                 var counter = 0;
                 var showY2axis = null;
                 angular.forEach(allData, function (device) {
-                    colors.push($scope.defaultColors[counter]);
+                    if ($scope.defaultColors[counter]) {
+                        colors.push($scope.defaultColors[counter]);
+                    } else {
+                        colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                    }
                     counter++;
 
                     if (device.data.length > 0) {
