@@ -3,7 +3,6 @@
  */
 import angular from 'angular';
 import Dygraph from "dygraphs";
-'use strict';
 class fgpWidgetGraph {
 
     constructor($timeout, dataService, $rootScope, $interval, $filter, $location) {

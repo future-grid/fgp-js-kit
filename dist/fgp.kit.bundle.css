@@ -107,6 +107,9 @@
   left: 10px;
   right: 10px;
 }
+.line-chart-graph .dygraph-legend {
+  z-index: 999999 !important;
+}
 .line-chart-graph .dygraph-legend > span {
   display: none;
 }

@@ -37,6 +37,7 @@ gulp.task('js', ['clean'], () => {
             sourceMap: true,
             rollup: require('rollup'),
             moduleName: 'fgp_kit',
+            useStrict: false,
             banner: '/**\n' +
             ' * fgp-kit\n' +
             ' * @version 1.0 - Homepage <http://www.future-grid.com.au>\n' +

@@ -9,7 +9,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
     typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
     (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS));
-}(this, function (angular,$,Dygraph,ngmap,chart_js) { 'use strict';
+}(this, function (angular,$,Dygraph,ngmap,chart_js) {
 
     angular = 'default' in angular ? angular['default'] : angular;
     $ = 'default' in $ ? $['default'] : $;
