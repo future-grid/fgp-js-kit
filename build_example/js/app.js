@@ -3,6 +3,8 @@
  */
 angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
 
+    $scope.colors = ["#ff0000","#14f738"];// default colors for "scatter" view!
+
     $scope.configuration = [{
         "html": "<titlecontainer id=\"item4094\"></titlecontainer>",
         "configTemplate": "",

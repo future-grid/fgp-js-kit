@@ -10,7 +10,8 @@ class fgpStage {
             applicationName: "=",
             deviceName: "=",
             server: "=",
-            configuration: '='
+            configuration: '=',
+            scatterColors: "="
         };
         this.replace = true;
         this.restrict = 'A';
@@ -23,6 +24,11 @@ class fgpStage {
 
     controller($scope, $element, $timeout, $rootScope, $compile, dataService) {
         $scope.showdata = {};
+
+        if ($scope.scatterColors && $scope.scatterColors.length > 0) {
+            dataService.setColors($scope.scatterColors);
+        }
+
 
         $rootScope['applicationName'] = $scope.applicationName;
         $rootScope['host'] = $scope.server;
