@@ -235,33 +235,20 @@ class dataAccessApi {
         }
 
         if (tree.children[0] == null && tree.children[1] == null) {
-            if (tree.start >= start && tree.end <= end) {
+            // is overlap?
+            if (((start >= tree.start) && start < tree.end)
+                ||
+                ((start > tree.start) && start <= tree.end)
+                ||
+                ((tree.start >= start) && tree.start < end)
+                ||
+                ((tree.start > start) && tree.start <= end)) {
                 if (buckets.filter(function (elem) {
                         return elem.id == tree.id
                     }).length == 0) {
                     buckets.push(tree);
                 }
             }
-
-            // start inclued in a bucket
-            if (start > tree.start && start < tree.end) {
-                if (buckets.filter(function (elem) {
-                        return elem.id == tree.id
-                    }).length == 0) {
-                    buckets.push(tree);
-                }
-            }
-
-            // end inclued in a bucket
-            if (end > tree.start && end < tree.end) {
-                if (buckets.filter(function (elem) {
-                        return elem.id == tree.id
-                    }).length == 0) {
-                    buckets.push(tree);
-                }
-            }
-
-
         }
     }
 
