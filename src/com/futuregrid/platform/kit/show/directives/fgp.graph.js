@@ -391,12 +391,14 @@ class fgpWidgetGraph {
                 // showRangeSelector: true,
                 axes: {
                     y: {
-                        valueRange: [0, 1]
+                        valueRange: [0, 1],
+                        axisLabelWidth : 80
                     },
                     y2: {
                         // set axis-related properties here
                         'labelsKMB': true,
-                        valueRange: [0, 1]
+                        valueRange: [0, 1],
+                        axisLabelWidth: 80
                     },
                     x: {
                         // datetime format
@@ -1145,7 +1147,7 @@ class fgpWidgetGraph {
                             'series': series,
                             'colors': colors,
                             'axes': {
-                                'y': {valueRange: [yRange.min, yRange.max]},
+                                'y': {valueRange: [yRange.min, yRange.max], axisLabelWidth: 80},
                                 'y2': {}
                             }
                             // showRangeSelector: true
@@ -1313,7 +1315,7 @@ class fgpWidgetGraph {
                                 'series': series,
                                 'colors': colors,
                                 'axes': {
-                                    'y': {valueRange: [yRange.min, yRange.max]}
+                                    'y': {valueRange: [yRange.min, yRange.max], axisLabelWidth: 80}
                                 }
                                 // showRangeSelector: true
                             });
@@ -1335,11 +1337,12 @@ class fgpWidgetGraph {
                                 'series': series,
                                 'colors': colors,
                                 'axes': {
-                                    'y': {valueRange: [yRange.min, yRange.max]},
+                                    'y': {valueRange: [yRange.min, yRange.max], axisLabelWidth: 80},
                                     "y2": {
                                         axisLabelFormatter: function (d) {
                                             return '';
-                                        }
+                                        },
+                                        axisLabelWidth: 80
                                     }
                                 }
                                 // showRangeSelector: true
@@ -1466,8 +1469,12 @@ class fgpWidgetGraph {
                                         'y2label': leftAndRight.right,
                                         'series': series,
                                         'axes': {
-                                            'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                            'y2': {'labelsKMB': true, valueRange: [yRanges[1].min, yRanges[1].max]}
+                                            'y': {valueRange: [yRanges[0].min, yRanges[0].max], axisLabelWidth: 80},
+                                            'y2': {
+                                                'labelsKMB': true,
+                                                valueRange: [yRanges[1].min, yRanges[1].max],
+                                                axisLabelWidth: 80
+                                            }
                                         },
                                         'colors': colors
                                         // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
@@ -1491,11 +1498,12 @@ class fgpWidgetGraph {
                                         'y2label': "",
                                         'series': series,
                                         'axes': {
-                                            'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
+                                            'y': {valueRange: [yRanges[0].min, yRanges[0].max], axisLabelWidth: 80},
                                             'y2': {
                                                 axisLabelFormatter: function (d) {
                                                     return '';
-                                                }
+                                                },
+                                                axisLabelWidth: 80
                                             }
                                         },
                                         'colors': colors
@@ -1663,8 +1671,12 @@ class fgpWidgetGraph {
                                     'series': series,
                                     'colors': colors,
                                     'axes': {
-                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
-                                        'y2': {'labelsKMB': true, valueRange: [yRanges[1].min, yRanges[1].max]}
+                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max], axisLabelWidth: 80},
+                                        'y2': {
+                                            'labelsKMB': true,
+                                            valueRange: [yRanges[1].min, yRanges[1].max],
+                                            axisLabelWidth: 80
+                                        }
                                     },
                                     'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
@@ -1688,11 +1700,12 @@ class fgpWidgetGraph {
                                     'series': series,
                                     'colors': colors,
                                     'axes': {
-                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max]},
+                                        'y': {valueRange: [yRanges[0].min, yRanges[0].max], axisLabelWidth: 80},
                                         'y2': {
                                             axisLabelFormatter: function (d) {
                                                 return '';
-                                            }
+                                            },
+                                            axisLabelWidth: 80
                                         }
                                     },
                                     'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
