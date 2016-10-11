@@ -1260,7 +1260,8 @@ class fgpWidgetGraph {
                 });
 
                 var chartData = [];
-
+                // time needs sort!!!
+                newTime = newTime.sort();
                 angular.forEach(newTime, function (nt) {
                     chartData.push([new Date(nt)]);
                 });
@@ -1279,7 +1280,8 @@ class fgpWidgetGraph {
                             }
                         }
                         if (flag != true) {
-                            timeTicket.push(null);
+                            // we should use "NaN"
+                            timeTicket.push(NaN);
                         }
                     });
                 });
