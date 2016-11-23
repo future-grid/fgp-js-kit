@@ -41,6 +41,18 @@ class fgpStage {
             graphBindingArray.push(msg);
         });
 
+        $scope.$on('bindChildRepeatEvent', function (evt, msg) {
+            angular.forEach($scope.configuration, function (item) {
+                if (item.id == msg.id) {
+                    var items = angular.element("body").find("#"+item.id).children();
+                    angular.forEach(items, function (item_new) {
+                        $scope.showdata[item_new.id] = item;
+                        findChild4Repeat(item.id, angular.element(item_new), $scope.configuration);
+                    });
+                }
+            });
+        });
+
 
         $scope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
             angular.forEach($scope.showdata, function (metadata, key) {
@@ -50,6 +62,26 @@ class fgpStage {
                 }
             });
         });
+
+
+        function findChild4Repeat(parentId, parentHtmlObj, arrayItems) {
+
+            for (var i = 0; i < arrayItems.length; i++) {
+                if ('edit' + parentId === arrayItems[i].parent) {
+                    var currentItem = angular.element(arrayItems[i].html_render);
+                    var id = arrayItems[i].id;
+                    $scope.showdata[id] = arrayItems[i];
+                    parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                    findChild(arrayItems[i].id, currentItem, arrayItems);
+                } else if ('detail_status_' + parentId === arrayItems[i].parent) {
+                    var currentItem = angular.element(arrayItems[i].html_render);
+                    var id = arrayItems[i].id;
+                    $scope.showdata[id] = arrayItems[i];
+                    parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)($scope));
+                    findChild(arrayItems[i].id, currentItem, arrayItems);
+                }
+            }
+        }
 
         function findChild(parentId, parentHtmlObj, arrayItems) {
 

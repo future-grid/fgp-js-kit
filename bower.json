@@ -20,6 +20,7 @@
     "Chart.js": "^2.1.6",
     "jquery": "^2.2.2",
     "moment": "^2.13.0",
-    "ngmap": "^1.17.1"
+    "ngmap": "^1.17.1",
+    "angular-ui-ace": "bower"
   }
 }

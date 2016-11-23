@@ -9,9 +9,9 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
     typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
     (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS));
-}(this, (function (angular,$,Dygraph,ngmap,chart_js) {
+}(this, (function (angular$1,$,Dygraph,ngmap,chart_js) {
 
-angular = 'default' in angular ? angular['default'] : angular;
+angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
 $ = 'default' in $ ? $['default'] : $;
 Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
 
@@ -54,9 +54,21 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         graphBindingArray.push(msg);
     });
 
+    $scope.$on('bindChildRepeatEvent', function (evt, msg) {
+        angular$1.forEach($scope.configuration, function (item) {
+            if (item.id == msg.id) {
+                var items = angular$1.element("body").find("#"+item.id).children();
+                angular$1.forEach(items, function (item_new) {
+                    $scope.showdata[item_new.id] = item;
+                    findChild4Repeat(item.id, angular$1.element(item_new), $scope.configuration);
+                });
+            }
+        });
+    });
+
 
     $scope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
-        angular.forEach($scope.showdata, function (metadata, key) {
+        angular$1.forEach($scope.showdata, function (metadata, key) {
             if (key == msg.id) {
                 msg.callback({data: metadata, from: 'show'});
                 return;
@@ -64,17 +76,18 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         });
     });
 
-    function findChild(parentId, parentHtmlObj, arrayItems) {
+
+    function findChild4Repeat(parentId, parentHtmlObj, arrayItems) {
 
         for (var i = 0; i < arrayItems.length; i++) {
             if ('edit' + parentId === arrayItems[i].parent) {
-                var currentItem = angular.element(arrayItems[i].html_render);
+                var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
                 $scope.showdata[id] = arrayItems[i];
                 parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
                 findChild(arrayItems[i].id, currentItem, arrayItems);
             } else if ('detail_status_' + parentId === arrayItems[i].parent) {
-                var currentItem = angular.element(arrayItems[i].html_render);
+                var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
                 $scope.showdata[id] = arrayItems[i];
                 parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)($scope));
@@ -83,9 +96,28 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         }
     }
 
-    angular.forEach($scope.configuration, function (item) {
+    function findChild(parentId, parentHtmlObj, arrayItems) {
+
+        for (var i = 0; i < arrayItems.length; i++) {
+            if ('edit' + parentId === arrayItems[i].parent) {
+                var currentItem = angular$1.element(arrayItems[i].html_render);
+                var id = arrayItems[i].id;
+                $scope.showdata[id] = arrayItems[i];
+                parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                findChild(arrayItems[i].id, currentItem, arrayItems);
+            } else if ('detail_status_' + parentId === arrayItems[i].parent) {
+                var currentItem = angular$1.element(arrayItems[i].html_render);
+                var id = arrayItems[i].id;
+                $scope.showdata[id] = arrayItems[i];
+                parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)($scope));
+                findChild(arrayItems[i].id, currentItem, arrayItems);
+            }
+        }
+    }
+
+    angular$1.forEach($scope.configuration, function (item) {
         if ('workingArea' === item.parent) {
-            var currentItem = angular.element(item.html_render);
+            var currentItem = angular$1.element(item.html_render);
             $scope.showdata[item.id] = item;
             $element.append($compile(currentItem)($scope));
             findChild(item.id, currentItem, $scope.configuration);
@@ -107,7 +139,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
 
     // all item created;
     $timeout(function () {
-        angular.forEach(graphBindingArray, function (graph) {
+        angular$1.forEach(graphBindingArray, function (graph) {
             $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
         });
     });
@@ -174,7 +206,7 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
                 contentType: "application/json",
                 dataType: 'jsonp',
                 success: function (types) {
-                    angular.forEach(types, function (type) {
+                    angular$1.forEach(types, function (type) {
                         Object.defineProperty(data, type.name, {
                             get: function () {
                                 var result = null;
@@ -281,13 +313,13 @@ dataAccessApi.prototype.fillChildrenTree = function fillChildrenTree (buckets, t
 
     if (tree.children[0] == null && tree.children[1] == null) {
 
-        angular.forEach(buckets, function (value, key) {
+        angular$1.forEach(buckets, function (value, key) {
             if (key == tree.id && value != null) {
                 tree.data = value.array;
                 tree['size'] = value.size;
 
                 var flag = false;
-                angular.forEach(showData, function (data) {
+                angular$1.forEach(showData, function (data) {
                     if (data.id == tree.id) {
                         data.data = tree.data;
                         tree['size'] = value.size;
@@ -314,13 +346,13 @@ dataAccessApi.prototype.fillTree = function fillTree (buckets, tree, showData) {
     }
 
     if (tree.children[0] == null && tree.children[1] == null) {
-        angular.forEach(buckets, function (value, key) {
+        angular$1.forEach(buckets, function (value, key) {
             if (key == tree.id) {
                 tree.data = value.array;
                 tree['size'] = value.size;
 
                 var flag = false;
-                angular.forEach(showData, function (data) {
+                angular$1.forEach(showData, function (data) {
                     if (data.id == tree.id) {
                         data.data = tree.data;
                         tree['size'] = value.size;
@@ -380,12 +412,12 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
     var devicesNullBucket = [];
     var calTree = this.calTree;
     var fillChildrenTree = this.fillChildrenTree;
-    angular.forEach(deviceInfo, function (device, index) {
+    angular$1.forEach(deviceInfo, function (device, index) {
         var bucketKeys = [];
         calTree(bucketKeys, device.tree, start, end);
         var nullBucket = [];
         // get null buckets
-        angular.forEach(bucketKeys, function (bucket) {
+        angular$1.forEach(bucketKeys, function (bucket) {
             if (bucket.data == null) {
                 nullBucket.push(bucket.id);
             }
@@ -412,13 +444,13 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
         }).then(
             function (response) {
                 // response.data
-                angular.forEach(response.data, function (deviceData) {
+                angular$1.forEach(response.data, function (deviceData) {
 
                     var currentBucketShowData = null;
-                    angular.forEach(bucketsData, function (showData) {
+                    angular$1.forEach(bucketsData, function (showData) {
                         if (showData.device == deviceData.device) {
                             currentBucketShowData = showData.data; //  bucketKeys
-                            angular.forEach(deviceInfo, function (device, index) {
+                            angular$1.forEach(deviceInfo, function (device, index) {
                                 if (deviceData.device == device.name) {
                                     fillChildrenTree(deviceData.data, device.tree, currentBucketShowData);
                                 }
@@ -448,7 +480,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, applic
     calTree(bucketKeys, tree, start, end);
     var nullBucket = [];
     // get null buckets
-    angular.forEach(bucketKeys, function (bucket) {
+    angular$1.forEach(bucketKeys, function (bucket) {
         if (bucket.data == null) {
             nullBucket.push(bucket.id);
         }
@@ -837,7 +869,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             } else {
 
                 var ranges = [];
-                angular.forEach(g.xAxisRange(), function (range) {
+                angular$1.forEach(g.xAxisRange(), function (range) {
                     if (range instanceof Date) {
                         ranges.push(range.getTime());
                     } else {
@@ -1072,7 +1104,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
 
             scope.$on('bindFatherGraphEvent', function (event, data) {
-                angular.forEach(data.children, function (child) {
+                angular$1.forEach(data.children, function (child) {
                     if (child == attrs.id) {
                         Dygraph.synchronize([scope.currentChart].concat(data.parent), {
                             zoom: true,
@@ -1157,7 +1189,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.fixGraphWithGap = function () {
             if ($scope.currentChart && $scope.fixInterval) {
                 var currentInterval = -1;
-                angular.forEach($scope.intevals.device, function (item) {
+                angular$1.forEach($scope.intevals.device, function (item) {
                     if (item.name === $scope.currentIntervalName) {
                         currentInterval = item.interval;
                     }
@@ -1192,7 +1224,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
             } else if ($scope.currentChart && !$scope.fixInterval) {
                 noneFixed = [];
-                angular.copy($scope.currentChart.file_, noneFixed);
+                angular$1.copy($scope.currentChart.file_, noneFixed);
                 $scope.currentChart.updateOptions({file: noneFixed});
             }
 
@@ -1200,9 +1232,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.fixGraphWithGap_click = function () {
             if ($scope.currentChart && !$scope.fixInterval) {
                 noneFixed = [];
-                angular.copy($scope.currentChart.file_, noneFixed);
+                angular$1.copy($scope.currentChart.file_, noneFixed);
                 var currentInterval = -1;
-                angular.forEach($scope.intevals.device, function (item) {
+                angular$1.forEach($scope.intevals.device, function (item) {
                     if (item.name === $scope.currentIntervalName) {
                         currentInterval = item.interval;
                     }
@@ -1269,7 +1301,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     if (nObj == -1) {
                         var rangeLevel = null;
                         var otherLevels = [];
-                        angular.forEach(metadata.data.groups[1].collections, function (level) {
+                        angular$1.forEach(metadata.data.groups[1].collections, function (level) {
                             if (level.rows.length > 0) {
                                 if (rangeLevel != null) {
                                     otherLevels.push(rangeLevel);
@@ -1293,7 +1325,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             var rangeLevel = null;
                             var otherLevels = [];
-                            angular.forEach(metadata.data.groups[2].collections, function (level) {
+                            angular$1.forEach(metadata.data.groups[2].collections, function (level) {
                                 if (level.rows.length > 0) {
                                     if (rangeLevel != null) {
                                         otherLevels.push(rangeLevel);
@@ -1330,7 +1362,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     //device first level
                     var rangeLevel = null;
                     var otherLevels = [];
-                    angular.forEach(metadata.data.groups[1].collections, function (level) {
+                    angular$1.forEach(metadata.data.groups[1].collections, function (level) {
                         if (level.rows.length > 0) {
                             if (rangeLevel != null) {
                                 otherLevels.push(rangeLevel);
@@ -1374,7 +1406,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     }
                     $scope.currentIntervalName = "";
 
-                    angular.forEach(conf, function (config) {
+                    angular$1.forEach(conf, function (config) {
                         if (config.interval == expectedInterval) {
                             $scope.currentIntervalName = config.name;
                         }
@@ -1395,8 +1427,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var deviceInfo = [];
                             var currentStore = "";
                             // has problem....
-                            angular.forEach($scope.childTrees, function (device) {
-                                angular.forEach(device.trees, function (tree, index) {
+                            angular$1.forEach($scope.childTrees, function (device) {
+                                angular$1.forEach(device.trees, function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         currentStore = tree.store;
                                         deviceInfo.push({name: device.name, tree: tree.tree});
@@ -1406,9 +1438,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                             dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end).then(function (data) {
                                 var showData = [];
-                                angular.forEach(data, function (arr) {
+                                angular$1.forEach(data, function (arr) {
                                     var deviceData = [];
-                                    angular.forEach(arr.data, function (bucket) {
+                                    angular$1.forEach(arr.data, function (bucket) {
                                         if (bucket.data != null) {
                                             Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
                                         }
@@ -1457,13 +1489,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.loadingShow = false;
                         } else {
                             // cal tree
-                            angular.forEach($scope.trees, function (tree, index) {
+                            angular$1.forEach($scope.trees, function (tree, index) {
                                 if (expectedInterval == tree.frequency && index != 0) {
                                     // send request
                                     dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end).then(function (data) {
                                         // udpate chart
                                         var showData = [];
-                                        angular.forEach(data, function (arr) {
+                                        angular$1.forEach(data, function (arr) {
                                             Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
                                         });
                                         showData = showData.filter(function (obj) {
@@ -1533,7 +1565,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var trees = data.trees;
             $scope.trees = trees;
             var rangeTree = null;
-            angular.forEach(trees, function (tree) {
+            angular$1.forEach(trees, function (tree) {
                 if (tree.range) {
                     rangeTree = tree;
                 }
@@ -1582,18 +1614,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.intevals.device = [];
             //range data with all device
             $scope.childTrees = [];
-            angular.forEach(deviceDatas, function (deviceData) {
+            angular$1.forEach(deviceDatas, function (deviceData) {
                 var device = deviceData.device;
                 var trees = deviceData.trees;
                 $scope.childTrees.push({name: device.name, trees: trees});
                 var rangeTree = null;
-                angular.forEach(trees, function (tree) {
+                angular$1.forEach(trees, function (tree) {
                     if (tree.range) {
                         rangeTree = tree;
                     }
 
                     var flag = false;
-                    angular.forEach($scope.intevals.device, function (interval) {
+                    angular$1.forEach($scope.intevals.device, function (interval) {
                         if (interval.name == tree.store && interval.interval == tree.frequency) {
                             // has same one
                             flag = true;
@@ -1640,10 +1672,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var leftAndRight = {left: relationConfig.leftYAxis, right: relationConfig.rightYAxis};
             var allLines = [];
             var allXLabels = [];
-            angular.forEach(devicesInfo, function (device, key) {
-                angular.forEach(device.data, function (item) {
+            angular$1.forEach(devicesInfo, function (device, key) {
+                angular$1.forEach(device.data, function (item) {
                     var flag = false;
-                    angular.forEach(allXLabels, function (label) {
+                    angular$1.forEach(allXLabels, function (label) {
                         if (label.getTime() == item.timestamp) {
                             flag = true;
                         }
@@ -1661,7 +1693,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             });
 
             // make all line
-            angular.forEach(allXLabels, function (label) {
+            angular$1.forEach(allXLabels, function (label) {
                 allLines.push([label]);
             });
 
@@ -1669,7 +1701,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var yRange = {min: null, max: null};
             var showY2axis = false;
             var counter = 0;
-            angular.forEach(devicesInfo, function (device, key) {
+            angular$1.forEach(devicesInfo, function (device, key) {
                 if ($scope.defaultColors[counter]) {
                     colors.push($scope.defaultColors[counter]);
                 } else {
@@ -1677,7 +1709,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
                 counter++;
 
-                angular.forEach(collections, function (collection) {
+                angular$1.forEach(collections, function (collection) {
                     if (collection.name == device.range.store) {
                         $scope.currentIntervalName = device.range.store;
                         var originalData = device.data;
@@ -1693,10 +1725,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         // make a line
                         var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                         // add value
-                        angular.forEach(allLines, function (realLine, index) {
+                        angular$1.forEach(allLines, function (realLine, index) {
 
                             var flag = false;
-                            angular.forEach(originalData, function (odata) {
+                            angular$1.forEach(originalData, function (odata) {
                                 if (realLine[0].getTime() == odata.timestamp) {
                                     try {
                                         var value = f(odata);
@@ -1759,8 +1791,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     };
                 } else {
                     var newLines = [];
-                    angular.copy(allLines, newLines);
-                    angular.forEach(newLines, function (line) {
+                    angular$1.copy(allLines, newLines);
+                    angular$1.forEach(newLines, function (line) {
                         line.push(NaN);
                     });
                     series["span_y2"] = {'axis': 'y2'};
@@ -1807,7 +1839,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var yRange = {min: null, max: null};
             var counter = 0;
             var showY2axis = null;
-            angular.forEach(allData, function (device) {
+            angular$1.forEach(allData, function (device) {
                 if ($scope.defaultColors[counter]) {
                     colors.push($scope.defaultColors[counter]);
                 } else {
@@ -1817,7 +1849,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                 if (device.data.length > 0) {
                     labels.push(device.device);
-                    angular.forEach(collections, function (collection) {
+                    angular$1.forEach(collections, function (collection) {
                         if (collection.name == store) {
                             $scope.currentIntervalName = store;
                             if (collection.rows[0].yaxis == 0) {
@@ -1830,7 +1862,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var tempData = [];
                             var tempTime = [];
                             // make data
-                            angular.forEach(device.data, function (data) {
+                            angular$1.forEach(device.data, function (data) {
                                 var dateTime = new Date(data.timestamp);
                                 try {
                                     var value = f(data);
@@ -1869,13 +1901,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var chartData = [];
             // time needs sort!!!
             newTime = newTime.sort();
-            angular.forEach(newTime, function (nt) {
+            angular$1.forEach(newTime, function (nt) {
                 chartData.push([new Date(nt)]);
             });
 
 
-            angular.forEach(newLines, function (line) {
-                angular.forEach(chartData, function (timeTicket) {
+            angular$1.forEach(newLines, function (line) {
+                angular$1.forEach(chartData, function (timeTicket) {
                     // line data
                     var flag = false;
                     var lineData = line.data;
@@ -1926,8 +1958,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                     } else {
                         var newLines = [];
-                        angular.copy(chartData, newLines);
-                        angular.forEach(newLines, function (line) {
+                        angular$1.copy(chartData, newLines);
+                        angular$1.forEach(newLines, function (line) {
                             line.push(NaN);
                         });
                         series["span_y2"] = {axis: 'y2'};
@@ -1978,15 +2010,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var allLines = [];
             //0 for y  1 for y2
             var yRanges = [{min: null, max: null}, {min: null, max: null}];
-            angular.forEach(collections, function (collection) {
+            angular$1.forEach(collections, function (collection) {
                 if (collection.name == store) {
-                    angular.forEach(allData, function (line) {
+                    angular$1.forEach(allData, function (line) {
                         allLines.push([new Date(line.timestamp)]);
                     });
 
                     // var yRange = {'min': null, 'max': null};
                     var showY2axis = false;
-                    angular.forEach(collection.rows, function (row) {
+                    angular$1.forEach(collection.rows, function (row) {
                         labels.push(row.label);
                         colors.push(row.color);
 
@@ -1999,7 +2031,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         var f = new Function("data", "with(data) { if(" + row.value + ")return " + row.value + ";return null;}");
                         // add value
                         var counter = 0;
-                        angular.forEach(allLines, function (realLine) {
+                        angular$1.forEach(allLines, function (realLine) {
                             try {
                                 var value = f(allData[counter]);
                                 realLine.push(value);
@@ -2044,7 +2076,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                     });
 
-                    angular.forEach(yRanges, function (yrange) {
+                    angular$1.forEach(yRanges, function (yrange) {
                         if (yrange.min == yrange.max && yrange.min != null && yrange.max != null) {
                             yrange.min = yrange.min - (yrange.min) * 0.10;
                             yrange.max = yrange.max + (yrange.max) * 0.10;
@@ -2087,8 +2119,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             } else {
 
                                 var newLines = [];
-                                angular.copy(allLines, newLines);
-                                angular.forEach(newLines, function (line) {
+                                angular$1.copy(allLines, newLines);
+                                angular$1.forEach(newLines, function (line) {
                                     line.push(NaN);
                                 });
 
@@ -2144,16 +2176,16 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var allLines = [];
             //0 for y  1 for y2
             var yRanges = [{min: null, max: null}, {min: null, max: null}];
-            angular.forEach(collections, function (collection) {
+            angular$1.forEach(collections, function (collection) {
                 if (collection.name == store) {
                     $scope.currentIntervalName = store;
-                    angular.forEach(allData, function (line) {
+                    angular$1.forEach(allData, function (line) {
                         allLines.push([new Date(line.timestamp)]);
                     });
 
                     $scope.rangeSeriesNumber = collection.rows.length;
                     var showY2axis = false;
-                    angular.forEach(collection.rows, function (row) {
+                    angular$1.forEach(collection.rows, function (row) {
                         labels.push(row.label);
                         colors.push(row.color);
 
@@ -2167,7 +2199,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
                         // add value
                         var counter = 0;
-                        angular.forEach(allLines, function (realLine) {
+                        angular$1.forEach(allLines, function (realLine) {
                             try {
                                 var value = f(allData[counter]);
                                 realLine.push(value);
@@ -2239,8 +2271,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 series_range["span_y2"] = {axis: 'y2'};
                                 $scope.rangeSeries = series_range;
                                 var newLines = [];
-                                angular.copy(allLines, newLines);
-                                angular.forEach(newLines, function (line) {
+                                angular$1.copy(allLines, newLines);
+                                angular$1.forEach(newLines, function (line) {
                                     line.push(NaN);
                                 });
                                 $scope.rangeSelectorBar.updateOptions({
@@ -2253,7 +2285,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         }
 
-                        angular.forEach(yRanges, function (yrange) {
+                        angular$1.forEach(yRanges, function (yrange) {
                             if (yrange.min == yrange.max && yrange.min != null && yrange.max != null) {
                                 yrange.min = yrange.min - (yrange.min) * 0.10;
                                 yrange.max = yrange.max + (yrange.max) * 0.10;
@@ -2290,8 +2322,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             series['span_y2'] = {axis: 'y2'};
                             var newLines = [];
-                            angular.copy(allLines, newLines);
-                            angular.forEach(newLines, function (line) {
+                            angular$1.copy(allLines, newLines);
+                            angular$1.forEach(newLines, function (line) {
                                 line.push(NaN);
                             });
                             $scope.rangeConfig = {
@@ -2531,7 +2563,7 @@ fgpWidgetMap.prototype.controller = function controller ($scope, $element) {
 
             // show one point.
             var f = null;
-            angular.forEach($scope.showdata.metadata.data, function (item) {
+            angular$1.forEach($scope.showdata.metadata.data, function (item) {
                 try {
                     f = new Function("device", "with(device) { return " + item.value + ";}");
                     var result = f(deviceData.device);
@@ -2642,7 +2674,7 @@ fgpWidgetDeviceDetail.prototype.controller = function controller ($scope, $eleme
             $scope.data = [];
             //get all columns
             var f = null;
-            angular.forEach($scope.showdata.metadata.data, function (item) {
+            angular$1.forEach($scope.showdata.metadata.data, function (item) {
                 try {
                     f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
                     item.value = f(deviceData.device);
@@ -2790,7 +2822,7 @@ fgpWidgetPie.prototype.controller = function controller ($scope, $element, $time
             var colors = [];
             //get all columns
             var f = null;
-            angular.forEach($scope.showdata.metadata.data, function (item) {
+            angular$1.forEach($scope.showdata.metadata.data, function (item) {
                 try {
                     f = new Function("device", "with(device) { if(" + item.value + ") return " + item.value + ";}");
                     item.value = f(deviceData.device);
@@ -2813,7 +2845,7 @@ fgpWidgetPie.prototype.controller = function controller ($scope, $element, $time
             $scope.pieData = {labels: [], value: []};
             $timeout(function () {
                 // create data
-                angular.forEach($scope.data, function (item) {
+                angular$1.forEach($scope.data, function (item) {
                     $scope.pieData.labels.push(item.label);
                     $scope.pieData.value.push(item.value);
                 });
@@ -2838,6 +2870,175 @@ fgpWidgetPie.buildFactory = function buildFactory ($timeout) {
     return fgpWidgetPie.instance;
 };
 fgpWidgetPie.$inject = ['$timeout'];
+
+/**
+ * Created by eric on 22/11/16.
+ */
+
+var fgpDockerButton = function fgpDockerButton() {
+    this.restrict = 'E';
+    this.scope = {};
+};
+
+
+fgpDockerButton.prototype.template = function template (element, attrs) {
+    var show_dom = '<div class="col-xs-12 btn-group" role="group" aria-label="...">' +
+        '<button type="button" class="btn btn-success btn-xs" ' +
+        ' ng-click="action(button)" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
+        ' aria-hidden="true"></i>' +
+        '</button>' +
+        '</div>';
+    return show_dom;
+};
+
+fgpDockerButton.prototype.controller = function controller ($scope, $element) {
+    // get configuration
+    var id = $element.attr("id");
+    var configuration = null;
+    $scope.$emit('fetchWidgetMetadataEvent', {
+        id: id, callback: function (data) {
+            if (data) {
+                configuration = data.data.metadata.data;
+            }
+        }
+    });
+    // how many buttons?
+    $scope.buttons = [];
+
+    angular.forEach(configuration, function (item) {
+       if(item.label == "buttons"){
+           $scope.buttons = item.value;
+       }
+    });
+
+    //
+    $scope.action = function (button) {
+        // send request through $http
+
+
+
+
+
+
+
+
+
+    };
+};
+
+
+fgpDockerButton.buildFactory = function buildFactory () {
+    fgpDockerButton.instance = new fgpDockerButton();
+    return fgpDockerButton.instance;
+};
+
+/**
+ * Created by ericwang on 15/06/2016.
+ */
+var fgpWidgetRepeatContainer = function fgpWidgetRepeatContainer() {
+    this.restrict = 'E';
+    this.scope = {};
+};
+
+fgpWidgetRepeatContainer.prototype.template = function template (element, attrs) {
+    var flag = attrs.hasOwnProperty("shown");
+    var showTitle = attrs.hasOwnProperty("showtitle");
+    var element_id = attrs.id;
+    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items">' +
+        '<div class="{{css.width}}">' +
+        '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
+        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}}</div>' +
+        '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+        '</div>' +
+        '</div></div>';
+    var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items">' +
+        '<div class="{{css.width}}" style="margin-bottom:15px;">' +
+        '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
+        '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+        '</div>' +
+        '</div></div>';
+
+    // show or design
+    if (flag) {
+        if (showTitle) {
+            return dom_show;
+        } else {
+            // without title
+            return dom_show_notitle;
+        }
+    }
+};
+
+fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout) {
+    // only show
+    var element_id = $element.attr("id");
+
+    var widgetData = null;
+
+    $scope.$emit('fetchWidgetMetadataEvent', {
+        id: element_id, callback: function (data) {
+            if (data) {
+                widgetData = data;
+            }
+        }
+    });
+    // all items
+    $scope.items = [];
+
+    var metadata = widgetData.data.metadata;
+    $scope.css = {};
+    $scope.css["color"] = metadata.css.color;
+    $scope.css["width"] = metadata.css.width;
+    $scope.css["border"] = {};
+    $scope.css["border"]["color"] = metadata.css.border.color;
+    $scope.css["background"] = {};
+    $scope.css["background"]["color"] = metadata.css.background.color;
+    $scope.css["title"] = metadata.css.title;
+    $scope.css["title"]["color"] = metadata.css.title.color;
+    $scope.css["title"]["show"] = metadata.css.title.show;
+
+    $scope.data = {};
+    if (metadata.data) {
+        var script = metadata.data.source.script;
+        // run script
+        // $http({
+        // method: 'POST',
+        // url: 'http://example.com',
+        // data: { script: script}
+        // }).then(function (data) {
+        //
+        //
+        //
+        //
+        // }, function (error) {
+        // console.error(error);
+        // });
+        $scope.items.push({name:"a"});
+        $scope.items.push({name:"b"});
+        $scope.items.push({name:"c"});
+        $scope.items.push({name:"d"});
+
+        // I'm ready. please give all my children to me~
+        $timeout(function () {
+            // call stage
+            $scope.$emit('bindChildRepeatEvent', {
+                id: element_id
+            });
+        });
+
+
+
+    }
+
+};
+
+
+fgpWidgetRepeatContainer.buildFactory = function buildFactory () {
+    fgpWidgetRepeatContainer.instance = new fgpWidgetRepeatContainer();
+    return fgpWidgetRepeatContainer.instance;
+};
+
+fgpWidgetRepeatContainer.$inject = [];
 
 /**
  * Created by ericwang on 21/06/2016.
@@ -2898,9 +3099,9 @@ fgpWidgetChartTable.prototype.controller = function controller ($scope, $element
             var groupName = chartData.group;
             var columns = [];
             //get group and collection configuration
-            angular.forEach($scope.showdata.metadata.data.groups, function (group) {
+            angular$1.forEach($scope.showdata.metadata.data.groups, function (group) {
                 if (group.name == groupName) {
-                    angular.forEach(group.collections, function (collection) {
+                    angular$1.forEach(group.collections, function (collection) {
                         if (collection.name === collectionName) {
                             columns = collection.rows;
                         }
@@ -2911,13 +3112,13 @@ fgpWidgetChartTable.prototype.controller = function controller ($scope, $element
 
             $scope.sampledata.columns = [];
 
-            angular.forEach(columns, function (column) {
+            angular$1.forEach(columns, function (column) {
                 $scope.sampledata.columns.push({label: column.label, formatter: column.formatter});
             });
             $scope.sampledata.values = [];
-            angular.forEach(columns, function (column) {
+            angular$1.forEach(columns, function (column) {
                 var f = new Function("data", "with(data) { if(" + column.value + ") return " + column.value + ";return '';}");
-                angular.forEach(chartData.data.data, function (record, index) {
+                angular$1.forEach(chartData.data.data, function (record, index) {
                     if ($scope.sampledata.values.length < chartData.data.data.length) {
                         //add new one
                         var item = {};
@@ -2930,9 +3131,9 @@ fgpWidgetChartTable.prototype.controller = function controller ($scope, $element
             });
 
             var cleanData = [];
-            angular.forEach($scope.sampledata.values, function (value, index) {
+            angular$1.forEach($scope.sampledata.values, function (value, index) {
                 var flag = false;
-                angular.forEach(columns, function (column) {
+                angular$1.forEach(columns, function (column) {
                     if (value[column.label] && value[column.label] != "") {
                         flag = true;
                     }
@@ -2964,7 +3165,7 @@ fgpWidgetChartTable.buildFactory = function buildFactory () {
  * Created by ericwang on 10/06/2016.
  */
 // angular module
-angular.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
+angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
     .directive('widgetGraph', fgpWidgetGraph.buildFactory)
     .directive('widgetPageTitle', fgpWidgetPageTitle.buildFactory)
@@ -2973,6 +3174,8 @@ angular.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildF
     .directive('widgetDeviceDetail', fgpWidgetDeviceDetail.buildFactory)
     .directive('widgetDeviceSpan', fgpWidgetSpan.buildFactory)
     .directive('widgetPie', fgpWidgetPie.buildFactory)
+    .directive('widgetDockerButton', fgpDockerButton.buildFactory)
+    .directive('widgetRepeatContainer', fgpWidgetRepeatContainer.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory).filter('tableformatter', ['$filter', function ($filter) {
     return function (input, obj, field, formatter) {
         if (formatter) {

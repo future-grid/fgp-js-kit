@@ -13,6 +13,8 @@ import fgpWidgetStatus from './com/futuregrid/platform/kit/show/directives/fgp.s
 import fgpWidgetDetail from './com/futuregrid/platform/kit/show/directives/fgp.device.detail.js';
 import fgpWidgetSpan from './com/futuregrid/platform/kit/show/directives/fgp.span.js';
 import fgpWidgetPie from './com/futuregrid/platform/kit/show/directives/fgp.pie.js';
+import fgpDockerButton from './com/futuregrid/platform/kit/show/directives/fgp.docker.button.js';
+import fgpWidgetRepeatContainer from './com/futuregrid/platform/kit/show/directives/fgp.repeat.container';
 import fgpWidgetChartTable from './com/futuregrid/platform/kit/show/directives/fgp.chart.table.js';
 // angular module
 angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
@@ -24,6 +26,8 @@ angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory
     .directive('widgetDeviceDetail', fgpWidgetDetail.buildFactory)
     .directive('widgetDeviceSpan', fgpWidgetSpan.buildFactory)
     .directive('widgetPie', fgpWidgetPie.buildFactory)
+    .directive('widgetDockerButton', fgpDockerButton.buildFactory)
+    .directive('widgetRepeatContainer', fgpWidgetRepeatContainer.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory).filter('tableformatter', ['$filter', function ($filter) {
     return function (input, obj, field, formatter) {
         if (formatter) {
