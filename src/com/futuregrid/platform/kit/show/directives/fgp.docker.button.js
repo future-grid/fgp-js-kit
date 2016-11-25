@@ -11,11 +11,14 @@ export default class fgpDockerButton {
 
 
     template(element, attrs) {
-        var show_dom = '<div class="col-xs-12 btn-group" role="group" aria-label="...">' +
+        var deviceKey = attrs.deviceKey;
+        var show_dom = '<div class="col-xs-12 btn-group" role="group" style="padding: 2px;" aria-label="...">' +
+            '<div style="float: right;">' +
             '<button type="button" class="btn btn-success btn-xs" ' +
-            ' ng-click="action(button)" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
+            ' ng-click="action(button,\'' + deviceKey + '\')" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
             ' aria-hidden="true"></i>' +
             '</button>' +
+            '</div>' +
             '</div>';
         return show_dom;
     }
@@ -35,21 +38,29 @@ export default class fgpDockerButton {
         $scope.buttons = [];
 
         angular.forEach(configuration, function (item) {
-           if(item.label == "buttons"){
-               $scope.buttons = item.value;
-           }
+            if (item.label == "buttons") {
+                $scope.buttons = item.value;
+            }
         });
 
-        //
-        $scope.action = function (button) {
+        // submit "action" to rest api
+        $scope.action = function (button, deviceKey) {
             // send request through $http
-
-
-
-
-
-
-
+            $http({
+                method: 'POST',
+                url: '/api/docker/hosts/action',
+                data: {
+                    language: button.language,
+                    func: button.func,
+                    script: button.script,
+                    deviceName: '',
+                    key: deviceKey
+                }
+            }).then(function successCallback(response) {
+                console.info(response.data);
+            }, function errorCallback(response) {
+                console.error(response.data);
+            });
 
 
         };

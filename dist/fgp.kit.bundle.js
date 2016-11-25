@@ -2882,11 +2882,14 @@ var fgpDockerButton = function fgpDockerButton() {
 
 
 fgpDockerButton.prototype.template = function template (element, attrs) {
-    var show_dom = '<div class="col-xs-12 btn-group" role="group" aria-label="...">' +
+    var deviceKey = attrs.deviceKey;
+    var show_dom = '<div class="col-xs-12 btn-group" role="group" style="padding: 2px;" aria-label="...">' +
+        '<div style="float: right;">' +
         '<button type="button" class="btn btn-success btn-xs" ' +
-        ' ng-click="action(button)" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
+        ' ng-click="action(button,\'' + deviceKey + '\')" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
         ' aria-hidden="true"></i>' +
         '</button>' +
+        '</div>' +
         '</div>';
     return show_dom;
 };
@@ -2906,21 +2909,29 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element) {
     $scope.buttons = [];
 
     angular.forEach(configuration, function (item) {
-       if(item.label == "buttons"){
-           $scope.buttons = item.value;
-       }
+        if (item.label == "buttons") {
+            $scope.buttons = item.value;
+        }
     });
 
-    //
-    $scope.action = function (button) {
+    // submit "action" to rest api
+    $scope.action = function (button, deviceKey) {
         // send request through $http
-
-
-
-
-
-
-
+        $http({
+            method: 'POST',
+            url: '/api/docker/hosts/action',
+            data: {
+                language: button.language,
+                func: button.func,
+                script: button.script,
+                deviceName: '',
+                key: deviceKey
+            }
+        }).then(function successCallback(response) {
+            console.info(response.data);
+        }, function errorCallback(response) {
+            console.error(response.data);
+        });
 
 
     };
@@ -2935,24 +2946,29 @@ fgpDockerButton.buildFactory = function buildFactory () {
 /**
  * Created by ericwang on 15/06/2016.
  */
-var fgpWidgetRepeatContainer = function fgpWidgetRepeatContainer() {
+var fgpWidgetRepeatContainer = function fgpWidgetRepeatContainer($http) {
     this.restrict = 'E';
     this.scope = {};
+    this._$http = $http;
 };
 
 fgpWidgetRepeatContainer.prototype.template = function template (element, attrs) {
     var flag = attrs.hasOwnProperty("shown");
     var showTitle = attrs.hasOwnProperty("showtitle");
     var element_id = attrs.id;
-    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items">' +
-        '<div class="{{css.width}}">' +
+    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" style="padding-left: 2px; padding-right: 2px;">' +
+        '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
-        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}}</div>' +
-        '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}} : {{item.name}}</div>' +
+        '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}">' +
+        '<div style="float:left;">' +
+        '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+        '</div>'+
+        '</div>' +
         '</div>' +
         '</div></div>';
     var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items">' +
-        '<div class="{{css.width}}" style="margin-bottom:15px;">' +
+        '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
         '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
         '</div>' +
@@ -2969,7 +2985,7 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
     }
 };
 
-fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout) {
+fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout, $http, $location, $stateParams) {
     // only show
     var element_id = $element.attr("id");
 
@@ -2985,6 +3001,9 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
     // all items
     $scope.items = [];
 
+    $scope.labelstyle = ["default","primary","success","info","warning","danger"];
+
+
     var metadata = widgetData.data.metadata;
     $scope.css = {};
     $scope.css["color"] = metadata.css.color;
@@ -2998,26 +3017,25 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
     $scope.css["title"]["show"] = metadata.css.title.show;
 
     $scope.data = {};
-    if (metadata.data) {
-        var script = metadata.data.source.script;
-        // run script
-        // $http({
-        // method: 'POST',
-        // url: 'http://example.com',
-        // data: { script: script}
-        // }).then(function (data) {
-        //
-        //
-        //
-        //
-        // }, function (error) {
-        // console.error(error);
-        // });
-        $scope.items.push({name:"a"});
-        $scope.items.push({name:"b"});
-        $scope.items.push({name:"c"});
-        $scope.items.push({name:"d"});
 
+    $scope.labels =[];
+
+    var page = $stateParams.type;
+    var applicationName = $stateParams.applicationName;
+    var device = $stateParams.device;
+
+
+    if (metadata.data) {
+        $scope.labels = metadata.data.datasource.labels.split(" ");
+        // run script
+        $http({
+            method: 'GET',
+            url: '/api/docker/platformnodes/' + page + '/' + device
+        }).then(function (data) {
+            $scope.items = data.data;
+        }, function (error) {
+            console.error(error);
+        });
         // I'm ready. please give all my children to me~
         $timeout(function () {
             // call stage
@@ -3027,18 +3045,63 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
         });
 
 
-
     }
 
 };
 
 
-fgpWidgetRepeatContainer.buildFactory = function buildFactory () {
-    fgpWidgetRepeatContainer.instance = new fgpWidgetRepeatContainer();
+fgpWidgetRepeatContainer.buildFactory = function buildFactory ($http) {
+    fgpWidgetRepeatContainer.instance = new fgpWidgetRepeatContainer($http);
     return fgpWidgetRepeatContainer.instance;
 };
 
-fgpWidgetRepeatContainer.$inject = [];
+fgpWidgetRepeatContainer.$inject = ['$http'];
+
+/**
+ * Created by eric on 25/11/16.
+ */
+var fgpImage = function fgpImage() {
+    this.restrict = 'E';
+    this.scope = {};
+};
+
+fgpImage.prototype.template = function template (scope, element) {
+    return '' +
+        '<div><img src="{{url}}" style="width:{{css.width}}px;height:{{css.height}}px;"></div>' +
+        '';
+};
+
+fgpImage.prototype.controller = function controller ($scope, $element) {
+
+    var element_id = $element.attr("id");
+    var widgetData = null;
+    $scope.$emit('fetchWidgetMetadataEvent', {
+        id: element_id, callback: function (data) {
+            if (data) {
+                widgetData = data;
+            }
+        }
+    });
+
+    $scope.showdata = widgetData.data;
+    $scope.css = {
+        width: "0",
+        height: "0"
+    };
+
+    $scope.url = "";
+    if ($scope.showdata.metadata.css) {
+        $scope.css = $scope.showdata.metadata.css;
+    }
+    if($scope.showdata.metadata.data){
+        $scope.url = $scope.showdata.metadata.data.url;
+    }
+};
+
+fgpImage.buildFactory = function buildFactory () {
+    fgpImage.instance = new fgpImage();
+    return fgpImage.instance;
+};
 
 /**
  * Created by ericwang on 21/06/2016.
@@ -3176,6 +3239,7 @@ angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buil
     .directive('widgetPie', fgpWidgetPie.buildFactory)
     .directive('widgetDockerButton', fgpDockerButton.buildFactory)
     .directive('widgetRepeatContainer', fgpWidgetRepeatContainer.buildFactory)
+    .directive('widgetImage', fgpImage.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory).filter('tableformatter', ['$filter', function ($filter) {
     return function (input, obj, field, formatter) {
         if (formatter) {
