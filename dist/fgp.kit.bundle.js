@@ -3067,7 +3067,7 @@ var fgpImage = function fgpImage() {
 
 fgpImage.prototype.template = function template (scope, element) {
     return '' +
-        '<div><img src="{{url}}" style="width:{{css.width}}px;height:{{css.height}}px;"></div>' +
+        '<img src="{{url}}" style="width:{{css.width}}px;height:{{css.height}}px;">' +
         '';
 };
 
