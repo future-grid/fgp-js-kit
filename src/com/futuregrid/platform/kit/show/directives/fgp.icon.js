@@ -54,7 +54,7 @@ export default class fgpIcon {
 
         if (widgetData.from == "show" && widgetData.data) {
             $scope.data_from = "application";
-
+            $scope.parent_container = widgetData.data.parent;
             $scope.$on('deviceInfoEvent', function (event, deviceData) {
                 // if the parent container sends a device to here, ignore global device.
                 if ($scope.data_from != "application" && deviceData.from == "application") {

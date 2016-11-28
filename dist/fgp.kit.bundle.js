@@ -135,7 +135,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
                     $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
                 });
             });
-        }, 10000);
+        }, 30000);
     }
 
 
@@ -3159,7 +3159,7 @@ fgpIcon.prototype.controller = function controller ($scope, $element) {
 
     if (widgetData.from == "show" && widgetData.data) {
         $scope.data_from = "application";
-
+        $scope.parent_container = widgetData.data.parent;
         $scope.$on('deviceInfoEvent', function (event, deviceData) {
             // if the parent container sends a device to here, ignore global device.
             if ($scope.data_from != "application" && deviceData.from == "application") {
