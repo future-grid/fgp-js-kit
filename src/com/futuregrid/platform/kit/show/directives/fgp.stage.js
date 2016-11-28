@@ -1,7 +1,7 @@
 /**
  * Created by ericwang on 10/06/2016.
  */
-import angular from 'angular';
+import angular from "angular";
 'use strict';
 class fgpStage {
 
@@ -22,7 +22,7 @@ class fgpStage {
             '</div>';
     }
 
-    controller($scope, $element, $timeout, $rootScope, $compile, dataService) {
+    controller($scope, $element, $timeout, $rootScope, $compile, dataService, $interval) {
         $scope.showdata = {};
 
         if ($scope.scatterColors && $scope.scatterColors.length > 0) {
@@ -44,7 +44,7 @@ class fgpStage {
         $scope.$on('bindChildRepeatEvent', function (evt, msg) {
             angular.forEach($scope.configuration, function (item) {
                 if (item.id == msg.id) {
-                    var items = angular.element("body").find("#"+item.id).children();
+                    var items = angular.element("body").find("#" + item.id).children();
                     angular.forEach(items, function (item_new) {
                         $scope.showdata[item_new.id] = item;
                         findChild4Repeat(item.id, angular.element(item_new), $scope.configuration);
@@ -115,12 +115,14 @@ class fgpStage {
          * get device information
          */
         if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
-            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-                // send device info to all widget
-                $timeout(function () {
-                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+            $interval(function () {
+                dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+                    // send device info to all widget
+                    $timeout(function () {
+                        $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                    });
                 });
-            });
+            }, 30000);
         }
 
 

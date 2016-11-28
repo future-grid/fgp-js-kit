@@ -35,7 +35,7 @@ fgpStage.prototype.template = function template () {
         '</div>';
 };
 
-fgpStage.prototype.controller = function controller ($scope, $element, $timeout, $rootScope, $compile, dataService) {
+fgpStage.prototype.controller = function controller ($scope, $element, $timeout, $rootScope, $compile, dataService, $interval) {
     $scope.showdata = {};
 
     if ($scope.scatterColors && $scope.scatterColors.length > 0) {
@@ -57,7 +57,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     $scope.$on('bindChildRepeatEvent', function (evt, msg) {
         angular$1.forEach($scope.configuration, function (item) {
             if (item.id == msg.id) {
-                var items = angular$1.element("body").find("#"+item.id).children();
+                var items = angular$1.element("body").find("#" + item.id).children();
                 angular$1.forEach(items, function (item_new) {
                     $scope.showdata[item_new.id] = item;
                     findChild4Repeat(item.id, angular$1.element(item_new), $scope.configuration);
@@ -128,12 +128,14 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
      * get device information
      */
     if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
-        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-            // send device info to all widget
-            $timeout(function () {
-                $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+        $interval(function () {
+            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+                // send device info to all widget
+                $timeout(function () {
+                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                });
             });
-        });
+        }, 10000);
     }
 
 
