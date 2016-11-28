@@ -9,7 +9,7 @@ export default class fgpIcon {
     }
 
     template(element, attrs) {
-        var show_dom = '<div class="{{css.width}}" style="margin:10px;background-color: {{css.background.color}};border-color:{{css.border.color || \'#fff\'}};">' +
+        var show_dom = '<div class="{{css.width}}" style="margin-top: 10px;background-color: {{css.background.color}};border-color:{{css.border.color || \'#fff\'}};">' +
             '<div class="col-xs-4 col-md-4" style="padding: 5px;">' +
             '<i class="fa fa-{{icon}}" style="font-size: 60px;"></i>' +
             '</div>' +
