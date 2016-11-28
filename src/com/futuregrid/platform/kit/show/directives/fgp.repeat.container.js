@@ -84,7 +84,12 @@ class fgpWidgetRepeatContainer {
 
 
         if (metadata.data) {
-            $scope.labels = metadata.data.datasource.labels.split(" ");
+            $scope.labels = [];
+            if(metadata.data.datasource.labels){
+                $scope.labels = metadata.data.datasource.labels.split(" ");
+            }
+
+
             // run script
             $http({
                 method: 'GET',
