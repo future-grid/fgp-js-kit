@@ -124,17 +124,24 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         }
     });
 
+    var sendDeviceData = function () {
+        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+            // send device info to all widget
+            $timeout(function () {
+                $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+            });
+        });
+    };
+
     /**
      * get device information
      */
     if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+        // first time
+        sendDeviceData();
+        // every 30 seconds
         $interval(function () {
-            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-                // send device info to all widget
-                $timeout(function () {
-                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
-                });
-            });
+            sendDeviceData();
         }, 30000);
     }
 
@@ -1295,8 +1302,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.data_from = deviceData.from;
                 }
             }
-
-
             $scope.$watch('currentView', function (nObj, oObj) {
                 // change
                 if (nObj != oObj) {
@@ -1356,8 +1361,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 $scope.fixInterval = false;
 
             });
-
-
             // first time of showing chart
             $scope.$watch('currentChart', function (newValue) {
                 if (newValue) {
@@ -1380,8 +1383,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     });
                 }
             });
-
-
             $scope.$watch("chartDateTime", function (newValue, oldValue) {
                 if (newValue.begin != oldValue.begin || newValue.end != oldValue.end) {
                     var expect_points = Math.floor($element.parent().width() / 2);
@@ -1532,8 +1533,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     }
                     $scope.status = false;
                 }
-            });
-
+            });// not working.....
 
         });
 
@@ -3028,7 +3028,12 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
 
 
     if (metadata.data) {
-        $scope.labels = metadata.data.datasource.labels.split(" ");
+        $scope.labels = [];
+        if(metadata.data.datasource.labels){
+            $scope.labels = metadata.data.datasource.labels.split(" ");
+        }
+
+
         // run script
         $http({
             method: 'GET',

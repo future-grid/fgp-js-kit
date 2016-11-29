@@ -656,8 +656,6 @@ class fgpWidgetGraph {
                         $scope.data_from = deviceData.from;
                     }
                 }
-
-
                 $scope.$watch('currentView', function (nObj, oObj) {
                     // change
                     if (nObj != oObj) {
@@ -717,8 +715,6 @@ class fgpWidgetGraph {
                     $scope.fixInterval = false;
 
                 });
-
-
                 // first time of showing chart
                 $scope.$watch('currentChart', function (newValue) {
                     if (newValue) {
@@ -741,8 +737,6 @@ class fgpWidgetGraph {
                         });
                     }
                 });
-
-
                 $scope.$watch("chartDateTime", function (newValue, oldValue) {
                     if (newValue.begin != oldValue.begin || newValue.end != oldValue.end) {
                         var expect_points = Math.floor($element.parent().width() / 2);
@@ -893,8 +887,7 @@ class fgpWidgetGraph {
                         }
                         $scope.status = false;
                     }
-                });
-
+                });// not working.....
 
             });
 

@@ -111,17 +111,24 @@ class fgpStage {
             }
         });
 
+        var sendDeviceData = function () {
+            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+                // send device info to all widget
+                $timeout(function () {
+                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                });
+            });
+        };
+
         /**
          * get device information
          */
         if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+            // first time
+            sendDeviceData();
+            // every 30 seconds
             $interval(function () {
-                dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-                    // send device info to all widget
-                    $timeout(function () {
-                        $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
-                    });
-                });
+                sendDeviceData();
             }, 30000);
         }
 
