@@ -126,7 +126,7 @@ class fgpStage {
         if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
             // first time
             sendDeviceData();
-            // every 30 seconds
+            // after every 30 seconds
             $interval(function () {
                 sendDeviceData();
             }, 30000);
