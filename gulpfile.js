@@ -51,6 +51,7 @@ gulp.task('js', ['clean'], () => {
                 dygraphs: "Dygraph",
                 "chart.js": "chartJS",
                 ngmap: "ngmap",
+                ws:"angular-websocket",
                 underscore: '_'
             },
             external: Object.keys(pkg.dependencies),

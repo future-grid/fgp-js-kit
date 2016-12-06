@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "angular": "^1.5.0",
+    "angular-websocket": "^2.0.1",
     "bootstrap": "^3.3.6",
     "chart.js": "^2.1.6",
     "dygraphs": "^1.1.1",

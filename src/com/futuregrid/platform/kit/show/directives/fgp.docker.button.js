@@ -11,11 +11,10 @@ export default class fgpDockerButton {
 
 
     template(element, attrs) {
-        var deviceKey = attrs.deviceKey;
         var show_dom = '<div class="col-xs-12 btn-group" role="group" style="padding: 2px;" aria-label="...">' +
             '<div style="float: right;">' +
             '<button type="button" class="btn btn-success btn-xs" ' +
-            ' ng-click="action(button,\'' + deviceKey + '\')" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
+            ' ng-click="action(button)" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
             ' aria-hidden="true"></i>' +
             '</button>' +
             '</div>' +
@@ -23,7 +22,7 @@ export default class fgpDockerButton {
         return show_dom;
     }
 
-    controller($scope, $element) {
+    controller($scope, $element, $http) {
         // get configuration
         var id = $element.attr("id");
         var configuration = null;
@@ -34,6 +33,12 @@ export default class fgpDockerButton {
                 }
             }
         });
+
+        var repeateId = [];
+
+        if ($scope.$parent.repeat) {
+            repeateId = $scope.$parent.repeat.split(",");
+        }
         // how many buttons?
         $scope.buttons = [];
 
@@ -44,17 +49,17 @@ export default class fgpDockerButton {
         });
 
         // submit "action" to rest api
-        $scope.action = function (button, deviceKey) {
+        $scope.action = function (button) {
             // send request through $http
             $http({
                 method: 'POST',
                 url: '/api/docker/hosts/action',
                 data: {
-                    language: button.language,
-                    func: button.func,
+                    func: 'action',
                     script: button.script,
-                    deviceName: '',
-                    key: deviceKey
+                    container: repeateId[0],
+                    host: repeateId[1],
+                    application: repeateId[2]
                 }
             }).then(function successCallback(response) {
                 console.info(response.data);

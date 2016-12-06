@@ -2,6 +2,7 @@
  * Created by ericwang on 15/06/2016.
  */
 'use strict';
+import ws from 'angular-websocket';
 class fgpWidgetRepeatContainer {
 
     constructor($http) {
@@ -14,14 +15,14 @@ class fgpWidgetRepeatContainer {
         var flag = attrs.hasOwnProperty("shown");
         var showTitle = attrs.hasOwnProperty("showtitle");
         var element_id = attrs.id;
-        var dom_show = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" style="padding-left: 2px; padding-right: 2px;">' +
+        var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
             '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
             '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}} : {{item.name}}</div>' +
             '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}">' +
             '<div style="float:left;">' +
             '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
-            '</div>'+
+            '</div>' +
             '</div>' +
             '</div>' +
             '</div></div>';
@@ -29,6 +30,9 @@ class fgpWidgetRepeatContainer {
             '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
             '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+            '<div style="float:left;">' +
+            '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+            '</div>' +
             '</div>' +
             '</div></div>';
 
@@ -43,7 +47,7 @@ class fgpWidgetRepeatContainer {
         }
     }
 
-    controller($scope, $element, dataService, $rootScope, $timeout, $http, $location, $stateParams) {
+    controller($scope, $element, dataService, $rootScope, $timeout, $http, $location, $stateParams, $websocket) {
         // only show
         var element_id = $element.attr("id");
 
@@ -59,7 +63,7 @@ class fgpWidgetRepeatContainer {
         // all items
         $scope.items = [];
 
-        $scope.labelstyle = ["default","primary","success","info","warning","danger"];
+        $scope.labelstyle = ["default", "primary", "success", "info", "warning", "danger"];
 
 
         var metadata = widgetData.data.metadata;
@@ -76,7 +80,7 @@ class fgpWidgetRepeatContainer {
 
         $scope.data = {};
 
-        $scope.labels =[];
+        $scope.labels = [];
 
         var page = $stateParams.type;
         var applicationName = $stateParams.applicationName;
@@ -85,7 +89,7 @@ class fgpWidgetRepeatContainer {
 
         if (metadata.data) {
             $scope.labels = [];
-            if(metadata.data.datasource.labels){
+            if (metadata.data.datasource.labels) {
                 $scope.labels = metadata.data.datasource.labels.split(" ");
             }
 
@@ -99,16 +103,33 @@ class fgpWidgetRepeatContainer {
             }, function (error) {
                 console.error(error);
             });
+
             // I'm ready. please give all my children to me~
-            $timeout(function () {
-                // call stage
-                $scope.$emit('bindChildRepeatEvent', {
-                    id: element_id
+
+            // call stage
+            $scope.$on('LastRepeaterElement', function () {
+                $timeout(function () {
+                    $scope.$emit('bindChildRepeatEvent', {
+                        id: element_id
+                    });
                 });
             });
 
 
         }
+        //establish a connection with websocket
+        var dataStream = $websocket('ws://' + $location.host() + ":" + $location.port() + '/ws/hosts');
+        dataStream.onMessage(function (message) {
+            try {
+                var backData = JSON.parse(message.data);
+                if(backData.hasOwnProperty("container")){
+                    // tell children
+                    $scope.$parent.$broadcast('containerStatusEvent', backData);
+                }
+            } catch (e) {
+            }
+        });
+
 
     }
 

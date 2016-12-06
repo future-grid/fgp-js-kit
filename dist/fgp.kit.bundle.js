@@ -6,10 +6,10 @@
  * @overview fgp.kit.js is a useful toolkit for future-grid's clients.
  */
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
-    typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
-    (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS));
-}(this, (function (angular$1,$,Dygraph,ngmap,chart_js) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js'), require('angular-websocket')) :
+    typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js', 'angular-websocket'], factory) :
+    (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS,global.angularWebsocket));
+}(this, (function (angular$1,$,Dygraph,ngmap,chart_js,angularWebsocket) {
 
 angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
 $ = 'default' in $ ? $['default'] : $;
@@ -60,7 +60,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
                 var items = angular$1.element("body").find("#" + item.id).children();
                 angular$1.forEach(items, function (item_new) {
                     $scope.showdata[item_new.id] = item;
-                    findChild4Repeat(item.id, angular$1.element(item_new), $scope.configuration);
+                    findChild4Repeat(item.id, angular$1.element(item_new), $scope.configuration, item_new.id);
                 });
             }
         });
@@ -77,14 +77,17 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     });
 
 
-    function findChild4Repeat(parentId, parentHtmlObj, arrayItems) {
+    function findChild4Repeat(parentId, parentHtmlObj, arrayItems, newId) {
 
         for (var i = 0; i < arrayItems.length; i++) {
             if ('edit' + parentId === arrayItems[i].parent) {
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
                 $scope.showdata[id] = arrayItems[i];
-                parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                $scope.repeat = parentHtmlObj.attr("repeat-id");
+                if(parentHtmlObj.find('#edit' + parentId).find("#"+id).length == 0){
+                    parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                }
                 findChild(arrayItems[i].id, currentItem, arrayItems);
             } else if ('detail_status_' + parentId === arrayItems[i].parent) {
                 var currentItem = angular$1.element(arrayItems[i].html_render);
@@ -139,7 +142,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
         // first time
         sendDeviceData();
-        // every 30 seconds
+        // after every 30 seconds
         $interval(function () {
             sendDeviceData();
         }, 30000);
@@ -2884,11 +2887,10 @@ var fgpDockerButton = function fgpDockerButton() {
 
 
 fgpDockerButton.prototype.template = function template (element, attrs) {
-    var deviceKey = attrs.deviceKey;
     var show_dom = '<div class="col-xs-12 btn-group" role="group" style="padding: 2px;" aria-label="...">' +
         '<div style="float: right;">' +
         '<button type="button" class="btn btn-success btn-xs" ' +
-        ' ng-click="action(button,\'' + deviceKey + '\')" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
+        ' ng-click="action(button)" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
         ' aria-hidden="true"></i>' +
         '</button>' +
         '</div>' +
@@ -2896,7 +2898,7 @@ fgpDockerButton.prototype.template = function template (element, attrs) {
     return show_dom;
 };
 
-fgpDockerButton.prototype.controller = function controller ($scope, $element) {
+fgpDockerButton.prototype.controller = function controller ($scope, $element, $http) {
     // get configuration
     var id = $element.attr("id");
     var configuration = null;
@@ -2907,6 +2909,12 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element) {
             }
         }
     });
+
+    var repeateId = [];
+
+    if ($scope.$parent.repeat) {
+        repeateId = $scope.$parent.repeat.split(",");
+    }
     // how many buttons?
     $scope.buttons = [];
 
@@ -2917,17 +2925,17 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element) {
     });
 
     // submit "action" to rest api
-    $scope.action = function (button, deviceKey) {
+    $scope.action = function (button) {
         // send request through $http
         $http({
             method: 'POST',
             url: '/api/docker/hosts/action',
             data: {
-                language: button.language,
-                func: button.func,
+                func: 'action',
                 script: button.script,
-                deviceName: '',
-                key: deviceKey
+                container: repeateId[0],
+                host: repeateId[1],
+                application: repeateId[2]
             }
         }).then(function successCallback(response) {
             console.info(response.data);
@@ -2958,14 +2966,14 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
     var flag = attrs.hasOwnProperty("shown");
     var showTitle = attrs.hasOwnProperty("showtitle");
     var element_id = attrs.id;
-    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" style="padding-left: 2px; padding-right: 2px;">' +
+    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
         '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}} : {{item.name}}</div>' +
         '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}">' +
         '<div style="float:left;">' +
         '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
-        '</div>'+
+        '</div>' +
         '</div>' +
         '</div>' +
         '</div></div>';
@@ -2973,6 +2981,9 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
         '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
         '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+        '<div style="float:left;">' +
+        '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+        '</div>' +
         '</div>' +
         '</div></div>';
 
@@ -2987,7 +2998,7 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
     }
 };
 
-fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout, $http, $location, $stateParams) {
+fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout, $http, $location, $stateParams, $websocket) {
     // only show
     var element_id = $element.attr("id");
 
@@ -3003,7 +3014,7 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
     // all items
     $scope.items = [];
 
-    $scope.labelstyle = ["default","primary","success","info","warning","danger"];
+    $scope.labelstyle = ["default", "primary", "success", "info", "warning", "danger"];
 
 
     var metadata = widgetData.data.metadata;
@@ -3020,7 +3031,7 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
 
     $scope.data = {};
 
-    $scope.labels =[];
+    $scope.labels = [];
 
     var page = $stateParams.type;
     var applicationName = $stateParams.applicationName;
@@ -3029,7 +3040,7 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
 
     if (metadata.data) {
         $scope.labels = [];
-        if(metadata.data.datasource.labels){
+        if (metadata.data.datasource.labels) {
             $scope.labels = metadata.data.datasource.labels.split(" ");
         }
 
@@ -3043,16 +3054,33 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
         }, function (error) {
             console.error(error);
         });
+
         // I'm ready. please give all my children to me~
-        $timeout(function () {
-            // call stage
-            $scope.$emit('bindChildRepeatEvent', {
-                id: element_id
+
+        // call stage
+        $scope.$on('LastRepeaterElement', function () {
+            $timeout(function () {
+                $scope.$emit('bindChildRepeatEvent', {
+                    id: element_id
+                });
             });
         });
 
 
     }
+    //establish a connection with websocket
+    var dataStream = $websocket('ws://' + $location.host() + ":" + $location.port() + '/ws/hosts');
+    dataStream.onMessage(function (message) {
+        try {
+            var backData = JSON.parse(message.data);
+            if(backData.hasOwnProperty("container")){
+                // tell children
+                $scope.$parent.$broadcast('containerStatusEvent', backData);
+            }
+        } catch (e) {
+        }
+    });
+
 
 };
 
@@ -3189,6 +3217,132 @@ fgpIcon.buildFactory = function buildFactory () {
     fgpIcon.instance = new fgpIcon();
     return fgpIcon.instance;
 };
+
+/**
+ * Created by eric on 29/11/16.
+ */
+var fgpWidgetAppContainer = function fgpWidgetAppContainer() {
+    this.restrict = 'E';
+    this.scope = {
+    };
+};
+
+fgpWidgetAppContainer.prototype.template = function template (element, attrs) {
+    var element_id = attrs.id;
+    return '' +
+        '<div style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers" emit-last-repeater-element>' +
+        '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
+        '{{container.label}}' +
+        '</div>' +
+        '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px;">' +
+        '</div>' +
+        '</div>' +
+        '';
+};
+
+fgpWidgetAppContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout) {
+    // only show
+    var element_id = $element.attr("id");
+
+    var widgetData = null;
+
+    $scope.$emit('fetchWidgetMetadataEvent', {
+        id: element_id, callback: function (data) {
+            if (data) {
+                widgetData = data;
+            }
+        }
+    });
+    var metadata = widgetData.data.metadata;
+    $scope.css = {};
+    $scope.css["color"] = metadata.css.color;
+    $scope.css["width"] = metadata.css.width;
+    $scope.css["border"] = {};
+    $scope.css["border"]["color"] = metadata.css.border.color;
+    $scope.css["background"] = {};
+    $scope.css["background"]["color"] = metadata.css.background.color;
+
+    $scope.containers = [];
+    $scope.containerswithTimeout = [];
+    var metadata = widgetData.data.metadata;
+    // should be a host id
+    var repeat = $scope.$parent.repeat;
+
+    $scope.host = repeat;
+
+
+    // I'm ready. please give all my children to me~
+    // call stage
+    $scope.$on('LastRepeaterElement', function () {
+        $timeout(function () {
+            $scope.$emit('bindChildRepeatEvent', {
+                id: element_id
+            });
+        });
+    });
+
+    $scope.$on('containerStatusEvent', function (event, data) {
+
+        if (data.host == repeat) {
+            //f
+            var labels = [];
+
+            if (metadata.data.datasource.labels) {
+                labels = metadata.data.datasource.labels.split(" ");
+            }
+            var showLabel = "";
+            angular.forEach(labels, function (label) {
+                showLabel += data.config[label] + " ";
+            });
+
+            var app = {
+                id: data.container,
+                label: showLabel,
+                application:data.application
+            };
+            var flag = false;
+            angular.forEach($scope.containers, function (container) {
+                if (container.id == app.id) {
+                    container = app;
+                    // update timer
+                    var timer = $scope.containerswithTimeout.filter(function (item) {
+                        return item.app.id == app.id;
+                    });
+                    $timeout.cancel(timer[0].t);
+                    var newTimer = $timeout(function () {
+                        var index = $scope.containers.indexOf(app);
+                        $scope.containers.splice(index, 1);
+                    }, 30000);
+
+                    timer[0].t = newTimer;
+
+                    flag = true;
+                }
+            });
+
+            if (!flag) {
+                // add to
+                $scope.containers.push(app);
+                // delete it after 30 seconds!
+                var t = $timeout(function () {
+                    var index = $scope.containers.indexOf(app);
+                    $scope.containers.splice(index, 1);
+                }, 30000);
+                $scope.containerswithTimeout.push({t: t, app: app});
+            }
+
+        }
+
+    });
+
+};
+
+fgpWidgetAppContainer.buildFactory = function buildFactory () {
+    fgpWidgetAppContainer.instance = new fgpWidgetAppContainer();
+    return fgpWidgetAppContainer.instance;
+};
+
+fgpWidgetAppContainer.$inject = [];
 
 /**
  * Created by ericwang on 21/06/2016.
@@ -3328,7 +3482,15 @@ angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buil
     .directive('widgetRepeatContainer', fgpWidgetRepeatContainer.buildFactory)
     .directive('widgetImage', fgpImage.buildFactory)
     .directive('widgetIcon', fgpIcon.buildFactory)
-    .directive('widgetChartTable', fgpWidgetChartTable.buildFactory).filter('tableformatter', ['$filter', function ($filter) {
+    .directive('widgetAppContainer', fgpWidgetAppContainer.buildFactory)
+    .directive('widgetChartTable', fgpWidgetChartTable.buildFactory)
+    .directive('emitLastRepeaterElement', function () {
+        return function (scope) {
+            if (scope.$last) {
+                scope.$emit('LastRepeaterElement');
+            }
+        };
+    }).filter('tableformatter', ['$filter', function ($filter) {
     return function (input, obj, field, formatter) {
         if (formatter) {
             if (obj[field]) {
