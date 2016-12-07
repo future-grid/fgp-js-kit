@@ -2931,7 +2931,7 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
             method: 'POST',
             url: '/api/docker/hosts/action',
             data: {
-                func: 'action',
+                func: button.func,
                 script: button.script,
                 container: repeateId[0],
                 host: repeateId[1],
@@ -3230,9 +3230,9 @@ var fgpWidgetAppContainer = function fgpWidgetAppContainer() {
 fgpWidgetAppContainer.prototype.template = function template (element, attrs) {
     var element_id = attrs.id;
     return '' +
-        '<div style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers" emit-last-repeater-element>' +
+        '<div style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
         '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
-        '{{container.label}}' +
+        '{{container.label | removeSlash}}' +
         '</div>' +
         '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px;">' +
         '</div>' +
@@ -3469,7 +3469,16 @@ fgpWidgetChartTable.buildFactory = function buildFactory () {
  * Created by ericwang on 10/06/2016.
  */
 // angular module
-angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
+angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory)
+    .filter('removeSlash', function () {
+        return function (input) {
+            if(input.startsWith("/")){
+                return input.substring(1,input.length);
+            }
+            return input;
+        }
+    })
+    .directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
     .directive('widgetGraph', fgpWidgetGraph.buildFactory)
     .directive('widgetPageTitle', fgpWidgetPageTitle.buildFactory)

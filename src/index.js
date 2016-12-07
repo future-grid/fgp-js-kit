@@ -20,7 +20,16 @@ import fgpWidgetIcon from './com/futuregrid/platform/kit/show/directives/fgp.ico
 import fgpWidgetAppContainer from './com/futuregrid/platform/kit/show/directives/fgp.app.container.js';
 import fgpWidgetChartTable from './com/futuregrid/platform/kit/show/directives/fgp.chart.table.js';
 // angular module
-angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory).directive('fgpContainer', fgpStage.buildFactory)
+angular.module('fgp-kit', ['ngMap']).service('dataService', dataApi.buildFactory)
+    .filter('removeSlash', function () {
+        return function (input) {
+            if(input.startsWith("/")){
+                return input.substring(1,input.length);
+            }
+            return input;
+        }
+    })
+    .directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
     .directive('widgetGraph', fgpWidgetGraph.buildFactory)
     .directive('widgetPageTitle', fgpWidgetPageTitle.buildFactory)

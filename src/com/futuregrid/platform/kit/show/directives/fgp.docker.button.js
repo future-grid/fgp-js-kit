@@ -55,7 +55,7 @@ export default class fgpDockerButton {
                 method: 'POST',
                 url: '/api/docker/hosts/action',
                 data: {
-                    func: 'action',
+                    func: button.func,
                     script: button.script,
                     container: repeateId[0],
                     host: repeateId[1],
