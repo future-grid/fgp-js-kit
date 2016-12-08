@@ -6,14 +6,21 @@ class fgpWidgetAppContainer {
 
     constructor() {
         this.restrict = 'E';
-        this.scope = {
-        };
+        this.scope = {};
     }
 
     template(element, attrs) {
         var element_id = attrs.id;
         return '' +
-            '<div style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
+            '<div ng-show="showstyle == \'list\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
+            '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
+            '{{container.label | removeSlash}}' +
+            '</div>' +
+            '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px;">' +
+            '</div>' +
+            '</div>' +
+
+            '<div ng-show="showstyle == \'grid\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-6 col-xs-6" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
             '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
             '{{container.label | removeSlash}}' +
             '</div>' +
@@ -51,6 +58,8 @@ class fgpWidgetAppContainer {
         // should be a host id
         var repeat = $scope.$parent.repeat;
 
+        $scope.showstyle = "list";
+
         $scope.host = repeat;
 
 
@@ -63,6 +72,18 @@ class fgpWidgetAppContainer {
                 });
             });
         });
+
+        $timeout(function () {
+            var pp = $scope.$emit('listStyleEvent', {
+                id:widgetData.data.parent,
+                callback: function (style) {
+                    $scope.showstyle = style;
+                }
+            });
+
+        });
+
+
 
         $scope.$on('containerStatusEvent', function (event, data) {
 
@@ -81,7 +102,7 @@ class fgpWidgetAppContainer {
                 var app = {
                     id: data.container,
                     label: showLabel,
-                    application:data.application
+                    application: data.application
                 };
                 var flag = false;
                 angular.forEach($scope.containers, function (container) {

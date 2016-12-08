@@ -6,10 +6,10 @@
  * @overview fgp.kit.js is a useful toolkit for future-grid's clients.
  */
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js'), require('angular-websocket')) :
-    typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js', 'angular-websocket'], factory) :
-    (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS,global.angularWebsocket));
-}(this, (function (angular$1,$,Dygraph,ngmap,chart_js,angularWebsocket) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
+    typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
+    (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS));
+}(this, (function (angular$1,$,Dygraph,ngmap,chart_js) {
 
 angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
 $ = 'default' in $ ? $['default'] : $;
@@ -66,6 +66,11 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         });
     });
 
+    $scope.$on('listStyleEvent', function (evt, param) {
+        var config = $scope.showdata[param.id.replace("edit","")];
+        param.callback(config.metadata.data.datasource.style);
+    });
+
 
     $scope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
         angular$1.forEach($scope.showdata, function (metadata, key) {
@@ -84,7 +89,9 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
                 $scope.showdata[id] = arrayItems[i];
-                $scope.repeat = parentHtmlObj.attr("repeat-id");
+                if(parentHtmlObj.attr("repeat-id")){
+                    $scope.repeat = parentHtmlObj.attr("repeat-id");
+                }
                 if(parentHtmlObj.find('#edit' + parentId).find("#"+id).length == 0){
                     parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
                 }
@@ -2999,19 +3006,23 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
         '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}} : {{item.name}}</div>' +
-        '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}">' +
-        '<div style="float:left;">' +
+        '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
+        '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
         '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+        '</div>' +
+        '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
         '</div>' +
         '</div>' +
         '</div>' +
         '</div></div>';
-    var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items">' +
+    var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" repeat-id="{{item.key.id}}">' +
         '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
         '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
-        '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
-        '<div style="float:left;">' +
+        '<div style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+        '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
         '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+        '</div>' +
+        '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
         '</div>' +
         '</div>' +
         '</div></div>';
@@ -3060,10 +3071,11 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
 
     $scope.data = {};
 
+    $scope.listStyle = "list";
+
     $scope.labels = [];
 
     var page = $stateParams.type;
-    var applicationName = $stateParams.applicationName;
     var device = $stateParams.device;
 
 
@@ -3073,6 +3085,9 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
             $scope.labels = metadata.data.datasource.labels.split(" ");
         }
 
+        if (metadata.data.datasource.style) {
+            $scope.listStyle = metadata.data.datasource.style;
+        }
 
         // run script
         $http({
@@ -3096,13 +3111,15 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
         });
 
 
+
+
     }
     //establish a connection with websocket
     var dataStream = $websocket('ws://' + $location.host() + ":" + $location.port() + '/ws/hosts');
     dataStream.onMessage(function (message) {
         try {
             var backData = JSON.parse(message.data);
-            if(backData.hasOwnProperty("container")){
+            if (backData.hasOwnProperty("container")) {
                 // tell children
                 $scope.$parent.$broadcast('containerStatusEvent', backData);
             }
@@ -3252,14 +3269,21 @@ fgpIcon.buildFactory = function buildFactory () {
  */
 var fgpWidgetAppContainer = function fgpWidgetAppContainer() {
     this.restrict = 'E';
-    this.scope = {
-    };
+    this.scope = {};
 };
 
 fgpWidgetAppContainer.prototype.template = function template (element, attrs) {
     var element_id = attrs.id;
     return '' +
-        '<div style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
+        '<div ng-show="showstyle == \'list\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
+        '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
+        '{{container.label | removeSlash}}' +
+        '</div>' +
+        '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px;">' +
+        '</div>' +
+        '</div>' +
+
+        '<div ng-show="showstyle == \'grid\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-6 col-xs-6" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
         '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
         '{{container.label | removeSlash}}' +
         '</div>' +
@@ -3297,6 +3321,8 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
     // should be a host id
     var repeat = $scope.$parent.repeat;
 
+    $scope.showstyle = "list";
+
     $scope.host = repeat;
 
 
@@ -3309,6 +3335,18 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
             });
         });
     });
+
+    $timeout(function () {
+        var pp = $scope.$emit('listStyleEvent', {
+            id:widgetData.data.parent,
+            callback: function (style) {
+                $scope.showstyle = style;
+            }
+        });
+
+    });
+
+
 
     $scope.$on('containerStatusEvent', function (event, data) {
 
@@ -3327,7 +3365,7 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
             var app = {
                 id: data.container,
                 label: showLabel,
-                application:data.application
+                application: data.application
             };
             var flag = false;
             angular.forEach($scope.containers, function (container) {

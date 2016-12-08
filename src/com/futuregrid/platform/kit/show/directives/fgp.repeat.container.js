@@ -2,7 +2,6 @@
  * Created by ericwang on 15/06/2016.
  */
 'use strict';
-import ws from 'angular-websocket';
 class fgpWidgetRepeatContainer {
 
     constructor($http) {
@@ -19,19 +18,23 @@ class fgpWidgetRepeatContainer {
             '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
             '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}} : {{item.name}}</div>' +
-            '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}">' +
-            '<div style="float:left;">' +
+            '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
+            '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
             '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+            '</div>' +
+            '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
             '</div>' +
             '</div>' +
             '</div>' +
             '</div></div>';
-        var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items">' +
+        var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" repeat-id="{{item.key.id}}">' +
             '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
             '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
-            '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
-            '<div style="float:left;">' +
+            '<div style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
+            '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
             '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+            '</div>' +
+            '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
             '</div>' +
             '</div>' +
             '</div></div>';
@@ -80,10 +83,11 @@ class fgpWidgetRepeatContainer {
 
         $scope.data = {};
 
+        $scope.listStyle = "list";
+
         $scope.labels = [];
 
         var page = $stateParams.type;
-        var applicationName = $stateParams.applicationName;
         var device = $stateParams.device;
 
 
@@ -93,6 +97,9 @@ class fgpWidgetRepeatContainer {
                 $scope.labels = metadata.data.datasource.labels.split(" ");
             }
 
+            if (metadata.data.datasource.style) {
+                $scope.listStyle = metadata.data.datasource.style;
+            }
 
             // run script
             $http({
@@ -116,13 +123,15 @@ class fgpWidgetRepeatContainer {
             });
 
 
+
+
         }
         //establish a connection with websocket
         var dataStream = $websocket('ws://' + $location.host() + ":" + $location.port() + '/ws/hosts');
         dataStream.onMessage(function (message) {
             try {
                 var backData = JSON.parse(message.data);
-                if(backData.hasOwnProperty("container")){
+                if (backData.hasOwnProperty("container")) {
                     // tell children
                     $scope.$parent.$broadcast('containerStatusEvent', backData);
                 }

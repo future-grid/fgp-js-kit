@@ -53,6 +53,11 @@ class fgpStage {
             });
         });
 
+        $scope.$on('listStyleEvent', function (evt, param) {
+            var config = $scope.showdata[param.id.replace("edit","")];
+            param.callback(config.metadata.data.datasource.style);
+        });
+
 
         $scope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
             angular.forEach($scope.showdata, function (metadata, key) {
@@ -71,7 +76,9 @@ class fgpStage {
                     var currentItem = angular.element(arrayItems[i].html_render);
                     var id = arrayItems[i].id;
                     $scope.showdata[id] = arrayItems[i];
-                    $scope.repeat = parentHtmlObj.attr("repeat-id");
+                    if(parentHtmlObj.attr("repeat-id")){
+                        $scope.repeat = parentHtmlObj.attr("repeat-id");
+                    }
                     if(parentHtmlObj.find('#edit' + parentId).find("#"+id).length == 0){
                         parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
                     }
