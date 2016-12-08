@@ -2889,8 +2889,8 @@ var fgpDockerButton = function fgpDockerButton() {
 fgpDockerButton.prototype.template = function template (element, attrs) {
     var show_dom = '<div class="col-xs-12 btn-group" role="group" style="padding: 2px;" aria-label="...">' +
         '<div style="float: right;">' +
-        '<button type="button" class="btn btn-success btn-xs" ' +
-        ' ng-click="action(button)" ng-repeat="button in buttons"><i class="fa {{button.icon}}"' +
+        '<button type="button" class="btn btn-{{button.color}} btn-xs" ' +
+        ' ng-click="action(button)" ng-repeat="button in buttons" ng-show="checkShow(button)"><i class="fa {{button.icon}}"' +
         ' aria-hidden="true"></i>' +
         '</button>' +
         '</div>' +
@@ -2899,6 +2899,9 @@ fgpDockerButton.prototype.template = function template (element, attrs) {
 };
 
 fgpDockerButton.prototype.controller = function controller ($scope, $element, $http) {
+
+    $scope.stats = "";
+
     // get configuration
     var id = $element.attr("id");
     var configuration = null;
@@ -2911,6 +2914,24 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
     });
 
     var repeateId = [];
+
+    $scope.checkShow = function (button) {
+        if (button.type === "stop") {
+            if ($scope.stats === "running") {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (button.type === "start") {
+            if ($scope.stats === "exited" || $scope.stats === "created") {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    };
 
     if ($scope.$parent.repeat) {
         repeateId = $scope.$parent.repeat.split(",");
@@ -2945,6 +2966,14 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
 
 
     };
+
+    $scope.$on('containerStatusEvent', function (event, data) {
+        if (data.application === repeateId[2] && data.container === repeateId[0] && data.host === repeateId[1]) {
+            $scope.stats = data.stats;
+        }
+    });
+
+
 };
 
 
