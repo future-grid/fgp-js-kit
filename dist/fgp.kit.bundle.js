@@ -2935,6 +2935,12 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
             } else {
                 return false;
             }
+        } else if(button.type === "delete"){
+            if ($scope.stats === "exited" || $scope.stats === "created") {
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -3005,7 +3011,7 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
     var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
         '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
-        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}} : {{item.name}}</div>' +
+        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}};"><i class="fa fa-desktop" aria-hidden="true" style="margin-right: 5px;"></i>{{item.name}}</div>' +
         '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
         '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
         '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
@@ -3274,20 +3280,21 @@ var fgpWidgetAppContainer = function fgpWidgetAppContainer() {
 
 fgpWidgetAppContainer.prototype.template = function template (element, attrs) {
     var element_id = attrs.id;
+    //<div class="alert alert-info" role="alert">...</div>
     return '' +
-        '<div ng-show="showstyle == \'list\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
-        '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
-        '{{container.label | removeSlash}}' +
+        '<div ng-show="showstyle == \'list\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12  alert alert-info" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
+        '<div class="col-md-8 col-xs-8" role="alert" style="min-height: 24px; text-align: left;margin-bottom: 0px;padding: 3px;">' +
+        '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i>{{container.label | removeSlash}}' +
         '</div>' +
-        '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px;">' +
+        '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px; padding: 0;">' +
         '</div>' +
         '</div>' +
 
-        '<div ng-show="showstyle == \'grid\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-6 col-xs-6" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
-        '<div class="col-md-8 col-xs-8" style="min-height: 24px;">' +
-        '{{container.label | removeSlash}}' +
+        '<div ng-show="showstyle == \'grid\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-6 col-xs-6 alert alert-info" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
+        '<div class="col-md-8 col-xs-8" role="alert" style="min-height: 24px;text-align: left;margin-bottom: 0px;padding: 3px;">' +
+        '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i>{{container.label | removeSlash}}' +
         '</div>' +
-        '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px;">' +
+        '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px; padding: 0;">' +
         '</div>' +
         '</div>' +
         '';
@@ -3376,14 +3383,25 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
                         return item.app.id == app.id;
                     });
                     $timeout.cancel(timer[0].t);
-                    var newTimer = $timeout(function () {
-                        var index = $scope.containers.indexOf(app);
+                    console.info(data.stats);
+                    if(data.stats != "removed"){
+                        var newTimer = $timeout(function () {
+                            var index = $scope.containers.indexOf(app);
+                            $scope.containers.splice(index, 1);
+                        }, 30000);
+
+                        timer[0].t = newTimer;
+                        flag = true;
+                    }else{
+                        var index = -1;
+                        angular.forEach($scope.containers, function (item, itemIndex) {
+                            if(item.id === app.id){
+                                index = itemIndex;
+                            }
+                        });
                         $scope.containers.splice(index, 1);
-                    }, 30000);
-
-                    timer[0].t = newTimer;
-
-                    flag = true;
+                        flag = true;
+                    }
                 }
             });
 

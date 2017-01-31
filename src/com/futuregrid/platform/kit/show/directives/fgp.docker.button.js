@@ -52,6 +52,12 @@ export default class fgpDockerButton {
                 } else {
                     return false;
                 }
+            } else if(button.type === "delete"){
+                if ($scope.stats === "exited" || $scope.stats === "created") {
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }
