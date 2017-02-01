@@ -15,7 +15,7 @@ class fgpWidgetAppContainer {
         return '' +
             '<div ng-show="showstyle == \'list\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12  alert alert-info" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
             '<div class="col-md-8 col-xs-8" role="alert" style="min-height: 24px; text-align: left;margin-bottom: 0px;padding: 3px;">' +
-            '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i>{{container.label | removeSlash}}' +
+            '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i><a href="javascript:;" ng-click="gotoContainer(container);">{{container.name | removeSlash}}</a>' +
             '</div>' +
             '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px; padding: 0;">' +
             '</div>' +
@@ -23,7 +23,7 @@ class fgpWidgetAppContainer {
 
             '<div ng-show="showstyle == \'grid\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-6 col-xs-6 alert alert-info" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
             '<div class="col-md-8 col-xs-8" role="alert" style="min-height: 24px;text-align: left;margin-bottom: 0px;padding: 3px;">' +
-            '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i>{{container.label | removeSlash}}' +
+            '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i><a href="javascript:;" ng-click="gotoContainer(container);">{{container.name | removeSlash}}</a>' +
             '</div>' +
             '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px; padding: 0;">' +
             '</div>' +
@@ -76,7 +76,7 @@ class fgpWidgetAppContainer {
 
         $timeout(function () {
             var pp = $scope.$emit('listStyleEvent', {
-                id:widgetData.data.parent,
+                id: widgetData.data.parent,
                 callback: function (style) {
                     $scope.showstyle = style;
                 }
@@ -84,6 +84,11 @@ class fgpWidgetAppContainer {
 
         });
 
+        $scope.gotoContainer = function (container) {
+            // "device type and device name" display by a dynamic page!
+            console.info(container);
+            return false;
+        };
 
 
         $scope.$on('containerStatusEvent', function (event, data) {
@@ -103,34 +108,54 @@ class fgpWidgetAppContainer {
                 var app = {
                     id: data.container,
                     label: showLabel,
-                    application: data.application
+                    application: data.application,
+                    name: data.deviceName,
+                    type: data.deviceType
                 };
                 var flag = false;
                 angular.forEach($scope.containers, function (container) {
                     if (container.id == app.id) {
-                        container = app;
                         // update timer
-                        var timer = $scope.containerswithTimeout.filter(function (item) {
-                            return item.app.id == app.id;
+                        var timer_index = -1;
+                        var timer = $scope.containerswithTimeout.filter(function (item, index) {
+                            if(item.app.id == app.id){
+                                timer_index = index;
+                                return true;
+                            }else{
+                                false;
+                            }
                         });
                         $timeout.cancel(timer[0].t);
-                        if(data.stats != "removed"){
+                        if (data.stats != "removed") {
                             var newTimer = $timeout(function () {
                                 var index = $scope.containers.indexOf(app);
                                 $scope.containers.splice(index, 1);
+                                $scope.containerswithTimeout.splice(timer_index, 1);
+                                $timeout(function () {
+                                    $scope.$emit('bindChildRepeatEvent', {
+                                        id: element_id
+                                    });
+                                });
                             }, 30000);
-
                             timer[0].t = newTimer;
                             flag = true;
-                        }else{
+                        } else {
                             var index = -1;
                             angular.forEach($scope.containers, function (item, itemIndex) {
-                                if(item.id === app.id){
+                                if (item.id === app.id) {
                                     index = itemIndex;
                                 }
                             });
-                            $scope.containers.splice(index, 1);
-                            flag = true;
+                            if (index != -1 && timer_index != -1) {
+                                $scope.containers.splice(index, 1);
+                                $scope.containerswithTimeout.splice(timer_index, 1);
+                                flag = true;
+                                $timeout(function () {
+                                    $scope.$emit('bindChildRepeatEvent', {
+                                        id: element_id
+                                    });
+                                });
+                            }
                         }
                     }
                 });
@@ -145,7 +170,6 @@ class fgpWidgetAppContainer {
                     }, 30000);
                     $scope.containerswithTimeout.push({t: t, app: app});
                 }
-
             }
 
         });

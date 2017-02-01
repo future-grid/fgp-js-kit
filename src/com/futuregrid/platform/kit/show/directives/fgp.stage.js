@@ -47,14 +47,15 @@ class fgpStage {
                     var items = angular.element("body").find("#" + item.id).children();
                     angular.forEach(items, function (item_new) {
                         $scope.showdata[item_new.id] = item;
-                        findChild4Repeat(item.id, angular.element(item_new), $scope.configuration, item_new.id);
+                        var currentElement = angular.element(item_new);
+                        findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id);
                     });
                 }
             });
         });
 
         $scope.$on('listStyleEvent', function (evt, param) {
-            var config = $scope.showdata[param.id.replace("edit","")];
+            var config = $scope.showdata[param.id.replace("edit", "")];
             param.callback(config.metadata.data.datasource.style);
         });
 
@@ -76,10 +77,13 @@ class fgpStage {
                     var currentItem = angular.element(arrayItems[i].html_render);
                     var id = arrayItems[i].id;
                     $scope.showdata[id] = arrayItems[i];
-                    if(parentHtmlObj.attr("repeat-id")){
+                    if (parentHtmlObj.attr("repeat-id")) {
                         $scope.repeat = parentHtmlObj.attr("repeat-id");
                     }
-                    if(parentHtmlObj.find('#edit' + parentId).find("#"+id).length == 0){
+                    if (parentHtmlObj.find('#edit' + parentId).find("#" + id).length == 0) {
+                        parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                    }else{
+                        parentHtmlObj.find('#edit' + parentId).empty();
                         parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
                     }
                     findChild(arrayItems[i].id, currentItem, arrayItems);

@@ -63,11 +63,12 @@ export default class fgpDockerButton {
             }
         };
 
+        // how many buttons?
+        $scope.buttons = [];
+
         if ($scope.$parent.repeat) {
             repeateId = $scope.$parent.repeat.split(",");
         }
-        // how many buttons?
-        $scope.buttons = [];
 
         angular.forEach(configuration, function (item) {
             if (item.label == "buttons") {

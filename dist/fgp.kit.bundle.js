@@ -60,14 +60,15 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
                 var items = angular$1.element("body").find("#" + item.id).children();
                 angular$1.forEach(items, function (item_new) {
                     $scope.showdata[item_new.id] = item;
-                    findChild4Repeat(item.id, angular$1.element(item_new), $scope.configuration, item_new.id);
+                    var currentElement = angular$1.element(item_new);
+                    findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id);
                 });
             }
         });
     });
 
     $scope.$on('listStyleEvent', function (evt, param) {
-        var config = $scope.showdata[param.id.replace("edit","")];
+        var config = $scope.showdata[param.id.replace("edit", "")];
         param.callback(config.metadata.data.datasource.style);
     });
 
@@ -89,10 +90,13 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
                 $scope.showdata[id] = arrayItems[i];
-                if(parentHtmlObj.attr("repeat-id")){
+                if (parentHtmlObj.attr("repeat-id")) {
                     $scope.repeat = parentHtmlObj.attr("repeat-id");
                 }
-                if(parentHtmlObj.find('#edit' + parentId).find("#"+id).length == 0){
+                if (parentHtmlObj.find('#edit' + parentId).find("#" + id).length == 0) {
+                    parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                }else{
+                    parentHtmlObj.find('#edit' + parentId).empty();
                     parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
                 }
                 findChild(arrayItems[i].id, currentItem, arrayItems);
@@ -2946,11 +2950,12 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
         }
     };
 
+    // how many buttons?
+    $scope.buttons = [];
+
     if ($scope.$parent.repeat) {
         repeateId = $scope.$parent.repeat.split(",");
     }
-    // how many buttons?
-    $scope.buttons = [];
 
     angular.forEach(configuration, function (item) {
         if (item.label == "buttons") {
@@ -3284,7 +3289,7 @@ fgpWidgetAppContainer.prototype.template = function template (element, attrs) {
     return '' +
         '<div ng-show="showstyle == \'list\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-12 col-xs-12  alert alert-info" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
         '<div class="col-md-8 col-xs-8" role="alert" style="min-height: 24px; text-align: left;margin-bottom: 0px;padding: 3px;">' +
-        '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i>{{container.label | removeSlash}}' +
+        '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i><a href="javascript:;" ng-click="gotoContainer(container);">{{container.name | removeSlash}}</a>' +
         '</div>' +
         '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px; padding: 0;">' +
         '</div>' +
@@ -3292,7 +3297,7 @@ fgpWidgetAppContainer.prototype.template = function template (element, attrs) {
 
         '<div ng-show="showstyle == \'grid\'" style="padding:0;margin-bottom: 5px;background-color: {{css.background.color}}; border: 1px solid; border-color: {{css.border.color}};border-radius: 5px;"  class="col-md-6 col-xs-6 alert alert-info" id="' + element_id + '_{{$index}}" repeat-id="{{container.id}},{{host}},{{container.application}}" ng-repeat="container in containers | orderBy: \'Name\' as filtered_result track by $index" emit-last-repeater-element>' +
         '<div class="col-md-8 col-xs-8" role="alert" style="min-height: 24px;text-align: left;margin-bottom: 0px;padding: 3px;">' +
-        '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i>{{container.label | removeSlash}}' +
+        '<i class="fa fa-hdd-o" aria-hidden="true" style="padding-right: 5px;"></i><a href="javascript:;" ng-click="gotoContainer(container);">{{container.name | removeSlash}}</a>' +
         '</div>' +
         '<div class="col-md-4 col-xs-4" id="edit' + element_id + '" style="min-height: 24px; padding: 0;">' +
         '</div>' +
@@ -3345,7 +3350,7 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
 
     $timeout(function () {
         var pp = $scope.$emit('listStyleEvent', {
-            id:widgetData.data.parent,
+            id: widgetData.data.parent,
             callback: function (style) {
                 $scope.showstyle = style;
             }
@@ -3353,6 +3358,11 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
 
     });
 
+    $scope.gotoContainer = function (container) {
+        // "device type and device name" display by a dynamic page!
+        console.info(container);
+        return false;
+    };
 
 
     $scope.$on('containerStatusEvent', function (event, data) {
@@ -3372,35 +3382,54 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
             var app = {
                 id: data.container,
                 label: showLabel,
-                application: data.application
+                application: data.application,
+                name: data.deviceName,
+                type: data.deviceType
             };
             var flag = false;
             angular.forEach($scope.containers, function (container) {
                 if (container.id == app.id) {
-                    container = app;
                     // update timer
-                    var timer = $scope.containerswithTimeout.filter(function (item) {
-                        return item.app.id == app.id;
+                    var timer_index = -1;
+                    var timer = $scope.containerswithTimeout.filter(function (item, index) {
+                        if(item.app.id == app.id){
+                            timer_index = index;
+                            return true;
+                        }else{
+                            false;
+                        }
                     });
                     $timeout.cancel(timer[0].t);
-                    console.info(data.stats);
-                    if(data.stats != "removed"){
+                    if (data.stats != "removed") {
                         var newTimer = $timeout(function () {
                             var index = $scope.containers.indexOf(app);
                             $scope.containers.splice(index, 1);
+                            $scope.containerswithTimeout.splice(timer_index, 1);
+                            $timeout(function () {
+                                $scope.$emit('bindChildRepeatEvent', {
+                                    id: element_id
+                                });
+                            });
                         }, 30000);
-
                         timer[0].t = newTimer;
                         flag = true;
-                    }else{
+                    } else {
                         var index = -1;
                         angular.forEach($scope.containers, function (item, itemIndex) {
-                            if(item.id === app.id){
+                            if (item.id === app.id) {
                                 index = itemIndex;
                             }
                         });
-                        $scope.containers.splice(index, 1);
-                        flag = true;
+                        if (index != -1 && timer_index != -1) {
+                            $scope.containers.splice(index, 1);
+                            $scope.containerswithTimeout.splice(timer_index, 1);
+                            flag = true;
+                            $timeout(function () {
+                                $scope.$emit('bindChildRepeatEvent', {
+                                    id: element_id
+                                });
+                            });
+                        }
                     }
                 }
             });
@@ -3415,7 +3444,6 @@ fgpWidgetAppContainer.prototype.controller = function controller ($scope, $eleme
                 }, 30000);
                 $scope.containerswithTimeout.push({t: t, app: app});
             }
-
         }
 
     });
@@ -3557,8 +3585,8 @@ fgpWidgetChartTable.buildFactory = function buildFactory () {
 angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory)
     .filter('removeSlash', function () {
         return function (input) {
-            if(input.startsWith("/")){
-                return input.substring(1,input.length);
+            if (input.startsWith("/")) {
+                return input.substring(1, input.length);
             }
             return input;
         }
@@ -3578,13 +3606,13 @@ angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buil
     .directive('widgetIcon', fgpIcon.buildFactory)
     .directive('widgetAppContainer', fgpWidgetAppContainer.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory)
-    .directive('emitLastRepeaterElement', function () {
+    .directive('emitLastRepeaterElement', [function () {
         return function (scope) {
             if (scope.$last) {
                 scope.$emit('LastRepeaterElement');
             }
         };
-    }).filter('tableformatter', ['$filter', function ($filter) {
+    }]).filter('tableformatter', ['$filter', function ($filter) {
     return function (input, obj, field, formatter) {
         if (formatter) {
             if (obj[field]) {
