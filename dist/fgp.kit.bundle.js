@@ -31,7 +31,7 @@ var fgpStage = function fgpStage() {
 };
 
 fgpStage.prototype.template = function template () {
-    return '<div id="pageStage" class="wrapper col-md-12 col-xl-12" style="background-color: #fff;height:100%;">' +
+    return '<div id="pageStage" class="wrapper col-md-12 col-xl-12" style="background-color: #fff;height:100%;padding: 0px;">' +
         '</div>';
 };
 
@@ -154,9 +154,9 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         // first time
         sendDeviceData();
         // after every 30 seconds
-        $interval(function () {
-            sendDeviceData();
-        }, 30000);
+        // $interval(function () {
+        // sendDeviceData();
+        // }, 30000);
     }
 
 
@@ -579,7 +579,7 @@ fgpWidgetContainer.prototype.template = function template (element, attrs) {
     var showTitle = attrs.hasOwnProperty("showtitle");
     var element_id = attrs.id;
     var dom_show = '<div class="" id="' + element_id + '">' +
-        '<div class="{{css.width}}">' +
+        '<div class="{{css.width}}" style="padding: 0px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}}</div>' +
         '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
@@ -604,7 +604,7 @@ fgpWidgetContainer.prototype.template = function template (element, attrs) {
 
 };
 
-fgpWidgetContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout) {
+fgpWidgetContainer.prototype.controller = function controller ($scope, $element, dataService, $rootScope, $timeout, $stateParams) {
     // only show
     var element_id = $element.attr("id");
 
@@ -618,6 +618,8 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
             }
         }
     });
+
+
 
 
     var metadata = widgetData.data.metadata;
@@ -2909,24 +2911,45 @@ fgpDockerButton.prototype.template = function template (element, attrs) {
     return show_dom;
 };
 
-fgpDockerButton.prototype.controller = function controller ($scope, $element, $http) {
+
+fgpDockerButton.prototype.controller = function controller ($scope, $element, $http, $timeout) {
 
     $scope.stats = "";
 
     // get configuration
     var id = $element.attr("id");
     var configuration = null;
+    var confData = null;
     $scope.$emit('fetchWidgetMetadataEvent', {
         id: id, callback: function (data) {
             if (data) {
                 configuration = data.data.metadata.data;
+                confData = data.data;
             }
         }
     });
 
     var repeateId = [];
 
+    var pageDevice = null;
+    $scope.$on('deviceInfoEvent', function (event, data) {
+        pageDevice = data.device;
+    });
+
+    $scope.$on('containerStatusEvent', function (event, data) {
+        if (data.application === repeateId[2] && data.container === repeateId[0] && data.host === repeateId[1]) {
+            $scope.stats = data.stats;
+        }
+    });
+
     $scope.checkShow = function (button) {
+
+
+        if (button.hasOwnProperty("shown") && button.shown) {
+            return true;
+        }
+
+
         if (button.type === "stop") {
             if ($scope.stats === "running") {
                 return true;
@@ -2939,7 +2962,7 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
             } else {
                 return false;
             }
-        } else if(button.type === "delete"){
+        } else if (button.type === "delete") {
             if ($scope.stats === "exited" || $scope.stats === "created") {
                 return true;
             } else {
@@ -2963,35 +2986,48 @@ fgpDockerButton.prototype.controller = function controller ($scope, $element, $h
         }
     });
 
+    $scope.healthinfo = "";
+
+
     // submit "action" to rest api
     $scope.action = function (button) {
-        // send request through $http
-        $http({
-            method: 'POST',
-            url: '/api/docker/hosts/action',
-            data: {
-                func: button.func,
-                script: button.script,
-                container: repeateId[0],
-                host: repeateId[1],
-                application: repeateId[2]
-            }
-        }).then(function successCallback(response) {
-            console.info(response.data);
-        }, function errorCallback(response) {
-            console.error(response.data);
-        });
-
+        if (button.hasOwnProperty("shown") && button.shown) {
+            // send request through $http
+            $http({
+                method: 'POST',
+                url: '/api/docker/exec',
+                data: {
+                    func: button.func,
+                    script: button.script,
+                    deviceName: pageDevice.name,
+                    deviceKey: pageDevice.key.id,
+                    relationship: 'node_application'
+                }
+            }).then(function successCallback(response) {
+                console.info(response.data);
+            }, function errorCallback(response) {
+                console.error(response.data);
+            });
+        } else {
+            // send request through $http
+            $http({
+                method: 'POST',
+                url: '/api/docker/hosts/action',
+                data: {
+                    func: button.func,
+                    script: button.script,
+                    container: repeateId[0],
+                    host: repeateId[1],
+                    application: repeateId[2]
+                }
+            }).then(function successCallback(response) {
+                console.info(response.data);
+            }, function errorCallback(response) {
+                console.error(response.data);
+            });
+        }
 
     };
-
-    $scope.$on('containerStatusEvent', function (event, data) {
-        if (data.application === repeateId[2] && data.container === repeateId[0] && data.host === repeateId[1]) {
-            $scope.stats = data.stats;
-        }
-    });
-
-
 };
 
 
@@ -3013,25 +3049,26 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
     var flag = attrs.hasOwnProperty("shown");
     var showTitle = attrs.hasOwnProperty("showtitle");
     var element_id = attrs.id;
-    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
+    var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.device.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
         '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
-        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}};"><i class="fa fa-desktop" aria-hidden="true" style="margin-right: 5px;"></i>{{item.name}}</div>' +
+        '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}};"><i class="fa fa-desktop" aria-hidden="true" style="margin-right: 5px;"></i>{{item.device.name}}</div>' +
         '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
         '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
-        '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+        '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
+        '<span style="float:left;margin-right: 5px;" class="label label-success">{{item.health}}</span>' +
         '</div>' +
         '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
         '</div>' +
         '</div>' +
         '</div>' +
         '</div></div>';
-    var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" repeat-id="{{item.key.id}}">' +
+    var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" repeat-id="{{item.device.key.id}}">' +
         '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
         '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
         '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
-        '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+        '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
         '</div>' +
         '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
         '</div>' +
@@ -3086,12 +3123,15 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
 
     $scope.labels = [];
 
-    var page = $stateParams.type;
-    var device = $stateParams.device;
-
+    var deviceType = $stateParams.type;
+    var deviceName = $stateParams.device;
 
     if (metadata.data) {
+
+
         $scope.labels = [];
+
+
         if (metadata.data.datasource.labels) {
             $scope.labels = metadata.data.datasource.labels.split(" ");
         }
@@ -3100,10 +3140,12 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
             $scope.listStyle = metadata.data.datasource.style;
         }
 
-        // run script
+        // show different type
+        var relation = metadata.data.datasource.type;
+        $scope.items = [];
         $http({
             method: 'GET',
-            url: '/api/docker/platformnodes/' + page + '/' + device
+            url: 'api/docker/repeat/' + deviceType + '/' + deviceName + '/' + relation
         }).then(function (data) {
             $scope.items = data.data;
         }, function (error) {
@@ -3111,7 +3153,6 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
         });
 
         // I'm ready. please give all my children to me~
-
         // call stage
         $scope.$on('LastRepeaterElement', function () {
             $timeout(function () {
@@ -3120,8 +3161,6 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
                 });
             });
         });
-
-
 
 
     }
@@ -3133,6 +3172,20 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
             if (backData.hasOwnProperty("container")) {
                 // tell children
                 $scope.$parent.$broadcast('containerStatusEvent', backData);
+                // update health-check status
+                angular.forEach($scope.items, function (item) {
+                    if (backData.application == item.device.key.id) {
+                        if (backData.config.State.Health) {
+                            item["health"] = backData.config.State.Health.Status;
+                        }else{
+                            item["health"] = null;
+                        }
+
+                        if(backData.stats == "exited"){
+                            item["health"] = null;
+                        }
+                    }
+                });
             }
         } catch (e) {
         }

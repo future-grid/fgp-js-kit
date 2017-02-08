@@ -14,25 +14,26 @@ class fgpWidgetRepeatContainer {
         var flag = attrs.hasOwnProperty("shown");
         var showTitle = attrs.hasOwnProperty("showtitle");
         var element_id = attrs.id;
-        var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
+        var dom_show = '<div class="" id="' + element_id + '_{{$index}}" repeat-id="{{item.device.key.id}}" ng-repeat="item in items" emit-last-repeater-element style="padding-left: 2px; padding-right: 2px;">' +
             '<div class="{{css.width}}" style="padding-left: 1px; padding-right: 1px;">' +
             '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
-            '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}};"><i class="fa fa-desktop" aria-hidden="true" style="margin-right: 5px;"></i>{{item.name}}</div>' +
+            '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}};"><i class="fa fa-desktop" aria-hidden="true" style="margin-right: 5px;"></i>{{item.device.name}}</div>' +
             '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
             '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
-            '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+            '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
+            '<span style="float:left;margin-right: 5px;" class="label label-success">{{item.health}}</span>' +
             '</div>' +
             '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
             '</div>' +
             '</div>' +
             '</div>' +
             '</div></div>';
-        var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" repeat-id="{{item.key.id}}">' +
+        var dom_show_notitle = '<div class="" id="' + element_id + '_{{$index}}" ng-repeat="item in items" repeat-id="{{item.device.key.id}}">' +
             '<div class="{{css.width}}" style="margin-bottom:15px;padding-left: 2px; padding-right: 2px;">' +
             '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
             '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
-            '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item[label]}}</span>' +
+            '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
             '</div>' +
             '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
             '</div>' +
@@ -87,12 +88,15 @@ class fgpWidgetRepeatContainer {
 
         $scope.labels = [];
 
-        var page = $stateParams.type;
-        var device = $stateParams.device;
-
+        var deviceType = $stateParams.type;
+        var deviceName = $stateParams.device;
 
         if (metadata.data) {
+
+
             $scope.labels = [];
+
+
             if (metadata.data.datasource.labels) {
                 $scope.labels = metadata.data.datasource.labels.split(" ");
             }
@@ -101,10 +105,12 @@ class fgpWidgetRepeatContainer {
                 $scope.listStyle = metadata.data.datasource.style;
             }
 
-            // run script
+            // show different type
+            var relation = metadata.data.datasource.type;
+            $scope.items = [];
             $http({
                 method: 'GET',
-                url: '/api/docker/platformnodes/' + page + '/' + device
+                url: 'api/docker/repeat/' + deviceType + '/' + deviceName + '/' + relation
             }).then(function (data) {
                 $scope.items = data.data;
             }, function (error) {
@@ -112,7 +118,6 @@ class fgpWidgetRepeatContainer {
             });
 
             // I'm ready. please give all my children to me~
-
             // call stage
             $scope.$on('LastRepeaterElement', function () {
                 $timeout(function () {
@@ -121,8 +126,6 @@ class fgpWidgetRepeatContainer {
                     });
                 });
             });
-
-
 
 
         }
@@ -134,6 +137,20 @@ class fgpWidgetRepeatContainer {
                 if (backData.hasOwnProperty("container")) {
                     // tell children
                     $scope.$parent.$broadcast('containerStatusEvent', backData);
+                    // update health-check status
+                    angular.forEach($scope.items, function (item) {
+                        if (backData.application == item.device.key.id) {
+                            if (backData.config.State.Health) {
+                                item["health"] = backData.config.State.Health.Status;
+                            }else{
+                                item["health"] = null;
+                            }
+
+                            if(backData.stats == "exited"){
+                                item["health"] = null;
+                            }
+                        }
+                    });
                 }
             } catch (e) {
             }

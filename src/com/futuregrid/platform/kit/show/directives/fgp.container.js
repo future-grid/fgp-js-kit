@@ -14,7 +14,7 @@ class fgpWidgetContainer {
         var showTitle = attrs.hasOwnProperty("showtitle");
         var element_id = attrs.id;
         var dom_show = '<div class="" id="' + element_id + '">' +
-            '<div class="{{css.width}}">' +
+            '<div class="{{css.width}}" style="padding: 0px;">' +
             '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}}</div>' +
             '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
@@ -39,7 +39,7 @@ class fgpWidgetContainer {
 
     }
 
-    controller($scope, $element, dataService, $rootScope, $timeout) {
+    controller($scope, $element, dataService, $rootScope, $timeout, $stateParams) {
         // only show
         var element_id = $element.attr("id");
 
@@ -53,6 +53,8 @@ class fgpWidgetContainer {
                 }
             }
         });
+
+
 
 
         var metadata = widgetData.data.metadata;

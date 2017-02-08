@@ -18,7 +18,7 @@ class fgpStage {
     }
 
     template() {
-        return '<div id="pageStage" class="wrapper col-md-12 col-xl-12" style="background-color: #fff;height:100%;">' +
+        return '<div id="pageStage" class="wrapper col-md-12 col-xl-12" style="background-color: #fff;height:100%;padding: 0px;">' +
             '</div>';
     }
 
@@ -141,9 +141,9 @@ class fgpStage {
             // first time
             sendDeviceData();
             // after every 30 seconds
-            $interval(function () {
-                sendDeviceData();
-            }, 30000);
+            // $interval(function () {
+            //     sendDeviceData();
+            // }, 30000);
         }
 
 
