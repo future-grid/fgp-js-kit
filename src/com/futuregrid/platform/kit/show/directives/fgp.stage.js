@@ -48,7 +48,14 @@ class fgpStage {
                     angular.forEach(items, function (item_new) {
                         $scope.showdata[item_new.id] = item;
                         var currentElement = angular.element(item_new);
-                        findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id);
+                        if (currentElement.attr("dulp")) {
+                            var groupItems = angular.element("body").find("div[dulp='" + item.id + "']");
+                            angular.forEach(groupItems, function (dulpItem) {
+                                findChild4Repeat(item.id, angular.element(dulpItem), $scope.configuration, item_new.id);
+                            });
+                        }else{
+                            findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id);
+                        }
                     });
                 }
             });
@@ -76,23 +83,22 @@ class fgpStage {
                 if ('edit' + parentId === arrayItems[i].parent) {
                     var currentItem = angular.element(arrayItems[i].html_render);
                     var id = arrayItems[i].id;
+
                     $scope.showdata[id] = arrayItems[i];
                     if (parentHtmlObj.attr("repeat-id")) {
                         $scope.repeat = parentHtmlObj.attr("repeat-id");
                     }
                     if (parentHtmlObj.find('#edit' + parentId).find("#" + id).length == 0) {
                         parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
-                    }else{
-                        parentHtmlObj.find('#edit' + parentId).empty();
-                        parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
                     }
-                    findChild(arrayItems[i].id, currentItem, arrayItems);
-                } else if ('detail_status_' + parentId === arrayItems[i].parent) {
+                    findChild4Repeat(arrayItems[i].id, currentItem, arrayItems);
+                }
+                else if ('detail_status_' + parentId === arrayItems[i].parent) {
                     var currentItem = angular.element(arrayItems[i].html_render);
                     var id = arrayItems[i].id;
                     $scope.showdata[id] = arrayItems[i];
                     parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)($scope));
-                    findChild(arrayItems[i].id, currentItem, arrayItems);
+                    findChild4Repeat(arrayItems[i].id, currentItem, arrayItems);
                 }
             }
         }
@@ -116,30 +122,52 @@ class fgpStage {
             }
         }
 
-        angular.forEach($scope.configuration, function (item) {
-            if ('workingArea' === item.parent) {
-                var currentItem = angular.element(item.html_render);
-                $scope.showdata[item.id] = item;
-                $element.append($compile(currentItem)($scope));
-                findChild(item.id, currentItem, $scope.configuration);
-            }
-        });
+        angular
+            .forEach($scope
 
-        var sendDeviceData = function () {
-            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-                // send device info to all widget
-                $timeout(function () {
-                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                    .configuration
+                ,
+                function (item) {
+                    if ('workingArea' === item.parent) {
+                        var currentItem = angular.element(item.html_render);
+                        $scope.showdata[item.id] = item;
+                        $element.append($compile(currentItem)($scope));
+                        findChild(item.id, currentItem, $scope.configuration);
+                    }
+                }
+            )
+        ;
+
+        var
+            sendDeviceData = function () {
+                dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
+                    // send device info to all widget
+                    $timeout(function () {
+                        $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                    });
                 });
-            });
-        };
+            };
 
         /**
          * get device information
          */
-        if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+        if ($scope
+
+                .deviceName
+            &&
+            $scope
+                .deviceName
+            !=
+            ""
+            &&
+            "undefined"
+            !=
+            $scope
+                .deviceName
+        ) {
             // first time
             sendDeviceData();
+
             // after every 30 seconds
             // $interval(function () {
             //     sendDeviceData();
@@ -147,7 +175,7 @@ class fgpStage {
         }
 
 
-        // all item created;
+// all item created;
         $timeout(function () {
             angular.forEach(graphBindingArray, function (graph) {
                 $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
@@ -156,7 +184,8 @@ class fgpStage {
     }
 
 
-    static buildFactory() {
+    static
+    buildFactory() {
         fgpStage.instance = new fgpStage();
         return fgpStage.instance;
     }
