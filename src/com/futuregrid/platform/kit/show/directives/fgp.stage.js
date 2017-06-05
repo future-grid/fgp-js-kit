@@ -151,20 +151,7 @@ class fgpStage {
         /**
          * get device information
          */
-        if ($scope
-
-                .deviceName
-            &&
-            $scope
-                .deviceName
-            !=
-            ""
-            &&
-            "undefined"
-            !=
-            $scope
-                .deviceName
-        ) {
+        if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
             // first time
             sendDeviceData();
 

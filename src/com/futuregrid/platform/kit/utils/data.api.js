@@ -1,5 +1,5 @@
-import $ from 'jquery';
-import angular from 'angular';
+import $ from "jquery";
+import angular from "angular";
 /**
  * Created by ericwang on 15/06/2016.
  */
@@ -387,6 +387,26 @@ class dataAccessApi {
 
     setColors(colors) {
         this.colors = colors;
+    }
+
+
+    /**
+     * device id
+     * @param id
+     */
+    healthcheck(application, id) {
+
+        if (id = null || id == "") {
+            return;
+        }
+        this._$http.get('/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
+            .success(function (response) {
+                console.info(response);
+                debugger;
+                return response;
+            });
+
+
     }
 
 

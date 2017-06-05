@@ -164,20 +164,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     /**
      * get device information
      */
-    if ($scope
-
-            .deviceName
-        &&
-        $scope
-            .deviceName
-        !=
-        ""
-        &&
-        "undefined"
-        !=
-        $scope
-            .deviceName
-    ) {
+    if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
         // first time
         sendDeviceData();
 
@@ -584,6 +571,26 @@ dataAccessApi.prototype.defaultColors = function defaultColors () {
 
 dataAccessApi.prototype.setColors = function setColors (colors) {
     this.colors = colors;
+};
+
+
+/**
+ * device id
+ * @param id
+ */
+dataAccessApi.prototype.healthcheck = function healthcheck (application, id) {
+
+    if (id = null || id == "") {
+        return;
+    }
+    this._$http.get('/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
+        .success(function (response) {
+            console.info(response);
+            debugger;
+            return response;
+        });
+
+
 };
 
 
@@ -3084,7 +3091,7 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
         '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
         '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
         '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
-        '<span style="float:left;margin-right: 5px;" class="label label-success">{{item.health}}</span>' +
+        '<span style="float:left;margin-right: 5px;" class="label label-success" ng-click="healthcheck(item)">{{item.health}}</span>' +
         '</div>' +
         '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
         '</div>' +
@@ -3097,6 +3104,7 @@ fgpWidgetRepeatContainer.prototype.template = function template (element, attrs)
         '<div style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
         '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
         '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
+        '<span style="float:left;margin-right: 5px;" class="label label-success" ng-click="healthcheck(item)">{{item.health}}</span>' +
         '</div>' +
         '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
         '</div>' +
@@ -3205,11 +3213,11 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
                     if (backData.application == item.device.key.id) {
                         if (backData.config.State.Health) {
                             item["health"] = backData.config.State.Health.Status;
-                        }else{
+                        } else {
                             item["health"] = null;
                         }
 
-                        if(backData.stats == "exited"){
+                        if (backData.stats == "exited") {
                             item["health"] = null;
                         }
                     }
@@ -3218,6 +3226,11 @@ fgpWidgetRepeatContainer.prototype.controller = function controller ($scope, $el
         } catch (e) {
         }
     });
+
+    $scope.healthcheck = function (item) {
+        // call server and get the exception.
+        dataService.healthcheck(item.name, item.device.key.id);
+    };
 
 
 };

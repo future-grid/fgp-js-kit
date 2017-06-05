@@ -21,7 +21,7 @@ class fgpWidgetRepeatContainer {
             '<div class="panel-body"  style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\'}};">' +
             '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
             '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
-            '<span style="float:left;margin-right: 5px;" class="label label-success">{{item.health}}</span>' +
+            '<span style="float:left;margin-right: 5px;" class="label label-success" ng-click="healthcheck(item)">{{item.health}}</span>' +
             '</div>' +
             '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
             '</div>' +
@@ -34,6 +34,7 @@ class fgpWidgetRepeatContainer {
             '<div style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
             '<div style="float:left;padding-top: 5px;padding-left:5px;padding-right:5px;">' +
             '<span style="float:left;margin-right: 5px;" class="label label-{{labelstyle[$index]}}" ng-repeat="label in labels">{{label}}:{{item.labels[label]}}</span>' +
+            '<span style="float:left;margin-right: 5px;" class="label label-success" ng-click="healthcheck(item)">{{item.health}}</span>' +
             '</div>' +
             '<div class="col-md-12 col-xs-12" style="padding-top: 5px;padding-left:5px;padding-right:5px;float:left;max-height: 200px; overflow-y: auto;" id="edit' + element_id + '" list-type="{{listStyle}}">' +
             '</div>' +
@@ -142,11 +143,11 @@ class fgpWidgetRepeatContainer {
                         if (backData.application == item.device.key.id) {
                             if (backData.config.State.Health) {
                                 item["health"] = backData.config.State.Health.Status;
-                            }else{
+                            } else {
                                 item["health"] = null;
                             }
 
-                            if(backData.stats == "exited"){
+                            if (backData.stats == "exited") {
                                 item["health"] = null;
                             }
                         }
@@ -155,6 +156,11 @@ class fgpWidgetRepeatContainer {
             } catch (e) {
             }
         });
+
+        $scope.healthcheck = function (item) {
+            // call server and get the exception.
+            dataService.healthcheck(item.name, item.device.key.id);
+        }
 
 
     }
