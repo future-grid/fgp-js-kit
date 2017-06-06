@@ -39,7 +39,7 @@ class fgpWidgetContainer {
 
     }
 
-    controller($scope, $element, dataService, $rootScope, $timeout, $stateParams) {
+    controller($scope, $element, dataService, $rootScope, $timeout) {
         // only show
         var element_id = $element.attr("id");
 
