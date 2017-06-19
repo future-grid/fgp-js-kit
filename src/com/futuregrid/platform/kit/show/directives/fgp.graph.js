@@ -569,24 +569,29 @@ class fgpWidgetGraph {
 
             $scope.choosed_range = 0;
 
+            $scope.changeRange = function (range) {
+                if ($scope.chartDateWindow) {
+                    $scope.choosed_range = range.value;
+                    if ($scope.chartDateWindow[1] instanceof Date) {
+                        $scope.chartDateWindow = [new Date($scope.chartDateWindow[1].getTime() - $scope.choosed_range), $scope.chartDateWindow[1]];
+                        $scope.chartDateTime = [new Date($scope.chartDateWindow[1].getTime() - $scope.choosed_range), $scope.chartDateWindow[1]];
+                    } else {
+                        $scope.chartDateWindow = [new Date($scope.chartDateWindow[1] - $scope.choosed_range), $scope.chartDateWindow[1]];
+                        $scope.chartDateTime = [new Date($scope.chartDateWindow[1] - $scope.choosed_range), $scope.chartDateWindow[1]];
+                    }
+
+                }
+                if ($scope.currentChart) {
+                    $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                }
+            };
+
             // get the default rollup
             angular.forEach($scope.ranges, function (range) {
                 if (range.checked === true) {
                     $scope.choosed_range = range.value;
                 }
             });
-
-            $scope.changeRange = function (range) {
-                $scope.choosed_range = range.value;
-                if ($scope.chartDateWindow[1] instanceof Date) {
-                    $scope.chartDateWindow = [new Date($scope.chartDateWindow[1].getTime() - $scope.choosed_range), $scope.chartDateWindow[1]];
-                    $scope.chartDateTime = [new Date($scope.chartDateWindow[1].getTime() - $scope.choosed_range), $scope.chartDateWindow[1]];
-                } else {
-                    $scope.chartDateWindow = [new Date($scope.chartDateWindow[1] - $scope.choosed_range), $scope.chartDateWindow[1]];
-                    $scope.chartDateTime = [new Date($scope.chartDateWindow[1] - $scope.choosed_range), $scope.chartDateWindow[1]];
-                }
-                $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
-            };
 
             // auto refresh
 
@@ -1081,7 +1086,7 @@ class fgpWidgetGraph {
                 var allData = [{timestamp: new Date(rang_start)}, {timestamp: new Date(rang_end)}];
 
                 // only one point
-                if(rang_start == rang_end){
+                if (rang_start == rang_end) {
                     allData = [{timestamp: new Date(rang_start - 3600000)}, {timestamp: new Date(rang_end)}];
                 }
 
@@ -1114,8 +1119,25 @@ class fgpWidgetGraph {
                 $scope.ordinalRangeData = allData;
                 // get configuration and make real data
                 updateChart(metadata, store, allData);
-                $scope.chartDateWindow = [allData[0].timestamp, new Date(rangeTree.last.timestamp)];
-                $scope.chartDateTime = [allData[0].timestamp, new Date(rangeTree.last.timestamp)];
+
+                $scope.choosed_range = 0;
+                // get the default rollup
+                angular.forEach($scope.ranges, function (range) {
+                    if (range.checked === true) {
+                        $scope.choosed_range = range.value;
+                        if ($scope.chartDateWindow) {
+                            $scope.choosed_range = range.value;
+                            if ($scope.chartDateWindow[1] instanceof Date) {
+                                $scope.chartDateWindow = [new Date(new Date(rangeTree.last.timestamp).getTime() - $scope.choosed_range), new Date(rangeTree.last.timestamp)];
+                                $scope.chartDateTime = [new Date(new Date(rangeTree.last.timestamp).getTime() - $scope.choosed_range), new Date(rangeTree.last.timestamp)];
+                            } else {
+                                $scope.chartDateWindow = [new Date(rangeTree.last.timestamp - $scope.choosed_range), new Date(rangeTree.last.timestamp)];
+                                $scope.chartDateTime = [new Date(rangeTree.last.timestamp - $scope.choosed_range), new Date(rangeTree.last.timestamp)];
+                            }
+
+                        }
+                    }
+                });
                 $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
             };
 
