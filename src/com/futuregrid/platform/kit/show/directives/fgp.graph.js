@@ -1,7 +1,7 @@
 /**
  * Created by ericwang on 15/06/2016.
  */
-import angular from 'angular';
+import angular from "angular";
 import Dygraph from "dygraphs";
 class fgpWidgetGraph {
 
@@ -392,7 +392,7 @@ class fgpWidgetGraph {
                 axes: {
                     y: {
                         valueRange: [0, 1],
-                        axisLabelWidth : 80
+                        axisLabelWidth: 80
                     },
                     y2: {
                         // set axis-related properties here
@@ -738,7 +738,7 @@ class fgpWidgetGraph {
                     }
                 });
                 $scope.$watch("chartDateTime", function (newValue, oldValue) {
-                    if (newValue.begin != oldValue.begin || newValue.end != oldValue.end) {
+                    // if (newValue.begin != oldValue.begin || newValue.end != oldValue.end) {
                         var expect_points = Math.floor($element.parent().width() / 2);
                         // find a interval
                         var expectedInterval = (newValue.end - newValue.begin) / expect_points;
@@ -886,7 +886,7 @@ class fgpWidgetGraph {
                             $scope.fixGraphWithGap();
                         }
                         $scope.status = false;
-                    }
+                    // }
                 });// not working.....
 
             });
@@ -1715,9 +1715,17 @@ class fgpWidgetGraph {
                                     range: false
                                 });
                             }
-                            $scope.currentChart.updateOptions($scope.rangeConfig);
-                            $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
-                            $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+
+
+                            if (($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
+                                // keep the current range bar
+                                $scope.chartDateTime = [$scope.chartDateWindow[0],$scope.chartDateWindow[1]];
+                            } else {
+                                $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
+                                $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                                $scope.currentChart.updateOptions($scope.rangeConfig);
+                            }
+
                             //bind
                             $scope.loadingShow = false;
                         }
