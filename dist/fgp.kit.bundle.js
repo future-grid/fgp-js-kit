@@ -702,7 +702,7 @@ fgpWidgetContainer.$inject = [];
 /**
  * Created by ericwang on 15/06/2016.
  */
-var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location) {
+var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams) {
     this.restrict = 'E';
     this.scope = {};
     this.$timeout = $timeout;
@@ -1008,7 +1008,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             timeOut(function () {
                 scope.chartDateWindow = g.xAxisRange();
             });
-
+            return false;
         };
 
         var firstPoint = null;
@@ -1210,7 +1210,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 };
 
 //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope) {
+fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
 
@@ -1242,6 +1242,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         if (widgetData.data.metadata.css) {
             $scope.css = widgetData.data.metadata.css;
         }
+
+        // get start and end from url
+        var begin_path = $stateParams.begin;
+        var end_path = $stateParams.end;
+        var init_flag = false;
+
 
         //fix interval
         $scope.fixInterval = false;
@@ -1435,7 +1441,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
             });
             $scope.$watch("chartDateTime", function (newValue, oldValue) {
-                // if (newValue.begin != oldValue.begin || newValue.end != oldValue.end) {
+                if (newValue.begin != null && newValue.end != null) {
                     var expect_points = Math.floor($element.parent().width() / 2);
                     // find a interval
                     var expectedInterval = (newValue.end - newValue.begin) / expect_points;
@@ -1583,7 +1589,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.fixGraphWithGap();
                     }
                     $scope.status = false;
-                // }
+                }
             });// not working.....
 
         });
@@ -2414,14 +2420,29 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
 
-                        if (($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
+                        if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
                             // keep the current range bar
-                            $scope.chartDateTime = [$scope.chartDateWindow[0],$scope.chartDateWindow[1]];
+
                         } else {
+
                             $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
-                            $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                            if (begin_path && end_path && !init_flag) {
+                                // $scope.chartDateTime = {
+                                // "begin": new Date(new Number(begin_path)),
+                                // "end": new Date(new Number(end_path))
+                                // };
+                                $scope.chartDateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                                $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                                init_flag = true;
+                            }else{
+                                $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                                $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                            }
+
                             $scope.currentChart.updateOptions($scope.rangeConfig);
+
                         }
+
 
                         //bind
                         $scope.loadingShow = false;
@@ -2430,7 +2451,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
             });
         };
-
 
         $scope.chartDateTime = {begin: null, end: null};
 
@@ -2464,12 +2484,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 };
 
 
-fgpWidgetGraph.buildFactory = function buildFactory ($timeout, dataService, $rootScope, $interval, $filter, $location) {
-    fgpWidgetGraph.instance = new fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location);
+fgpWidgetGraph.buildFactory = function buildFactory ($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams) {
+    fgpWidgetGraph.instance = new fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams);
     return fgpWidgetGraph.instance;
 };
 
-fgpWidgetGraph.$inject = ['$timeout', 'dataService', '$rootScope', '$interval', '$filter', '$location'];
+fgpWidgetGraph.$inject = ['$timeout', 'dataService', '$rootScope', '$interval', '$filter', '$location', '$stateParams'];
 
 /**
  * Created by ericwang on 20/06/2016.
