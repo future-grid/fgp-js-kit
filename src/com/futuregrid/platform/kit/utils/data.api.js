@@ -28,57 +28,51 @@ class dataAccessApi {
      */
     deviceInfo(host, deviceName, deviceKey, applicationName) {
         var deferred = this._$q.defer();
-        var url = host + "/api/";
+        var url = host + "/rest/api/";
 
         if (applicationName) {
             url += "app/" + applicationName;
         }
 
         if (deviceName) {
-            url += '/devices/parameter/jsonp?name=' + deviceName
+            url += '/devices/' + deviceName
         } else if (deviceKey) {
-            url += 'devices/parameter/jsonp?key=' + deviceKey
+            url += 'devices?key=' + deviceKey
         }
 
         $.ajaxSettings.async = false;
         $.ajax({
             type: 'GET',
             url: url,
-            jsonpCallback: 'jsonCallback',
             contentType: "application/json",
-            dataType: 'jsonp',
             success: function (data) {
-                var url = host + "/api/";
+                var url = host + "/rest/api/";
                 if (applicationName) {
-                    url += "app/" + applicationName + "/devices/extension-types/jsonp?device_type=";
+                    url += "app/" + applicationName + "/devices/extension-types?device_type=";
                 } else {
-                    url += "devices/extension-types/jsonp?device_type=";
+                    url += "devices/extension-types?device_type=";
                 }
                 $.ajaxSettings.async = false;
                 $.ajax({
                     type: 'GET',
                     url: url + data.type,
-                    jsonpCallback: 'jsonCallback',
                     contentType: "application/json",
-                    dataType: 'jsonp',
                     success: function (types) {
                         angular.forEach(types, function (type) {
                             Object.defineProperty(data, type.name, {
                                 get: function () {
                                     var result = null;
-                                    var url = host + "/api/";
+                                    var url = host + "/rest/api/";
                                     if (applicationName) {
-                                        url += "app/" + applicationName + "/devices/extensions/jsonp?device_name=";
+                                        url += "app/" + applicationName + "/devices/extensions?device_name=";
                                     } else {
-                                        url += "devices/extensions/jsonp?device_name=";
+                                        url += "devices/extensions?device_name=";
                                     }
                                     $.ajaxSettings.async = false;
                                     $.ajax({
                                         type: 'GET',
                                         url: url + this.name + '&extension_type=' + type.name,
-                                        jsonpCallback: 'jsonCallback',
                                         contentType: "application/json",
-                                        dataType: 'jsonp',
                                         success: function (field) {
                                             result = field;
                                         },
@@ -114,8 +108,8 @@ class dataAccessApi {
      */
     deviceInitInfo(host, application, deviceKey, storeSchema, rangeLevel, otherLevels) {
         var deferred = this._$q.defer();
-        this._$http.jsonp(host + '/api/app/' + application + '/store/index/jsonp/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-            params: {'otherLevels': otherLevels, 'callback': 'JSON_CALLBACK'}, cache: this.deviceStores
+        this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
+            params: {'otherLevels': otherLevels}, cache: this.deviceStores
         }).then(
             function (response) {
                 deferred.resolve(response.data);
@@ -137,12 +131,11 @@ class dataAccessApi {
      */
     childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels) {
         var deferred = this._$q.defer();
-        this._$http.jsonp(host + '/api/app/' + application + '/store/index/jsonp/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
+        this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
             params: {
                 relationType: relationType,
                 relationDeviceType: relationDeviceType,
-                otherLevels: otherLevels,
-                'callback': 'JSON_CALLBACK'
+                otherLevels: otherLevels
             },
             cache: this.deviceStores
         }).then(
@@ -292,12 +285,9 @@ class dataAccessApi {
         } else {
             // get data from rest service
             var deferred = this._$q.defer();
-            this._$http.jsonp(host + '/api/app/' + application + '/store/index/devices/store/data/jsonp/' + storeSchema + '/' + store, {
-                params: {
-                    deviceBucketKeys: JSON.stringify(devicesNullBucket),
-                    callback: 'JSON_CALLBACK'
-                }
-            }).then(
+            this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
+                JSON.stringify(devicesNullBucket)
+            ).then(
                 function (response) {
                     // response.data
                     angular.forEach(response.data, function (deviceData) {
@@ -350,10 +340,9 @@ class dataAccessApi {
         } else {
             // send rest request
             var deferred = this._$q.defer();
-            this._$http.jsonp(host + '/api/app/' + application + '/store/index/store/data/jsonp/' + deviceKey + '/' + storeSchema + '/' + store, {
+            this._$http.get(host + '/rest/api/app/' + application + '/store/index/store/data/' + deviceKey + '/' + storeSchema + '/' + store, {
                 params: {
-                    bucketKeys: nullBucket,
-                    callback: 'JSON_CALLBACK'
+                    bucketKeys: nullBucket
                 }
             }).then(
                 function (response) {
@@ -399,10 +388,9 @@ class dataAccessApi {
         if (id = null || id == "") {
             return;
         }
-        this._$http.get('/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
+        this._$http.get('/rest/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
             .success(function (response) {
                 console.info(response);
-                debugger;
                 return response;
             });
 

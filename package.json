@@ -23,7 +23,7 @@
     "uglify-js": "^2.6.2"
   },
   "dependencies": {
-    "angular": "^1.5.0",
+    "angular": "1.5.7",
     "angular-websocket": "^2.0.1",
     "bootstrap": "^3.3.6",
     "chart.js": "^2.1.6",
@@ -31,6 +31,8 @@
     "jquery": "^2.2.2",
     "moment": "^2.13.0",
     "ngmap": "^1.17.1",
-    "rollup": "^0.36.3"
+    "rollup": "^0.36.3",
+    "angular-route": "1.5.7",
+    "angular-ui-router": "~0.3.0"
   }
 }

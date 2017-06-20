@@ -11,7 +11,8 @@ class fgpStage {
             deviceName: "=",
             server: "=",
             configuration: '=',
-            scatterColors: "="
+            scatterColors: "=",
+            standalone: "="
         };
         this.replace = true;
         this.restrict = 'A';
@@ -33,6 +34,7 @@ class fgpStage {
         $rootScope['applicationName'] = $scope.applicationName;
         $rootScope['host'] = $scope.server;
         $rootScope['device'] = $scope.deviceName;
+        $rootScope['standalone'] = $scope.standalone;
 
 
         var graphBindingArray = [];

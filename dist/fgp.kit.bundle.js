@@ -24,7 +24,8 @@ var fgpStage = function fgpStage() {
         deviceName: "=",
         server: "=",
         configuration: '=',
-        scatterColors: "="
+        scatterColors: "=",
+        standalone: "="
     };
     this.replace = true;
     this.restrict = 'A';
@@ -46,6 +47,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     $rootScope['applicationName'] = $scope.applicationName;
     $rootScope['host'] = $scope.server;
     $rootScope['device'] = $scope.deviceName;
+    $rootScope['standalone'] = $scope.standalone;
 
 
     var graphBindingArray = [];
@@ -210,57 +212,51 @@ var dataAccessApi = function dataAccessApi($http, $q, $cacheFactory) {
  */
 dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, deviceKey, applicationName) {
     var deferred = this._$q.defer();
-    var url = host + "/api/";
+    var url = host + "/rest/api/";
 
     if (applicationName) {
         url += "app/" + applicationName;
     }
 
     if (deviceName) {
-        url += '/devices/parameter/jsonp?name=' + deviceName;
+        url += '/devices/' + deviceName;
     } else if (deviceKey) {
-        url += 'devices/parameter/jsonp?key=' + deviceKey;
+        url += 'devices?key=' + deviceKey;
     }
 
     $.ajaxSettings.async = false;
     $.ajax({
         type: 'GET',
         url: url,
-        jsonpCallback: 'jsonCallback',
         contentType: "application/json",
-        dataType: 'jsonp',
         success: function (data) {
-            var url = host + "/api/";
+            var url = host + "/rest/api/";
             if (applicationName) {
-                url += "app/" + applicationName + "/devices/extension-types/jsonp?device_type=";
+                url += "app/" + applicationName + "/devices/extension-types?device_type=";
             } else {
-                url += "devices/extension-types/jsonp?device_type=";
+                url += "devices/extension-types?device_type=";
             }
             $.ajaxSettings.async = false;
             $.ajax({
                 type: 'GET',
                 url: url + data.type,
-                jsonpCallback: 'jsonCallback',
                 contentType: "application/json",
-                dataType: 'jsonp',
                 success: function (types) {
                     angular$1.forEach(types, function (type) {
                         Object.defineProperty(data, type.name, {
                             get: function () {
                                 var result = null;
-                                var url = host + "/api/";
+                                var url = host + "/rest/api/";
                                 if (applicationName) {
-                                    url += "app/" + applicationName + "/devices/extensions/jsonp?device_name=";
+                                    url += "app/" + applicationName + "/devices/extensions?device_name=";
                                 } else {
-                                    url += "devices/extensions/jsonp?device_name=";
+                                    url += "devices/extensions?device_name=";
                                 }
                                 $.ajaxSettings.async = false;
                                 $.ajax({
                                     type: 'GET',
                                     url: url + this.name + '&extension_type=' + type.name,
-                                    jsonpCallback: 'jsonCallback',
                                     contentType: "application/json",
-                                    dataType: 'jsonp',
                                     success: function (field) {
                                         result = field;
                                     },
@@ -296,8 +292,8 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
  */
 dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, application, deviceKey, storeSchema, rangeLevel, otherLevels) {
     var deferred = this._$q.defer();
-    this._$http.jsonp(host + '/api/app/' + application + '/store/index/jsonp/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-        params: {'otherLevels': otherLevels, 'callback': 'JSON_CALLBACK'}, cache: this.deviceStores
+    this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
+        params: {'otherLevels': otherLevels}, cache: this.deviceStores
     }).then(
         function (response) {
             deferred.resolve(response.data);
@@ -319,12 +315,11 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
  */
 dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo (host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels) {
     var deferred = this._$q.defer();
-    this._$http.jsonp(host + '/api/app/' + application + '/store/index/jsonp/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
+    this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
         params: {
             relationType: relationType,
             relationDeviceType: relationDeviceType,
-            otherLevels: otherLevels,
-            'callback': 'JSON_CALLBACK'
+            otherLevels: otherLevels
         },
         cache: this.deviceStores
     }).then(
@@ -474,12 +469,9 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
     } else {
         // get data from rest service
         var deferred = this._$q.defer();
-        this._$http.jsonp(host + '/api/app/' + application + '/store/index/devices/store/data/jsonp/' + storeSchema + '/' + store, {
-            params: {
-                deviceBucketKeys: JSON.stringify(devicesNullBucket),
-                callback: 'JSON_CALLBACK'
-            }
-        }).then(
+        this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
+            JSON.stringify(devicesNullBucket)
+        ).then(
             function (response) {
                 // response.data
                 angular$1.forEach(response.data, function (deviceData) {
@@ -532,10 +524,9 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, applic
     } else {
         // send rest request
         var deferred = this._$q.defer();
-        this._$http.jsonp(host + '/api/app/' + application + '/store/index/store/data/jsonp/' + deviceKey + '/' + storeSchema + '/' + store, {
+        this._$http.get(host + '/rest/api/app/' + application + '/store/index/store/data/' + deviceKey + '/' + storeSchema + '/' + store, {
             params: {
-                bucketKeys: nullBucket,
-                callback: 'JSON_CALLBACK'
+                bucketKeys: nullBucket
             }
         }).then(
             function (response) {
@@ -583,10 +574,9 @@ dataAccessApi.prototype.healthcheck = function healthcheck (application, id) {
     if (id = null || id == "") {
         return;
     }
-    this._$http.get('/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
+    this._$http.get('/rest/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
         .success(function (response) {
             console.info(response);
-            debugger;
             return response;
         });
 
@@ -2434,7 +2424,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.chartDateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
                                 $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
                                 init_flag = true;
-                            }else{
+                            } else {
                                 $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                             }
@@ -2456,6 +2446,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
         // function for show one
         $scope.showOne = function (deviceName) {
+
+            if ($rootScope['standalone'] && $rootScope['standalone'] == true) {
+                return false;
+            }
+
+
             // device type is
             if ($location.url().indexOf('/app/page/param/') != -1) {
                 //open window
@@ -3704,7 +3700,7 @@ fgpWidgetChartTable.buildFactory = function buildFactory () {
  * Created by ericwang on 10/06/2016.
  */
 // angular module
-angular$1.module('fgp-kit', ['ngMap']).service('dataService', dataAccessApi.buildFactory)
+angular$1.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataAccessApi.buildFactory)
     .filter('removeSlash', function () {
         return function (input) {
             if (input.startsWith("/")) {

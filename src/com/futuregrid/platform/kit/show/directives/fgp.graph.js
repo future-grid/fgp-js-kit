@@ -1737,7 +1737,7 @@ class fgpWidgetGraph {
                                     $scope.chartDateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
                                     init_flag = true;
-                                }else{
+                                } else {
                                     $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                                     $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 }
@@ -1759,6 +1759,12 @@ class fgpWidgetGraph {
 
             // function for show one
             $scope.showOne = function (deviceName) {
+
+                if ($rootScope['standalone'] && $rootScope['standalone'] == true) {
+                    return false;
+                }
+
+
                 // device type is
                 if ($location.url().indexOf('/app/page/param/') != -1) {
                     //open window
