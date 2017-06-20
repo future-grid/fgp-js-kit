@@ -11,7 +11,7 @@ This is the first version of graph library that uses the v1.1.1 version of Dygra
 
 ### bower
 
-    bower install --save fgp-js-kit
+    bower install --save fgp-js-kit#~1.0.0
 
 ### npm
 
@@ -38,6 +38,7 @@ adding the dependencies for Angular and Dygraphs first:
   <script src="bower_components/angular/angular.min.js"></script>
   <script src="bower_components/dygraphs/dygraph-combined.js"></script>
   <script src="bower_components/dygraphs/extras/synchronizer.js"></script>
+  <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
   <!--
    <script src="bower_components/eric_dygraphs/dygraph-combined-dev.js"></script>
    <script src="bower_components/eric_dygraphs/extras/synchronizer.js"></script>
@@ -52,6 +53,7 @@ There are 4 attributes of this directive.
 `device-name="'127.0.0.1'"`
 `configuration="configuration"`
 `server="'http://localhost:8081'"`
+`standalone="true"`
 
 *DEPRECATION WARNING*: Note that 'configuration' attribute should be a Array.
 
@@ -62,14 +64,14 @@ There are 4 attributes of this directive.
 ```html
 <div fgp-container application-name="'node-agent'" device-name="'127.0.0.1'"
          configuration="configuration"
-         server="'http://localhost:8081'"></div>
+         server="'http://localhost:8081'" standalone="true"></div>
 ```
 
 ## Javascript
 
 ```javascript
 angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
-
+    // you can find your pages configuratiion in FGP_PLATEFORM
     $scope.configuration = [{
         "html": "<titlecontainer id=\"item4094\"></titlecontainer>",
         "configTemplate": "",

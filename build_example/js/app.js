@@ -1,7 +1,15 @@
 /**
  * Created by ericwang on 15/06/2016.
  */
-angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
+angular.module('app', ['fgp-kit']).config(['$httpProvider', function($httpProvider) {
+    // if you want to use it outside the server.
+    $httpProvider.defaults.headers.common['Authorization'] = 'Basic ******=';
+    $.ajaxSetup({
+        headers: {
+            'Authorization': "Basic ********="
+        }
+    });
+}]).controller('ctl', function ($scope) {
 
     $scope.colors = ["#ff0000","#14f738"];// default colors for "scatter" view!
 
