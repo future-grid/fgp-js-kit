@@ -967,7 +967,14 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             if (zoomTimer) {
                 timeOut.cancel(zoomTimer);
             }
-            var normal = e.detail ? e.detail * -1 : e.wheelDelta / 40;
+            var normal;
+
+            if(e instanceof WheelEvent){
+                normal = e.detail ? e.detail * -1 : e.deltaY / 40;
+            }else{
+                normal = e.detail ? e.detail * -1 : e.wheelDelta / 40;
+            }
+
             // For me the normalized value shows 0.075 for one click. If I took
             // that verbatim, it would be a 7.5%.
             var percentage = normal / 50;
@@ -1034,6 +1041,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var interactionModel = {
             'mousewheel': scroll,
             'DOMMouseScroll': scroll,
+            'wheel':scroll,
             'mousedown': mousedownHandler,
             'mousemove': mousemoveHandler,
             'mouseup': mouseupHandler
@@ -1099,13 +1107,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     scope.showOne(p.name);
                 }
             },
-            drawCallback: function (g, isInit) {
-                timeOut(function () {
-                    if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                        scope.refersh(g);
-                    }
-                });
-            },
             'interactionModel': interactionModel
         };
 
@@ -1160,13 +1161,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                             zoom: true,
                             selection: false,
                             range: false
-                        });
-                        scope.currentChart.updateOptions({
-                            drawCallback: function (g, isInit) {
-                                timeOut(function () {
-                                    scope.refersh(g);
-                                });
-                            }
                         });
                     }
                 });
