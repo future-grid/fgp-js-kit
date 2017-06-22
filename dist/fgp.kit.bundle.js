@@ -1019,12 +1019,12 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         };
         var mousemoveHandler = function (e, g, context) {
             if (context.isPanning) {
-                if (event.offsetX <= (g.plotter_.area.x)) {
-                    movePan(event, g, context, 'r');
-                } else if (event.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
-                    movePan(event, g, context, 'l');
+                if (e.offsetX <= (g.plotter_.area.x)) {
+                    movePan(e, g, context, 'r');
+                } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
+                    movePan(e, g, context, 'l');
                 } else {
-                    movePan(event, g, context, 'h');
+                    movePan(e, g, context, 'h');
                 }
                 timeOut(function () {
                     scope.chartDateWindow = scope.currentChart.xAxisRange();
