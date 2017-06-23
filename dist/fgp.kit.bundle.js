@@ -957,21 +957,17 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             }
         }
 
-        var zoomTimer = null;
         var scroll = function (e, g, context) {
 
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
 
-            if (zoomTimer) {
-                timeOut.cancel(zoomTimer);
-            }
             var normal;
 
-            if(e instanceof WheelEvent){
+            if (e instanceof WheelEvent) {
                 normal = e.detail ? e.detail * -1 : e.deltaY / 40;
-            }else{
+            } else {
                 normal = e.detail ? e.detail * -1 : e.wheelDelta / 40;
             }
 
@@ -1000,12 +996,10 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 // console.info("h")
                 zoom(g, percentage, xPct, yPct, 'h', null);
             }
-
             Dygraph.cancelEvent(e);
             timeOut(function () {
                 scope.chartDateWindow = g.xAxisRange();
             });
-            return false;
         };
 
         var firstPoint = null;
@@ -1041,7 +1035,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var interactionModel = {
             'mousewheel': scroll,
             'DOMMouseScroll': scroll,
-            'wheel':scroll,
+            'wheel': scroll,
             'mousedown': mousedownHandler,
             'mousemove': mousemoveHandler,
             'mouseup': mouseupHandler
@@ -1107,6 +1101,13 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     scope.showOne(p.name);
                 }
             },
+            drawCallback: function (g, isInit) {
+                timeOut(function () {
+                    if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
+                        scope.refersh(g);
+                    }
+                });
+            },
             'interactionModel': interactionModel
         };
 
@@ -1161,6 +1162,13 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                             zoom: true,
                             selection: false,
                             range: false
+                        });
+                        scope.currentChart.updateOptions({
+                            drawCallback: function (g, isInit) {
+                                timeOut(function () {
+                                    scope.refersh(g);
+                                });
+                            }
                         });
                     }
                 });
