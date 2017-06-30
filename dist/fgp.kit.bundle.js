@@ -957,9 +957,35 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             }
         }
 
+
+        var canScroll = false;
+
+        var timer = null;
+        var mouseOverHandler = function (e, g, context) {
+            //
+            if (scope.basicInfo && !scope.basicInfo.zoom) {
+                return;
+            }
+            //
+            if(timer!=null){
+                timeOut.cancel(timer);
+            }
+            timer = timeOut(function () {
+                canScroll = true;
+            }, 3000);
+        };
+
+        var mouseOutHandler = function (e, g, context) {
+            // set flag to false
+            if(timer!=null){
+                timeOut.cancel(timer);
+            }
+            canScroll = false;
+        };
+
         var scroll = function (e, g, context) {
 
-            if (scope.basicInfo && !scope.basicInfo.zoom) {
+            if ((scope.basicInfo && !scope.basicInfo.zoom) || !canScroll) {
                 return;
             }
 
@@ -1026,6 +1052,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             }
         };
 
+
         var mouseupHandler = function (e, g, context) {
             if (context.isPanning) {
                 Dygraph.endPan(e, g, context);
@@ -1038,7 +1065,9 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             'wheel': scroll,
             'mousedown': mousedownHandler,
             'mousemove': mousemoveHandler,
-            'mouseup': mouseupHandler
+            'mouseup': mouseupHandler,
+            'mouseover': mouseOverHandler,
+            'mouseout': mouseOutHandler
         };
 
 
