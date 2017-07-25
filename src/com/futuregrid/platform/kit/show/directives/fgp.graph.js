@@ -445,7 +445,7 @@ class fgpWidgetGraph {
                 },
                 drawCallback: function (g, isInit) {
                     if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                        scope.refersh(g);
+                        scope.refersh(g, isInit);
                     }
                 },
                 'interactionModel': interactionModel
@@ -506,7 +506,7 @@ class fgpWidgetGraph {
                             scope.currentChart.updateOptions({
                                 drawCallback: function (g, isInit) {
                                     // console.info("refersh running!" + " is  Init?"+ isInit);
-                                    scope.refersh(g);
+                                    scope.refersh(g, isInit);
                                 }
                             });
 
@@ -1806,12 +1806,12 @@ class fgpWidgetGraph {
             };
 
             var timer = null;
-            $scope.refersh = function (g) {
+            $scope.refersh = function (g, init) {
                 if (timer) {
                     $timeout.cancel(timer);
                 }
                 timer = $timeout(function () {
-                    if(g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
+                    if(init || g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
                         $scope.chartDateTime = {begin: g.xAxisRange()[0], end: g.xAxisRange()[1]};
                         $scope.chartDateWindow = g.xAxisRange();
                     }

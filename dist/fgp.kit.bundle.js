@@ -1131,11 +1131,9 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 }
             },
             drawCallback: function (g, isInit) {
-                // timeOut(function () {
-                // if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                //     scope.refersh(g);
-                // }
-                // });
+                if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
+                    scope.refersh(g, isInit);
+                }
             },
             'interactionModel': interactionModel
         };
@@ -1194,8 +1192,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                         });
                         scope.currentChart.updateOptions({
                             drawCallback: function (g, isInit) {
-                                console.info("refersh running!" + " is  Init?"+ isInit);
-                                scope.refersh(g);
+                                // console.info("refersh running!" + " is  Init?"+ isInit);
+                                scope.refersh(g, isInit);
                             }
                         });
 
@@ -2495,12 +2493,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         };
 
         var timer = null;
-        $scope.refersh = function (g) {
+        $scope.refersh = function (g, init) {
             if (timer) {
                 $timeout.cancel(timer);
             }
             timer = $timeout(function () {
-                if(g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
+                if(init || g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
                     $scope.chartDateTime = {begin: g.xAxisRange()[0], end: g.xAxisRange()[1]};
                     $scope.chartDateWindow = g.xAxisRange();
                 }
