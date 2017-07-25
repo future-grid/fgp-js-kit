@@ -444,11 +444,11 @@ class fgpWidgetGraph {
                     }
                 },
                 drawCallback: function (g, isInit) {
-                    timeOut(function () {
-                        if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                            scope.refersh(g);
-                        }
-                    });
+                    // timeOut(function () {
+                    //     if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
+                    //         scope.refersh(g);
+                    //     }
+                    // });
                 },
                 'interactionModel': interactionModel
             };
