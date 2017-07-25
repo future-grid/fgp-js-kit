@@ -1208,7 +1208,11 @@ class fgpWidgetGraph {
                             // showRangeSelector: true
                         };
                     }
+                    //
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
+                    //  keep the same time window and refersh
+                    $scope.chartDateTime = {begin:$scope.chartDateTime.begin, end:$scope.chartDateTime.end};
+                    $scope.chartDateWindow = [$scope.chartDateTime.begin,$scope.chartDateTime.end];
                     $scope.loadingShow = false;
                 }
 
@@ -1753,8 +1757,9 @@ class fgpWidgetGraph {
 
 
                             if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
-                                // keep the current range bar
-
+                                // keep the current range bar refresh once.
+                                $scope.chartDateTime = {begin:$scope.chartDateTime.begin, end:$scope.chartDateTime.end};
+                                $scope.chartDateWindow = [$scope.chartDateTime.begin,$scope.chartDateTime.end];
                             } else {
 
                                 $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
