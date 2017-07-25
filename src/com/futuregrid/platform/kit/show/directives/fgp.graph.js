@@ -507,9 +507,9 @@ class fgpWidgetGraph {
                             });
                             scope.currentChart.updateOptions({
                                 drawCallback: function (g, isInit) {
-                                    timeOut(function () {
-                                        scope.refersh(g);
-                                    });
+                                    // timeOut(function () {
+                                    //     scope.refersh(g);
+                                    // });
                                 }
                             });
                         }
