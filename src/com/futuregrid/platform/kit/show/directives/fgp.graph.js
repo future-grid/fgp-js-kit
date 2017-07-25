@@ -507,11 +507,11 @@ class fgpWidgetGraph {
                             });
                             scope.currentChart.updateOptions({
                                 drawCallback: function (g, isInit) {
-                                    // timeOut(function () {
-                                    //     scope.refersh(g);
-                                    // });
+                                    // console.info("refersh running!" + " is  Init?"+ isInit);
+                                    scope.refersh(g);
                                 }
                             });
+
                         }
                     });
 
@@ -1813,12 +1813,12 @@ class fgpWidgetGraph {
                     $timeout.cancel(timer);
                 }
                 timer = $timeout(function () {
-                    $scope.chartDateTime = {begin: g.xAxisRange()[0], end: g.xAxisRange()[1]};
-                    $scope.chartDateWindow = g.xAxisRange();
+                    if(g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
+                        $scope.chartDateTime = {begin: g.xAxisRange()[0], end: g.xAxisRange()[1]};
+                        $scope.chartDateWindow = g.xAxisRange();
+                    }
                 }, 600);
             };
-
-
         }
 
     }
