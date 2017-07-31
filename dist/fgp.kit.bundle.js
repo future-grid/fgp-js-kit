@@ -1229,7 +1229,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 };
 
 //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams,$graphstorage) {
+fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
 
@@ -1561,7 +1561,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var deviceInfo = [];
                             var currentStore = "";
                             // has problem....
-                            angular$1.forEach($graphstorage.getTree($scope.elementId+"childrenTrees"), function (device) {
+                            angular$1.forEach($scope.childTrees, function (device) {
                                 angular$1.forEach(device.trees, function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         currentStore = tree.store;
@@ -1641,7 +1641,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.loadingShow = false;
                         } else {
                             // cal tree
-                            angular$1.forEach($graphstorage.getTree($scope.elementId+"trees"), function (tree, index) {
+                            angular$1.forEach($scope.trees, function (tree, index) {
                                 if (expectedInterval == tree.frequency && index != 0) {
                                     // send request
                                     var fields = [];
@@ -1721,8 +1721,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         };
 
 
-        $graphstorage.setTree($scope.elementId+"trees", []);
-
+        $scope.trees = [];
         $scope.rangeData = [];
 
         $scope.ordinalRangeData = [];
@@ -1732,7 +1731,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             //
             $scope.intevals.device = [];
             var trees = data.trees;
-            $graphstorage.setTree($scope.elementId+"trees", trees);
+            $scope.trees = trees;
             var rangeTree = null;
             angular$1.forEach(trees, function (tree) {
                 if (tree.range) {
@@ -1756,7 +1755,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             });
 
 
-            if ($graphstorage.getTree($scope.elementId+"trees").length == 0 || allData.length == 0) {
+            if ($scope.trees.length == 0 || allData.length == 0) {
                 $scope.emptyDataShow = true;
                 return;
             }
@@ -1782,11 +1781,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var devicesInfo = {};
             $scope.intevals.device = [];
             //range data with all device
-            $graphstorage.setTree($scope.elementId+"childrenTrees", []);
+            $scope.childTrees = [];
             angular$1.forEach(deviceDatas, function (deviceData) {
                 var device = deviceData.device;
                 var trees = deviceData.trees;
-                $graphstorage.addTree($scope.elementId+"childrenTrees",{name: device.name, trees: trees});
+                $scope.childTrees.push({name: device.name, trees: trees});
                 var rangeTree = null;
                 angular$1.forEach(trees, function (tree) {
                     if (tree.range) {
