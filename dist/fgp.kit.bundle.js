@@ -1715,7 +1715,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
             if (node.children[0] == null && node.children[1] == null) {
-                Array.prototype.push.apply(values, node.data.slice(0, node.data.length));
+                if(node.data.array){
+                    Array.prototype.push.apply(values, node.data.array.slice(0, node.data.size));
+                }else{
+                    Array.prototype.push.apply(values, node.data.slice(0, node.data.length));
+                }
+
             }
 
         };
