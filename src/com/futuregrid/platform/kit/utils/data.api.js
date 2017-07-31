@@ -106,10 +106,10 @@ class dataAccessApi {
      * @param storeSchema
      * @returns {Promise}
      */
-    deviceInitInfo(host, application, deviceKey, storeSchema, rangeLevel, otherLevels) {
+    deviceInitInfo(host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-            params: {'otherLevels': otherLevels}, cache: this.deviceStores
+            params: {'otherLevels': otherLevels, 'fields': [].concat(fields)}, cache: this.deviceStores
         }).then(
             function (response) {
                 deferred.resolve(response.data);
@@ -129,13 +129,14 @@ class dataAccessApi {
      * @param storeSchema
      * @returns {Promise}
      */
-    childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels) {
+    childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels, fields) {
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
             params: {
                 relationType: relationType,
                 relationDeviceType: relationDeviceType,
-                otherLevels: otherLevels
+                otherLevels: otherLevels,
+                fields:[].concat(fields)
             },
             cache: this.deviceStores
         }).then(
@@ -164,14 +165,14 @@ class dataAccessApi {
 
             angular.forEach(buckets, function (value, key) {
                 if (key == tree.id && value != null) {
-                    tree.data = value.array;
-                    tree['size'] = value.size;
+                    tree.data = value;
+                    tree['size'] = value.length;
 
                     var flag = false;
                     angular.forEach(showData, function (data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
-                            tree['size'] = value.size;
+                            tree['size'] = value.length;
                             flag = true;
                         }
                     });
@@ -197,18 +198,16 @@ class dataAccessApi {
         if (tree.children[0] == null && tree.children[1] == null) {
             angular.forEach(buckets, function (value, key) {
                 if (key == tree.id) {
-                    tree.data = value.array;
+                    tree.data = value;
                     tree['size'] = value.size;
-
                     var flag = false;
                     angular.forEach(showData, function (data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
-                            tree['size'] = value.size;
+                            data['size'] = tree.size;
                             flag = true;
                         }
                     });
-
                     if (!flag) {
                         console.info("error:" + key);
                     }
@@ -255,7 +254,7 @@ class dataAccessApi {
      * @param start
      * @param end
      */
-    devicesStoreData(host, application, deviceInfo, storeSchema, store, start, end) {
+    devicesStoreData(host, application, deviceInfo, storeSchema, store, start, end, fields) {
 
         var bucketsData = [];
         var devicesNullBucket = [];
@@ -286,7 +285,7 @@ class dataAccessApi {
             // get data from rest service
             var deferred = this._$q.defer();
             this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
-                JSON.stringify(devicesNullBucket)
+                {'bucketKeys':JSON.stringify(devicesNullBucket),'fields': JSON.stringify(fields)}
             ).then(
                 function (response) {
                     // response.data
@@ -319,7 +318,7 @@ class dataAccessApi {
     }
 
 
-    deviceStoreData(host, application, deviceKey, storeSchema, store, tree, start, end) {
+    deviceStoreData(host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
         var fillTree = this.fillTree;
         var calTree = this.calTree;
         var bucketKeys = [];
@@ -342,7 +341,8 @@ class dataAccessApi {
             var deferred = this._$q.defer();
             this._$http.get(host + '/rest/api/app/' + application + '/store/index/store/data/' + deviceKey + '/' + storeSchema + '/' + store, {
                 params: {
-                    bucketKeys: nullBucket
+                    bucketKeys: nullBucket,
+                    fields:[].concat(fields)
                 }
             }).then(
                 function (response) {

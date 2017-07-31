@@ -290,10 +290,10 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
  * @param storeSchema
  * @returns {Promise}
  */
-dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, application, deviceKey, storeSchema, rangeLevel, otherLevels) {
+dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
     var deferred = this._$q.defer();
     this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-        params: {'otherLevels': otherLevels}, cache: this.deviceStores
+        params: {'otherLevels': otherLevels, 'fields': [].concat(fields)}, cache: this.deviceStores
     }).then(
         function (response) {
             deferred.resolve(response.data);
@@ -313,13 +313,14 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
  * @param storeSchema
  * @returns {Promise}
  */
-dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo (host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels) {
+dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo (host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels, fields) {
     var deferred = this._$q.defer();
     this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
         params: {
             relationType: relationType,
             relationDeviceType: relationDeviceType,
-            otherLevels: otherLevels
+            otherLevels: otherLevels,
+            fields:[].concat(fields)
         },
         cache: this.deviceStores
     }).then(
@@ -348,14 +349,14 @@ dataAccessApi.prototype.fillChildrenTree = function fillChildrenTree (buckets, t
 
         angular$1.forEach(buckets, function (value, key) {
             if (key == tree.id && value != null) {
-                tree.data = value.array;
-                tree['size'] = value.size;
+                tree.data = value;
+                tree['size'] = value.length;
 
                 var flag = false;
                 angular$1.forEach(showData, function (data) {
                     if (data.id == tree.id) {
                         data.data = tree.data;
-                        tree['size'] = value.size;
+                        tree['size'] = value.length;
                         flag = true;
                     }
                 });
@@ -381,18 +382,16 @@ dataAccessApi.prototype.fillTree = function fillTree (buckets, tree, showData) {
     if (tree.children[0] == null && tree.children[1] == null) {
         angular$1.forEach(buckets, function (value, key) {
             if (key == tree.id) {
-                tree.data = value.array;
+                tree.data = value;
                 tree['size'] = value.size;
-
                 var flag = false;
                 angular$1.forEach(showData, function (data) {
                     if (data.id == tree.id) {
                         data.data = tree.data;
-                        tree['size'] = value.size;
+                        data['size'] = tree.size;
                         flag = true;
                     }
                 });
-
                 if (!flag) {
                     console.info("error:" + key);
                 }
@@ -439,7 +438,7 @@ dataAccessApi.prototype.calTree = function calTree (buckets, tree, start, end) {
  * @param start
  * @param end
  */
-dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, application, deviceInfo, storeSchema, store, start, end) {
+dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, application, deviceInfo, storeSchema, store, start, end, fields) {
 
     var bucketsData = [];
     var devicesNullBucket = [];
@@ -470,7 +469,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
         // get data from rest service
         var deferred = this._$q.defer();
         this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
-            JSON.stringify(devicesNullBucket)
+            {'bucketKeys':JSON.stringify(devicesNullBucket),'fields': JSON.stringify(fields)}
         ).then(
             function (response) {
                 // response.data
@@ -503,7 +502,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
 };
 
 
-dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, application, deviceKey, storeSchema, store, tree, start, end) {
+dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
     var fillTree = this.fillTree;
     var calTree = this.calTree;
     var bucketKeys = [];
@@ -526,7 +525,8 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, applic
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/store/data/' + deviceKey + '/' + storeSchema + '/' + store, {
             params: {
-                bucketKeys: nullBucket
+                bucketKeys: nullBucket,
+                fields:[].concat(fields)
             }
         }).then(
             function (response) {
@@ -1229,7 +1229,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 };
 
 //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
+fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams,$graphstorage) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
 
@@ -1394,7 +1394,24 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                         if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
                             // show device view
-                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels).then(function (data) {
+                            var fields = [];
+                            var patt = new RegExp(/^data./g);
+
+                            angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                                if (level.rows.length > 0 && level.name === rangeLevel) {
+                                    var lines = level.rows;
+                                    if(lines){
+                                        angular$1.forEach(lines, function(line){
+                                            //
+                                            if(line.value && patt.test(line.value)){
+                                                fields.push(line.value.replace('data.',''));
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+
+                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
                                 initChart(data);
                             }, function (error) {
                                 console.error(error);
@@ -1417,8 +1434,26 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             });
                             if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
+
+                                var fields = [];
+                                var patt = new RegExp(/^data./g);
+
+                                angular$1.forEach(metadata.data.groups[2].collections, function (level) {
+                                    if (level.rows.length > 0 && level.name === rangeLevel) {
+                                        var lines = level.rows;
+                                        if(lines){
+                                            angular$1.forEach(lines, function(line){
+                                                //
+                                                if(line.value && patt.test(line.value)){
+                                                    fields.push(line.value.replace('data.',''));
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+
                                 // show children view
-                                dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels).then(function (data) {
+                                dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function (data) {
                                     // get all device trees
                                     if (data != null && data.length > 0) {
                                         initChildrenChart(data);
@@ -1451,8 +1486,28 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             rangeLevel = level.name;
                         }
                     });
+
+                    // fields of range level
+                    var fields = [];
+                    var patt = new RegExp(/^data./g);
+
+                    angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                        if (level.rows.length > 0 && level.name === rangeLevel) {
+                            var lines = level.rows;
+                            if(lines){
+                                angular$1.forEach(lines, function(line){
+                                    //
+                                    if(line.value && patt.test(line.value)){
+                                        fields.push(line.value.replace('data.',''));
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+
                     //send a rest request
-                    dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels).then(function (data) {
+                    dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
                         initChart(data);
                     }, function (error) {
                         console.error(error);
@@ -1506,7 +1561,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var deviceInfo = [];
                             var currentStore = "";
                             // has problem....
-                            angular$1.forEach($scope.childTrees, function (device) {
+                            angular$1.forEach($graphstorage.getTree($scope.elementId+"childrenTrees"), function (device) {
                                 angular$1.forEach(device.trees, function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         currentStore = tree.store;
@@ -1515,7 +1570,25 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
                             });
 
-                            dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end).then(function (data) {
+                            var fields = [];
+                            var patt = new RegExp(/^data./g);
+
+                            angular$1.forEach(metadata.data.groups[2].collections, function (level) {
+                                if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
+                                    var lines = level.rows;
+                                    if(lines){
+                                        angular$1.forEach(lines, function(line){
+                                            //
+                                            if(line.value && patt.test(line.value)){
+                                                fields.push(line.value.replace('data.',''));
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+
+
+                            dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function (data) {
                                 var showData = [];
                                 angular$1.forEach(data, function (arr) {
                                     var deviceData = [];
@@ -1568,10 +1641,28 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.loadingShow = false;
                         } else {
                             // cal tree
-                            angular$1.forEach($scope.trees, function (tree, index) {
+                            angular$1.forEach($graphstorage.getTree($scope.elementId+"trees"), function (tree, index) {
                                 if (expectedInterval == tree.frequency && index != 0) {
                                     // send request
-                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end).then(function (data) {
+                                    var fields = [];
+                                    var patt = new RegExp(/^data./g);
+
+                                    angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                                        if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
+                                            var lines = level.rows;
+                                            if(lines){
+                                                angular$1.forEach(lines, function(line){
+                                                    //
+                                                    if(line.value && patt.test(line.value)){
+                                                        fields.push(line.value.replace('data.',''));
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+
+
+                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function (data) {
                                         // udpate chart
                                         var showData = [];
                                         angular$1.forEach(data, function (arr) {
@@ -1624,13 +1715,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
             if (node.children[0] == null && node.children[1] == null) {
-                Array.prototype.push.apply(values, node.data.array.slice(0, node.data.size));
+                Array.prototype.push.apply(values, node.data.slice(0, node.data.length));
             }
 
         };
 
 
-        $scope.trees = [];
+        $graphstorage.setTree($scope.elementId+"trees", []);
 
         $scope.rangeData = [];
 
@@ -1641,7 +1732,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             //
             $scope.intevals.device = [];
             var trees = data.trees;
-            $scope.trees = trees;
+            $graphstorage.setTree($scope.elementId+"trees", trees);
             var rangeTree = null;
             angular$1.forEach(trees, function (tree) {
                 if (tree.range) {
@@ -1665,7 +1756,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             });
 
 
-            if ($scope.trees.length == 0 || allData.length == 0) {
+            if ($graphstorage.getTree($scope.elementId+"trees").length == 0 || allData.length == 0) {
                 $scope.emptyDataShow = true;
                 return;
             }
@@ -1691,11 +1782,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var devicesInfo = {};
             $scope.intevals.device = [];
             //range data with all device
-            $scope.childTrees = [];
+            $graphstorage.setTree($scope.elementId+"childrenTrees", []);
             angular$1.forEach(deviceDatas, function (deviceData) {
                 var device = deviceData.device;
                 var trees = deviceData.trees;
-                $scope.childTrees.push({name: device.name, trees: trees});
+                $graphstorage.addTree($scope.elementId+"childrenTrees",{name: device.name, trees: trees});
                 var rangeTree = null;
                 angular$1.forEach(trees, function (tree) {
                     if (tree.range) {
@@ -3743,6 +3834,28 @@ angular$1.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataAc
             return input;
         }
     })
+    .factory('$graphstorage', ['$window', function($window) {
+    return {
+        setTree: function(key, value) {
+            $window.localStorage[key] = JSON.stringify(value);
+        },
+        getTree: function(key) {
+            return JSON.parse($window.localStorage[key]) || false;
+        },
+        addTree: function (key,value) {
+            if($window.localStorage[key]){
+                var trees = JSON.parse($window.localStorage[key]);
+                trees.push(value);
+                this.setTree(key,trees);
+            }else{
+                this.setTree(key, [value]);
+            }
+        },
+        clear: function(){
+            $window.localStorage.clear();
+        }
+    }
+    }])
     .directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
     .directive('widgetGraph', fgpWidgetGraph.buildFactory)

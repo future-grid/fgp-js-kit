@@ -29,6 +29,28 @@ angular.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataApi.
             return input;
         }
     })
+    .factory('$graphstorage', ['$window', function($window) {
+    return {
+        setTree: function(key, value) {
+            $window.localStorage[key] = JSON.stringify(value);
+        },
+        getTree: function(key) {
+            return JSON.parse($window.localStorage[key]) || false;
+        },
+        addTree: function (key,value) {
+            if($window.localStorage[key]){
+                var trees = JSON.parse($window.localStorage[key]);
+                trees.push(value);
+                this.setTree(key,trees);
+            }else{
+                this.setTree(key, [value]);
+            }
+        },
+        clear: function(){
+            $window.localStorage.clear();
+        }
+    }
+    }])
     .directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
     .directive('widgetGraph', fgpWidgetGraph.buildFactory)

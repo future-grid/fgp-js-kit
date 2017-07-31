@@ -542,7 +542,7 @@ class fgpWidgetGraph {
     }
 
     //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-    controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
+    controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams,$graphstorage) {
         var element_id = $element.attr("id");
         $scope.elementId = element_id;
 
@@ -707,7 +707,24 @@ class fgpWidgetGraph {
                             });
                             if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
                                 // show device view
-                                dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels).then(function (data) {
+                                var fields = [];
+                                var patt = new RegExp(/^data./g);
+
+                                angular.forEach(metadata.data.groups[1].collections, function (level) {
+                                    if (level.rows.length > 0 && level.name === rangeLevel) {
+                                        var lines = level.rows;
+                                        if(lines){
+                                            angular.forEach(lines, function(line){
+                                                //
+                                                if(line.value && patt.test(line.value)){
+                                                    fields.push(line.value.replace('data.',''));
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+
+                                dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
                                     initChart(data);
                                 }, function (error) {
                                     console.error(error)
@@ -730,8 +747,26 @@ class fgpWidgetGraph {
                                     }
                                 });
                                 if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
+
+                                    var fields = [];
+                                    var patt = new RegExp(/^data./g);
+
+                                    angular.forEach(metadata.data.groups[2].collections, function (level) {
+                                        if (level.rows.length > 0 && level.name === rangeLevel) {
+                                            var lines = level.rows;
+                                            if(lines){
+                                                angular.forEach(lines, function(line){
+                                                    //
+                                                    if(line.value && patt.test(line.value)){
+                                                        fields.push(line.value.replace('data.',''));
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+
                                     // show children view
-                                    dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels).then(function (data) {
+                                    dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function (data) {
                                         // get all device trees
                                         if (data != null && data.length > 0) {
                                             initChildrenChart(data);
@@ -764,8 +799,28 @@ class fgpWidgetGraph {
                                 rangeLevel = level.name;
                             }
                         });
+
+                        // fields of range level
+                        var fields = [];
+                        var patt = new RegExp(/^data./g);
+
+                        angular.forEach(metadata.data.groups[1].collections, function (level) {
+                            if (level.rows.length > 0 && level.name === rangeLevel) {
+                                var lines = level.rows;
+                                if(lines){
+                                    angular.forEach(lines, function(line){
+                                        //
+                                        if(line.value && patt.test(line.value)){
+                                            fields.push(line.value.replace('data.',''));
+                                        }
+                                    });
+                                }
+                            }
+                        });
+
+
                         //send a rest request
-                        dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels).then(function (data) {
+                        dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
                             initChart(data);
                         }, function (error) {
                             console.error(error)
@@ -819,7 +874,7 @@ class fgpWidgetGraph {
                                 var deviceInfo = [];
                                 var currentStore = "";
                                 // has problem....
-                                angular.forEach($scope.childTrees, function (device) {
+                                angular.forEach($graphstorage.getTree($scope.elementId+"childrenTrees"), function (device) {
                                     angular.forEach(device.trees, function (tree, index) {
                                         if (expectedInterval == tree.frequency && index != 0) {
                                             currentStore = tree.store;
@@ -828,7 +883,25 @@ class fgpWidgetGraph {
                                     });
                                 });
 
-                                dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end).then(function (data) {
+                                var fields = [];
+                                var patt = new RegExp(/^data./g);
+
+                                angular.forEach(metadata.data.groups[2].collections, function (level) {
+                                    if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
+                                        var lines = level.rows;
+                                        if(lines){
+                                            angular.forEach(lines, function(line){
+                                                //
+                                                if(line.value && patt.test(line.value)){
+                                                    fields.push(line.value.replace('data.',''));
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+
+
+                                dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function (data) {
                                     var showData = [];
                                     angular.forEach(data, function (arr) {
                                         var deviceData = [];
@@ -881,10 +954,28 @@ class fgpWidgetGraph {
                                 $scope.loadingShow = false;
                             } else {
                                 // cal tree
-                                angular.forEach($scope.trees, function (tree, index) {
+                                angular.forEach($graphstorage.getTree($scope.elementId+"trees"), function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         // send request
-                                        dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end).then(function (data) {
+                                        var fields = [];
+                                        var patt = new RegExp(/^data./g);
+
+                                        angular.forEach(metadata.data.groups[1].collections, function (level) {
+                                            if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
+                                                var lines = level.rows;
+                                                if(lines){
+                                                    angular.forEach(lines, function(line){
+                                                        //
+                                                        if(line.value && patt.test(line.value)){
+                                                            fields.push(line.value.replace('data.',''));
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        });
+
+
+                                        dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function (data) {
                                             // udpate chart
                                             var showData = [];
                                             angular.forEach(data, function (arr) {
@@ -937,13 +1028,13 @@ class fgpWidgetGraph {
                 }
 
                 if (node.children[0] == null && node.children[1] == null) {
-                    Array.prototype.push.apply(values, node.data.array.slice(0, node.data.size));
+                    Array.prototype.push.apply(values, node.data.slice(0, node.data.length));
                 }
 
             };
 
 
-            $scope.trees = [];
+            $graphstorage.setTree($scope.elementId+"trees", []);
 
             $scope.rangeData = [];
 
@@ -954,7 +1045,7 @@ class fgpWidgetGraph {
                 //
                 $scope.intevals.device = [];
                 var trees = data.trees;
-                $scope.trees = trees;
+                $graphstorage.setTree($scope.elementId+"trees", trees);
                 var rangeTree = null;
                 angular.forEach(trees, function (tree) {
                     if (tree.range) {
@@ -978,7 +1069,7 @@ class fgpWidgetGraph {
                 });
 
 
-                if ($scope.trees.length == 0 || allData.length == 0) {
+                if ($graphstorage.getTree($scope.elementId+"trees").length == 0 || allData.length == 0) {
                     $scope.emptyDataShow = true;
                     return;
                 }
@@ -1004,11 +1095,11 @@ class fgpWidgetGraph {
                 var devicesInfo = {};
                 $scope.intevals.device = [];
                 //range data with all device
-                $scope.childTrees = [];
+                $graphstorage.setTree($scope.elementId+"childrenTrees", []);
                 angular.forEach(deviceDatas, function (deviceData) {
                     var device = deviceData.device;
                     var trees = deviceData.trees;
-                    $scope.childTrees.push({name: device.name, trees: trees});
+                    $graphstorage.addTree($scope.elementId+"childrenTrees",{name: device.name, trees: trees});
                     var rangeTree = null;
                     angular.forEach(trees, function (tree) {
                         if (tree.range) {
