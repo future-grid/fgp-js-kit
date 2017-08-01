@@ -1403,7 +1403,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     if(lines){
                                         angular$1.forEach(lines, function(line){
                                             //
-                                            if(line.value && patt.test(line.value)){
+                                            if(line.value && (line.value).startsWith('data.')){
                                                 fields.push(line.value.replace('data.',''));
                                             }
                                         });
@@ -1444,7 +1444,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         if(lines){
                                             angular$1.forEach(lines, function(line){
                                                 //
-                                                if(line.value && patt.test(line.value)){
+                                                if(line.value && (line.value).startsWith('data.')){
                                                     fields.push(line.value.replace('data.',''));
                                                 }
                                             });
@@ -1497,7 +1497,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             if(lines){
                                 angular$1.forEach(lines, function(line){
                                     //
-                                    if(line.value && patt.test(line.value)){
+                                    if(line.value && (line.value).startsWith('data.')){
                                         fields.push(line.value.replace('data.',''));
                                     }
                                 });
@@ -1579,7 +1579,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     if(lines){
                                         angular$1.forEach(lines, function(line){
                                             //
-                                            if(line.value && patt.test(line.value)){
+                                            if(line.value && (line.value).startsWith('data.')){
                                                 fields.push(line.value.replace('data.',''));
                                             }
                                         });
@@ -1653,7 +1653,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             if(lines){
                                                 angular$1.forEach(lines, function(line){
                                                     //
-                                                    if(line.value && patt.test(line.value)){
+                                                    if(line.value && (line.value).startsWith('data.')){
                                                         fields.push(line.value.replace('data.',''));
                                                     }
                                                 });

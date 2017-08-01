@@ -716,7 +716,7 @@ class fgpWidgetGraph {
                                         if(lines){
                                             angular.forEach(lines, function(line){
                                                 //
-                                                if(line.value && patt.test(line.value)){
+                                                if(line.value && (line.value).startsWith('data.')){
                                                     fields.push(line.value.replace('data.',''));
                                                 }
                                             });
@@ -757,7 +757,7 @@ class fgpWidgetGraph {
                                             if(lines){
                                                 angular.forEach(lines, function(line){
                                                     //
-                                                    if(line.value && patt.test(line.value)){
+                                                    if(line.value && (line.value).startsWith('data.')){
                                                         fields.push(line.value.replace('data.',''));
                                                     }
                                                 });
@@ -810,7 +810,7 @@ class fgpWidgetGraph {
                                 if(lines){
                                     angular.forEach(lines, function(line){
                                         //
-                                        if(line.value && patt.test(line.value)){
+                                        if(line.value && (line.value).startsWith('data.')){
                                             fields.push(line.value.replace('data.',''));
                                         }
                                     });
@@ -892,7 +892,7 @@ class fgpWidgetGraph {
                                         if(lines){
                                             angular.forEach(lines, function(line){
                                                 //
-                                                if(line.value && patt.test(line.value)){
+                                                if(line.value && (line.value).startsWith('data.')){
                                                     fields.push(line.value.replace('data.',''));
                                                 }
                                             });
@@ -966,7 +966,7 @@ class fgpWidgetGraph {
                                                 if(lines){
                                                     angular.forEach(lines, function(line){
                                                         //
-                                                        if(line.value && patt.test(line.value)){
+                                                        if(line.value && (line.value).startsWith('data.')){
                                                             fields.push(line.value.replace('data.',''));
                                                         }
                                                     });
