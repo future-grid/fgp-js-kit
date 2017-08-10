@@ -285,7 +285,21 @@ class fgpWidgetGraph {
                 }
                 timer = timeOut(function () {
                     canScroll = true;
-                }, 3000);
+                }, 1000);
+            };
+
+
+            var mouseEnterHandler = function (e,g, context) {
+                if (scope.basicInfo && !scope.basicInfo.zoom) {
+                    return;
+                }
+                //
+                if(timer!=null){
+                    timeOut.cancel(timer);
+                }
+                timer = timeOut(function () {
+                    canScroll = true;
+                }, 1000);
             };
 
             var mouseOutHandler = function (e, g, context) {
@@ -378,8 +392,9 @@ class fgpWidgetGraph {
                 'wheel': scroll,
                 'mousedown': mousedownHandler,
                 'mousemove': mousemoveHandler,
+                'mouseenter':mouseEnterHandler,
                 'mouseup': mouseupHandler,
-                'mouseover': mouseOverHandler,
+                // 'mouseover': mouseOverHandler,
                 'mouseout': mouseOutHandler
             };
 
