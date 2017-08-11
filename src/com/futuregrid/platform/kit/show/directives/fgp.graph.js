@@ -723,16 +723,20 @@ class fgpWidgetGraph {
                             if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
                                 // show device view
                                 var fields = [];
-                                var patt = new RegExp(/^data./g);
+                                var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
                                 angular.forEach(metadata.data.groups[1].collections, function (level) {
                                     if (level.rows.length > 0 && level.name === rangeLevel) {
                                         var lines = level.rows;
                                         if(lines){
                                             angular.forEach(lines, function(line){
-                                                //
-                                                if(line.value && (line.value).startsWith('data.')){
-                                                    fields.push(line.value.replace('data.',''));
+                                                if(line.value){
+                                                    var columns = (line.value).match(patt);
+                                                    angular.forEach(columns, function (column) {
+                                                        if(column.startsWith('data.')){
+                                                            fields.push(column.replace('data.',''));
+                                                        }
+                                                    });
                                                 }
                                             });
                                         }
@@ -764,16 +768,20 @@ class fgpWidgetGraph {
                                 if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
 
                                     var fields = [];
-                                    var patt = new RegExp(/^data./g);
+                                    var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
                                     angular.forEach(metadata.data.groups[2].collections, function (level) {
                                         if (level.rows.length > 0 && level.name === rangeLevel) {
                                             var lines = level.rows;
                                             if(lines){
                                                 angular.forEach(lines, function(line){
-                                                    //
-                                                    if(line.value && (line.value).startsWith('data.')){
-                                                        fields.push(line.value.replace('data.',''));
+                                                    if(line.value){
+                                                        var columns = (line.value).match(patt);
+                                                        angular.forEach(columns, function (column) {
+                                                            if(column.startsWith('data.')){
+                                                                fields.push(column.replace('data.',''));
+                                                            }
+                                                        });
                                                     }
                                                 });
                                             }
@@ -817,7 +825,7 @@ class fgpWidgetGraph {
 
                         // fields of range level
                         var fields = [];
-                        var patt = new RegExp(/^data./g);
+                        var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
                         angular.forEach(metadata.data.groups[1].collections, function (level) {
                             if (level.rows.length > 0 && level.name === rangeLevel) {
@@ -825,8 +833,13 @@ class fgpWidgetGraph {
                                 if(lines){
                                     angular.forEach(lines, function(line){
                                         //
-                                        if(line.value && (line.value).startsWith('data.')){
-                                            fields.push(line.value.replace('data.',''));
+                                        if(line.value){
+                                            var columns = (line.value).match(patt);
+                                            angular.forEach(columns, function (column) {
+                                                if((column).startsWith('data.')){
+                                                    fields.push(column.replace('data.',''));
+                                                }
+                                            });
                                         }
                                     });
                                 }
@@ -899,16 +912,20 @@ class fgpWidgetGraph {
                                 });
 
                                 var fields = [];
-                                var patt = new RegExp(/^data./g);
+                                var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
                                 angular.forEach(metadata.data.groups[2].collections, function (level) {
                                     if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
                                         var lines = level.rows;
                                         if(lines){
                                             angular.forEach(lines, function(line){
-                                                //
-                                                if(line.value && (line.value).startsWith('data.')){
-                                                    fields.push(line.value.replace('data.',''));
+                                                if(line.value){
+                                                    var columns = (line.value).match(patt);
+                                                    angular.forEach(columns, function (column) {
+                                                        if(column && (column).startsWith('data.')){
+                                                            fields.push(column.replace('data.',''));
+                                                        }
+                                                    });
                                                 }
                                             });
                                         }
@@ -973,7 +990,7 @@ class fgpWidgetGraph {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         // send request
                                         var fields = [];
-                                        var patt = new RegExp(/^data./g);
+                                        var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
                                         angular.forEach(metadata.data.groups[1].collections, function (level) {
                                             if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
@@ -981,9 +998,16 @@ class fgpWidgetGraph {
                                                 if(lines){
                                                     angular.forEach(lines, function(line){
                                                         //
-                                                        if(line.value && (line.value).startsWith('data.')){
-                                                            fields.push(line.value.replace('data.',''));
+                                                        if(line.value){
+                                                            var columns = (line.value).match(patt);
+                                                            angular.forEach(columns, function (column) {
+                                                                if((column).startsWith('data.')){
+                                                                    fields.push(column.replace('data.',''));
+                                                                }
+                                                            });
+
                                                         }
+
                                                     });
                                                 }
                                             }
