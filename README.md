@@ -1,4 +1,4 @@
-# fgp-js-kit
+# fgp-js-kit  # 1.0.41
 Future Grid JavaScript Library.
 
 Reactive, responsive Graph. using [Dygraphs](http://dygraphs.com). 
