@@ -1071,6 +1071,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             if (context.isPanning) {
                 Dygraph.endPan(e, g, context);
             }
+
+            canScroll = true;
         };
 
         var interactionModel = {

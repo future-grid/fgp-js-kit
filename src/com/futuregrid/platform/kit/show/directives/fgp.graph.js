@@ -384,6 +384,8 @@ class fgpWidgetGraph {
                 if (context.isPanning) {
                     Dygraph.endPan(e, g, context);
                 }
+
+                canScroll = true;
             };
 
             var interactionModel = {
