@@ -405,16 +405,16 @@ class fgpWidgetGraph {
             var configuration = {
                 drawGapEdgePoints: true,
                 'pointSize': 3,
+                legend: 'follow',
                 labelsKMB: true,
+                labelsSeparateLines: true,
                 // data formate
                 labels: ['x'].concat(sampleData.labels),
-                highlightCircleSize: 2,
-                strokeWidth: 1,
-                highlightSeriesOpts: {
-                    strokeWidth: 2,
-                    strokeBorderWidth: 1,
-                    highlightCircleSize: 2
-                },
+                // highlightSeriesOpts: {
+                //     strokeWidth: 2,
+                //     strokeBorderWidth: 1,
+                //     highlightCircleSize: 2
+                // },
                 drawPoints: false,
                 drawAxesAtZero: false,
                 labelsDivStyles: {
@@ -451,7 +451,7 @@ class fgpWidgetGraph {
                     x: {
                         // datetime format
                         valueFormatter: function (y) {
-                            return moment(y).format('LLLL'); //Hide legend label
+                            return moment(y).format('lll'); //Hide legend label
                         }
                     }
                 },
@@ -1326,6 +1326,7 @@ class fgpWidgetGraph {
                         $scope.childrenRangeConfig = {
                             'drawGapEdgePoints': true,
                             'pointSize': 3,
+                            'legend': 'follow',
                             'labelsKMB': true,
                             'file': newLines,
                             'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -1475,6 +1476,7 @@ class fgpWidgetGraph {
                             $scope.currentChart.updateOptions({
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
+                                'legend': 'follow',
                                 'labelsKMB': true,
                                 'file': chartData,
                                 'labels': ['x'].concat(labels),
@@ -1497,6 +1499,7 @@ class fgpWidgetGraph {
                             $scope.currentChart.updateOptions({
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
+                                'legend': 'follow',
                                 'labelsKMB': true,
                                 'file': newLines,
                                 'labels': ['x'].concat(labels).concat(["span_y2"]),
@@ -1630,6 +1633,7 @@ class fgpWidgetGraph {
                                     $scope.currentChart.updateOptions({
                                         'drawGapEdgePoints': true,
                                         'pointSize': 3,
+                                        'legend': 'follow',
                                         'labelsKMB': true,
                                         'file': allLines,
                                         'labels': ['x'].concat(labels),
@@ -1659,6 +1663,7 @@ class fgpWidgetGraph {
                                     $scope.currentChart.updateOptions({
                                         'drawGapEdgePoints': true,
                                         'pointSize': 3,
+                                        'legend': 'follow',
                                         'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -1831,6 +1836,7 @@ class fgpWidgetGraph {
                                 $scope.rangeConfig = {
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
+                                    'legend': 'follow',
                                     'labelsKMB': true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
@@ -1860,6 +1866,7 @@ class fgpWidgetGraph {
                                 $scope.rangeConfig = {
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
+                                    'legend': 'follow',
                                     'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),

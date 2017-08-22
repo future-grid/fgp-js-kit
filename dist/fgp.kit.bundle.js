@@ -1092,16 +1092,16 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var configuration = {
             drawGapEdgePoints: true,
             'pointSize': 3,
+            legend: 'follow',
             labelsKMB: true,
+            labelsSeparateLines: true,
             // data formate
             labels: ['x'].concat(sampleData.labels),
-            highlightCircleSize: 2,
-            strokeWidth: 1,
-            highlightSeriesOpts: {
-                strokeWidth: 2,
-                strokeBorderWidth: 1,
-                highlightCircleSize: 2
-            },
+            // highlightSeriesOpts: {
+            // strokeWidth: 2,
+            // strokeBorderWidth: 1,
+            // highlightCircleSize: 2
+            // },
             drawPoints: false,
             drawAxesAtZero: false,
             labelsDivStyles: {
@@ -1138,7 +1138,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 x: {
                     // datetime format
                     valueFormatter: function (y) {
-                        return moment(y).format('LLLL'); //Hide legend label
+                        return moment(y).format('lll'); //Hide legend label
                     }
                 }
             },
@@ -2013,6 +2013,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.childrenRangeConfig = {
                         'drawGapEdgePoints': true,
                         'pointSize': 3,
+                        'legend': 'follow',
                         'labelsKMB': true,
                         'file': newLines,
                         'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -2162,6 +2163,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.currentChart.updateOptions({
                             'drawGapEdgePoints': true,
                             'pointSize': 3,
+                            'legend': 'follow',
                             'labelsKMB': true,
                             'file': chartData,
                             'labels': ['x'].concat(labels),
@@ -2184,6 +2186,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.currentChart.updateOptions({
                             'drawGapEdgePoints': true,
                             'pointSize': 3,
+                            'legend': 'follow',
                             'labelsKMB': true,
                             'file': newLines,
                             'labels': ['x'].concat(labels).concat(["span_y2"]),
@@ -2317,6 +2320,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.currentChart.updateOptions({
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
+                                    'legend': 'follow',
                                     'labelsKMB': true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
@@ -2346,6 +2350,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.currentChart.updateOptions({
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
+                                    'legend': 'follow',
                                     'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -2518,6 +2523,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.rangeConfig = {
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
+                                'legend': 'follow',
                                 'labelsKMB': true,
                                 'file': allLines,
                                 'labels': ['x'].concat(labels),
@@ -2547,6 +2553,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.rangeConfig = {
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
+                                'legend': 'follow',
                                 'labelsKMB': true,
                                 'file': newLines,
                                 'labels': ['x'].concat(labels).concat(['span_y2']),
