@@ -711,11 +711,13 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
             '</div></div>';
 
 
+        var dom_legend = '<span class="badge" style="background-color:{{legendColor}}" ng-show="legendText">{{legendText}}</span>';
+
         var dom_empty_data = '<div ng-show="emptyDataShow" id="emptydata_' + attrs.id + '" style="width: 100%;height:100%;position: absolute;background: rgba(255, 255, 255, 0.1);" data-chartloading><div class="spinner" style="width: 100%;">' +
             '<h1>Empty Data!</h1>' +
             '</div></div>';
 
-        return '<div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><div class="relationBtn">R</div><span>Scatter View</span></a><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'h:mm a MMMM d, y\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'h:mm a MMMM d, y\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
+        return '<div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><div class="relationBtn">R</div><span>Scatter View</span></a><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div><div style="float:right;margin-right: 20px;"><label class="label-inline">'+dom_legend+'</label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
     }
 };
 
@@ -1138,7 +1140,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 x: {
                     // datetime format
                     valueFormatter: function (y) {
-                        return moment(y).format('lll'); //Hide legend label
+                        return moment(y).format('DD/MM/YYYY HH:mm:ss'); //Hide legend label
                     }
                 }
             },
@@ -1263,6 +1265,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
         }
     });
+
+
+    $scope.legendText = null;
+    $scope.legendColor = null;
 
     if (widgetData.data && widgetData.from == "show") {
         $scope.loadingShow = false;
@@ -1588,6 +1594,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             // }
                             $scope.loadingShow = false;
                         } else {
+                            $scope.legendText = null;
                             var deviceInfo = [];
                             var currentStore = "";
                             // has problem....
@@ -1984,7 +1991,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 yRange.max = yRange.max + (yRange.max) * 0.10;
             }
             //update chart
-
             if ($scope.currentChart) {
                 $scope.rangeChildrenData = allLines;
 
@@ -1992,11 +1998,43 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.childrenRangeConfig = {
                         'labelsKMB': true,
                         'file': allLines,
+                        legend: 'never',
+                        labelsKMB: true,
+                        labelsSeparateLines: false,
+                        // data formate
+                        labels: ['x'].concat(sampleData.labels),
+                        highlightSeriesOpts: {
+                            strokeWidth: 2,
+                            strokeBorderWidth: 1,
+                            highlightCircleSize: 2
+                        },
                         'labels': ['x'].concat(labels),
                         'ylabel': leftAndRight.left,
                         'y2label': leftAndRight.right,
                         'series': series,
                         'colors': colors,
+                        highlightCallback: function(e, x, pts, row, seriesName) {
+                            $scope.$apply(function () {
+                                var sn = "";
+                                angular$1.forEach(series, function (value, name, item) {
+                                    if(value.axis === "y1"){
+                                        sn = name;
+                                    }
+                                });
+                                angular$1.forEach(pts, function(item, index){
+                                    if(item.name === seriesName){
+                                        $scope.legendColor = colors[index];
+                                        $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                    }
+                                });
+                            });
+                        },
+
+                        unhighlightCallback: function(e) {
+                            $scope.$apply(function () {
+                                $scope.legendText = null;
+                            });
+                        },
                         'axes': {
                             'y': {valueRange: [yRange.min, yRange.max], axisLabelWidth: 80},
                             'y2': {}
@@ -2013,9 +2051,38 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.childrenRangeConfig = {
                         'drawGapEdgePoints': true,
                         'pointSize': 3,
-                        'legend': 'follow',
+                        'legend': 'never',
                         'labelsKMB': true,
                         'file': newLines,
+                        'labelsSeparateLines': false,
+                        'highlightSeriesOpts': {
+                            strokeWidth: 2,
+                            strokeBorderWidth: 1,
+                            highlightCircleSize: 2
+                        },
+                        highlightCallback: function(e, x, pts, row, seriesName) {
+                            $scope.$apply(function () {
+                                $scope.legendText = seriesName;
+                                var sn = "";
+                                angular$1.forEach(series, function (value, name, item) {
+                                    if(value.axis === "y1"){
+                                        sn = name;
+                                    }
+                                });
+                                angular$1.forEach(pts, function(item,index){
+                                    if(item.name === seriesName){
+                                        $scope.legendColor = colors[index];
+                                        $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                    }
+                                });
+                            });
+                        },
+
+                        unhighlightCallback: function(e) {
+                            $scope.$apply(function () {
+                                $scope.legendText = null;
+                            });
+                        },
                         'labels': ['x'].concat(labels).concat(['span_y2']),
                         'ylabel': leftAndRight.left,
                         'y2label': "",
@@ -2163,8 +2230,37 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.currentChart.updateOptions({
                             'drawGapEdgePoints': true,
                             'pointSize': 3,
-                            'legend': 'follow',
+                            'legend': 'never',
                             'labelsKMB': true,
+                            'highlightSeriesOpts': {
+                                strokeWidth: 2,
+                                strokeBorderWidth: 1,
+                                highlightCircleSize: 2
+                            },
+                            highlightCallback: function(e, x, pts, row, seriesName) {
+                                $scope.$apply(function () {
+                                    $scope.legendText = seriesName;
+                                    var sn = "";
+                                    angular$1.forEach(series, function (value, name, item) {
+                                        if(value.axis === "y1"){
+                                            sn = name;
+                                        }
+                                    });
+                                    angular$1.forEach(pts, function(item,index){
+                                        if(item.name === seriesName){
+                                            $scope.legendColor = colors[index];
+                                            $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                        }
+                                    });
+                                });
+                            },
+
+                            unhighlightCallback: function(e) {
+                                $scope.$apply(function () {
+                                    $scope.legendText = null;
+                                });
+                            },
+                            labelsSeparateLines: false,
                             'file': chartData,
                             'labels': ['x'].concat(labels),
                             'ylabel': leftAndRight.left,
@@ -2186,11 +2282,40 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.currentChart.updateOptions({
                             'drawGapEdgePoints': true,
                             'pointSize': 3,
-                            'legend': 'follow',
+                            'legend': 'never',
                             'labelsKMB': true,
                             'file': newLines,
+                            labelsSeparateLines: false,
                             'labels': ['x'].concat(labels).concat(["span_y2"]),
                             'ylabel': leftAndRight.left,
+                            'highlightSeriesOpts': {
+                                strokeWidth: 2,
+                                strokeBorderWidth: 1,
+                                highlightCircleSize: 2
+                            },
+                            highlightCallback: function(e, x, pts, row, seriesName) {
+                                $scope.$apply(function () {
+                                    $scope.legendText = seriesName;
+                                    var sn = "";
+                                    angular$1.forEach(series, function (value, name, item) {
+                                        if(value.axis === "y1"){
+                                            sn = name;
+                                        }
+                                    });
+                                    angular$1.forEach(pts, function(item, index){
+                                        if(item.name === seriesName){
+                                            $scope.legendColor = colors[index];
+                                            $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                        }
+                                    });
+                                });
+                            },
+
+                            unhighlightCallback: function(e) {
+                                $scope.$apply(function () {
+                                    $scope.legendText = null;
+                                });
+                            },
                             'y2label': "",
                             'series': series,
                             'colors': colors,
@@ -2321,6 +2446,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
+                                    labelsSeparateLines: false,
+                                    highlightSeriesOpts:{},
                                     'labelsKMB': true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
@@ -2351,6 +2478,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
+                                    labelsSeparateLines: false,
+                                    highlightSeriesOpts:{},
                                     'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -2524,11 +2653,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
                                 'legend': 'follow',
+                                labelsSeparateLines: true,
+                                highlightSeriesOpts:null,
                                 'labelsKMB': true,
                                 'file': allLines,
                                 'labels': ['x'].concat(labels),
                                 'ylabel': leftAndRight.left,
                                 'y2label': leftAndRight.right,
+
                                 'series': series,
                                 'colors': colors,
                                 'axes': {
@@ -2554,6 +2686,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
                                 'legend': 'follow',
+                                labelsSeparateLines: true,
+                                highlightSeriesOpts:null,
                                 'labelsKMB': true,
                                 'file': newLines,
                                 'labels': ['x'].concat(labels).concat(['span_y2']),
