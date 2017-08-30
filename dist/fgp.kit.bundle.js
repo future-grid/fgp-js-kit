@@ -711,13 +711,13 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
             '</div></div>';
 
 
-        var dom_legend = '<span class="badge" style="background-color:{{legendColor}}" ng-show="legendText">{{legendText}}</span>';
+        var dom_legend = '<li>{{legendText_device}}</li><li>{{legendText_datetime}}</li><li><label style="color: {{legendColor}}">{{legendText_column}}</label>:{{legendText_value}}</li>';
 
         var dom_empty_data = '<div ng-show="emptyDataShow" id="emptydata_' + attrs.id + '" style="width: 100%;height:100%;position: absolute;background: rgba(255, 255, 255, 0.1);" data-chartloading><div class="spinner" style="width: 100%;">' +
             '<h1>Empty Data!</h1>' +
             '</div></div>';
 
-        return '<div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><div class="relationBtn">R</div><span>Scatter View</span></a><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div><div style="float:right;margin-right: 20px;"><label class="label-inline">'+dom_legend+'</label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
+        return '<div id="legendbox'+attrs.id+'" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">'+dom_legend+'</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><div class="relationBtn">R</div><span>Scatter View</span></a><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
     }
 };
 
@@ -1268,6 +1268,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
     $scope.legendText = null;
+    $scope.legendText_device = null;
+    $scope.legendText_datetime = null;
+    $scope.legendText_column = null;
+    $scope.legendText_value = null;
     $scope.legendColor = null;
 
     if (widgetData.data && widgetData.from == "show") {
@@ -2014,25 +2018,47 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'series': series,
                         'colors': colors,
                         highlightCallback: function(e, x, pts, row, seriesName) {
-                            $scope.$apply(function () {
-                                var sn = "";
-                                angular$1.forEach(series, function (value, name, item) {
-                                    if(value.axis === "y1"){
-                                        sn = name;
-                                    }
-                                });
-                                angular$1.forEach(pts, function(item, index){
-                                    if(item.name === seriesName){
-                                        $scope.legendColor = colors[index];
-                                        $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                    }
-                                });
+                            var sn = "";
+                            angular$1.forEach(series, function (value, name, item) {
+                                if(value.axis === "y1"){
+                                    sn = name;
+                                }
                             });
+                            var point_show = {x:0,y:0};
+                            angular$1.forEach(pts, function(item, index){
+                                if(item.name === seriesName){
+                                    $scope.legendText = seriesName;
+                                    $scope.legendColor = colors[index];
+                                    // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                    $scope.legendText_device = seriesName;
+                                    $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                    $scope.legendText_column =sn;
+                                    $scope.legendText_value =item.yval;
+                                    angular$1.forEach(pts, function(point){
+                                        if(point.name === seriesName){
+                                            point_show.y = point.canvasy + 30;
+                                            point_show.x = point.canvasx + 30;
+                                        }
+                                    });
+                                }
+                            });
+                            var legendbox = angular$1.element("#legendbox"+element_id);
+
+
+                            $scope.$apply(function () {
+                                $scope.legendTop = point_show.y;
+                                $scope.legendLeft= point_show.x;
+                            });
+                                
                         },
 
                         unhighlightCallback: function(e) {
                             $scope.$apply(function () {
                                 $scope.legendText = null;
+                                $scope.legendText_device = null;
+                                $scope.legendText_datetime = null;
+                                $scope.legendText_column =null;
+                                $scope.legendText_value =null;
                             });
                         },
                         'axes': {
@@ -2061,26 +2087,44 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             highlightCircleSize: 2
                         },
                         highlightCallback: function(e, x, pts, row, seriesName) {
+                            var sn = "";
+                            angular$1.forEach(series, function (value, name, item) {
+                                if(value.axis === "y1"){
+                                    sn = name;
+                                }
+                            });
+                            var point_show = {x:0,y:0};
+                            angular$1.forEach(pts, function(item, index){
+                                if(item.name === seriesName){
+                                    $scope.legendText = seriesName;
+                                    $scope.legendColor = colors[index];
+                                    // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                    $scope.legendText_device = seriesName;
+                                    $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                    $scope.legendText_column =sn;
+                                    $scope.legendText_value =item.yval;
+                                    angular$1.forEach(pts, function(point){
+                                        if(point.name === seriesName){
+                                            point_show.y = point.canvasy + 30;
+                                            point_show.x = point.canvasx + 30;
+                                        }
+                                    });
+                                }
+                            });
+                            var legendbox = angular$1.element("#legendbox"+element_id);
                             $scope.$apply(function () {
-                                $scope.legendText = seriesName;
-                                var sn = "";
-                                angular$1.forEach(series, function (value, name, item) {
-                                    if(value.axis === "y1"){
-                                        sn = name;
-                                    }
-                                });
-                                angular$1.forEach(pts, function(item,index){
-                                    if(item.name === seriesName){
-                                        $scope.legendColor = colors[index];
-                                        $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                    }
-                                });
+                                $scope.legendTop = point_show.y;
+                                $scope.legendLeft= point_show.x;
                             });
                         },
 
                         unhighlightCallback: function(e) {
                             $scope.$apply(function () {
                                 $scope.legendText = null;
+                                $scope.legendText_device = null;
+                                $scope.legendText_datetime = null;
+                                $scope.legendText_column =null;
+                                $scope.legendText_value =null;
                             });
                         },
                         'labels': ['x'].concat(labels).concat(['span_y2']),
@@ -2238,26 +2282,44 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 highlightCircleSize: 2
                             },
                             highlightCallback: function(e, x, pts, row, seriesName) {
+                                var sn = "";
+                                angular$1.forEach(series, function (value, name, item) {
+                                    if(value.axis === "y1"){
+                                        sn = name;
+                                    }
+                                });
+                                var point_show = {x:0,y:0};
+                                angular$1.forEach(pts, function(item, index){
+                                    if(item.name === seriesName){
+                                        $scope.legendText = seriesName;
+                                        $scope.legendColor = colors[index];
+                                        // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                        $scope.legendText_device = seriesName;
+                                        $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                        $scope.legendText_column =sn;
+                                        $scope.legendText_value =item.yval;
+                                        angular$1.forEach(pts, function(point){
+                                            if(point.name === seriesName){
+                                                point_show.y = point.canvasy + 30;
+                                                point_show.x = point.canvasx + 30;
+                                            }
+                                        });
+                                    }
+                                });
+                                var legendbox = angular$1.element("#legendbox"+element_id);
                                 $scope.$apply(function () {
-                                    $scope.legendText = seriesName;
-                                    var sn = "";
-                                    angular$1.forEach(series, function (value, name, item) {
-                                        if(value.axis === "y1"){
-                                            sn = name;
-                                        }
-                                    });
-                                    angular$1.forEach(pts, function(item,index){
-                                        if(item.name === seriesName){
-                                            $scope.legendColor = colors[index];
-                                            $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                        }
-                                    });
+                                    $scope.legendTop = point_show.y;
+                                    $scope.legendLeft= point_show.x;
                                 });
                             },
 
                             unhighlightCallback: function(e) {
                                 $scope.$apply(function () {
                                     $scope.legendText = null;
+                                    $scope.legendText_device = null;
+                                    $scope.legendText_datetime = null;
+                                    $scope.legendText_column =null;
+                                    $scope.legendText_value =null;
                                 });
                             },
                             labelsSeparateLines: false,
@@ -2294,26 +2356,47 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 highlightCircleSize: 2
                             },
                             highlightCallback: function(e, x, pts, row, seriesName) {
-                                $scope.$apply(function () {
-                                    $scope.legendText = seriesName;
-                                    var sn = "";
-                                    angular$1.forEach(series, function (value, name, item) {
-                                        if(value.axis === "y1"){
-                                            sn = name;
-                                        }
-                                    });
-                                    angular$1.forEach(pts, function(item, index){
-                                        if(item.name === seriesName){
-                                            $scope.legendColor = colors[index];
-                                            $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                        }
-                                    });
+
+                                var sn = "";
+                                angular$1.forEach(series, function (value, name, item) {
+                                    if(value.axis === "y1"){
+                                        sn = name;
+                                    }
                                 });
+                                var point_show = {x:0,y:0};
+                                angular$1.forEach(pts, function(item, index){
+                                    if(item.name === seriesName){
+                                        $scope.legendText = seriesName;
+                                        $scope.legendColor = colors[index];
+                                        // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                        $scope.legendText_device = seriesName;
+                                        $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                        $scope.legendText_column =sn;
+                                        $scope.legendText_value =item.yval;
+                                        angular$1.forEach(pts, function(point){
+                                            if(point.name === seriesName){
+                                                point_show.y = point.canvasy + 30;
+                                                point_show.x = point.canvasx + 30;
+                                            }
+                                        });
+                                    }
+                                });
+                                var legendbox = angular$1.element("#legendbox"+element_id);
+
+                                $scope.$apply(function () {
+                                    $scope.legendTop = point_show.y;
+                                    $scope.legendLeft= point_show.x;
+                                });
+
                             },
 
                             unhighlightCallback: function(e) {
                                 $scope.$apply(function () {
                                     $scope.legendText = null;
+                                    $scope.legendText_device = null;
+                                    $scope.legendText_datetime = null;
+                                    $scope.legendText_column =null;
+                                    $scope.legendText_value =null;
                                 });
                             },
                             'y2label': "",
