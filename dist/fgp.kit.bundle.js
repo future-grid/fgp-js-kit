@@ -717,7 +717,10 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
             '<h1>Empty Data!</h1>' +
             '</div></div>';
 
-        return '<div id="legendbox'+attrs.id+'" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">'+dom_legend+'</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><div class="relationBtn">R</div><span>Scatter View</span></a><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
+
+        var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-primary dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device.name}}</li></ul> </div>';
+
+        return '<div id="legendbox'+attrs.id+'" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">'+dom_legend+'</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><div class="relationBtn">R</div><span>Scatter View</span></a><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()">fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">'+dom_series_list+'</div></div></div><div class="line-chart-graph" style="width: 100%;height: 100%;"></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;"><div class="range-selector-bar" style="height: 0px;margin-top: 30px;"></div></div></div></div></div>';
     }
 };
 
@@ -1341,6 +1344,25 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
         };
+
+
+        $scope.showOrHideDevice = function(device) {
+            angular$1.forEach($scope.childrenDevices, function (item, index) {
+                if (item.name === device.name) {
+                    var graph = $scope.currentChart;
+
+                    if(device.show == true){
+                        graph.setVisibility(index, false);
+                        device.show = false;
+                    }else{
+                        graph.setVisibility(index, true);
+                        device.show = true;
+                    }
+
+                }
+            });
+        };
+
         $scope.fixGraphWithGap_click = function () {
             if ($scope.currentChart && !$scope.fixInterval) {
                 noneFixed = [];
@@ -1601,12 +1623,17 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.legendText = null;
                             var deviceInfo = [];
                             var currentStore = "";
+
+                            $scope.childrenDevices = [];
+
                             // has problem....
                             angular$1.forEach($scope.childTrees, function (device) {
                                 angular$1.forEach(device.trees, function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         currentStore = tree.store;
                                         deviceInfo.push({name: device.name, tree: tree.tree});
+                                        device["show"] = true;
+                                        $scope.childrenDevices.push(device);
                                     }
                                 });
                             });
@@ -1839,8 +1866,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.intevals.device = [];
             //range data with all device
             $scope.childTrees = [];
+            $scope.childrenDevices = [];
+
             angular$1.forEach(deviceDatas, function (deviceData) {
                 var device = deviceData.device;
+                device["show"] = true;
+                $scope.childrenDevices.push(device);
                 var trees = deviceData.trees;
                 $scope.childTrees.push({name: device.name, trees: trees});
                 var rangeTree = null;
