@@ -2911,11 +2911,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         var btntimer = null;
 
 
-        $scope.btnPanVULeft = function () {
-
-        };
-
-
         $scope.btnZoomInVLeft = function () {
             var g = $scope.currentChart;
             var yAxes = g.axes_;
@@ -2956,8 +2951,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var g = $scope.currentChart;
             var yAxes = g.axes_;
             var range = yAxes[0].valueRange;
-            yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-            yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
         };
 
@@ -2966,8 +2961,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var g = $scope.currentChart;
             var yAxes = g.axes_;
             var range = yAxes[0].valueRange;
-            yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-            yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
         };
 
@@ -2977,8 +2972,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var g = $scope.currentChart;
             var yAxes = g.axes_;
             var range = yAxes[1].valueRange;
-            yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-            yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
         };
 
@@ -2986,8 +2981,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var g = $scope.currentChart;
             var yAxes = g.axes_;
             var range = yAxes[1].valueRange;
-            yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-            yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
         };
 
