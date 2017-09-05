@@ -1264,13 +1264,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     $scope.emptyDataShow = false;
     // attributes----------------------
 
-    $scope.$emit('fetchWidgetMetadataEvent', {
-        id: element_id, callback: function (data) {
-            if (data) {
-                widgetData = data;
-            }
-        }
-    });
+
 
 
     $scope.showY2Btns = false;
@@ -1290,7 +1284,33 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         interval: 2629800000
     }, {name: "1 year", interval: 31557600000}];
 
-    $scope.currentIntervalChoosed = $scope.dateTimeIntervals[1];
+
+    $scope.$emit('fetchWidgetMetadataEvent', {
+        id: element_id, callback: function (data) {
+            if (data) {
+                widgetData = data;
+                if (widgetData.data.metadata.data.basic.ranges) {
+                    if(widgetData.data.metadata.data.basic.hasOwnProperty("ranges")){
+                        $scope.dateTimeIntervals = widgetData.data.metadata.data.basic.ranges;
+                        angular$1.forEach($scope.dateTimeIntervals,function (range) {
+                            range["interval"] = range.value;
+                            if(range.checked == true){
+                                $scope.currentIntervalChoosed = range;
+                            }
+                        });
+                    }
+                }else{
+                    $scope.currentIntervalChoosed = $scope.dateTimeIntervals[1];
+                }
+            }
+        }
+    });
+
+
+
+
+
+
 
 
     $scope.changeInterval = function (interval) {
