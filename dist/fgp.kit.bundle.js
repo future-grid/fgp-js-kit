@@ -1290,11 +1290,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         interval: 2629800000
     }, {name: "1 year", interval: 31557600000}];
 
-    $scope.currentIntervalChoosed = $scope.dateTimeIntervals[2];
+    $scope.currentIntervalChoosed = $scope.dateTimeIntervals[1];
 
 
     $scope.changeInterval = function (interval) {
-        $scope.currentIntervalChoosed = interval;
+
         var range = $scope.currentChart["xAxisZoomRange"];
 
         if (range[0] instanceof Date) {
@@ -1305,9 +1305,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             range[1] = range[1].getTime();
         }
 
-        if ($scope.currentIntervalChoosed && ((range[1] - $scope.currentIntervalChoosed.interval) >= range[0])) {
-            $scope.rangeConfig.dateWindow = [new Date(range[1] - $scope.currentIntervalChoosed.interval), range[1]];
+        if (interval && ((range[1] - interval.interval) >= range[0])) {
+            $scope.rangeConfig.dateWindow = [new Date(range[1] - interval.interval), range[1]];
             $scope.currentChart.updateOptions($scope.rangeConfig);
+            $scope.currentIntervalChoosed = interval;
         }
     };
 
@@ -1640,6 +1641,16 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         }
                     }
+
+
+                    $scope.currentIntervalName = "";
+
+                    angular$1.forEach(conf, function (config) {
+                        if (config.interval == expectedInterval) {
+                            $scope.currentIntervalName = config.name;
+                        }
+                    });
+
                     // update range-bar
                     if ($scope.rangeSelectorBar) {
                         angular$1.forEach($scope.trees, function (tree) {
@@ -1679,70 +1690,95 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         showData = showData.filter(function (obj) {
                                             return obj != null;
                                         });
-                                        showData.sort(function (a, b) {
-                                            return a.timestamp > b.timestamp ? 1 : -1;
-                                        });
+
                                         // update range bar
-                                        if ($scope.rangeSelectorBar) {
-                                            var basicInfo = $scope.basicInfo;
-                                            var allLines = [];
-                                            angular$1.forEach(showData, function (line) {
-                                                allLines.push([new Date(line.timestamp)]);
+                                        var basicInfo = $scope.basicInfo;
+                                        var allLines = [];
+                                        angular$1.forEach(showData, function (line) {
+                                            allLines.push([new Date(line.timestamp)]);
+                                        });
+                                        var series_range = {'l0': {axis: 'y1'}};
+
+                                        var rangeBarLabels = [];
+                                        for (var i = 0; i < fields.length; i++) {
+                                            rangeBarLabels.push(fields[i]);
+
+                                            var f = new Function("data", "with(data) { if(data." + fields[i] + "!=null)return data." + fields[i] + ";return null;}");
+                                            // add value
+                                            var counter = 0;
+                                            angular$1.forEach(allLines, function (realLine) {
+                                                try {
+                                                    var value = f(showData[counter]);
+                                                    realLine.push(value);
+                                                } catch (ex) {
+                                                    realLine.push(null);
+                                                }
+                                                counter++;
                                             });
+                                        }
+                                        //
 
+                                        if($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file!=null){
+                                            var objNeed2Add = [];
+                                            angular$1.forEach($scope.rangeConfig.file,function (item) {
+                                                var flag = false;
+                                                var dataLength = -1;
+                                                angular$1.forEach(allLines, function (line) {
+                                                    dataLength = line.length;
+                                                    if(line.length > 0 && line[0].getTime() === item[0].getTime()){
+                                                        flag = true;
+                                                    }else if(line.length === 0){
+                                                        flag = true;
+                                                    }else{
+                                                        dataLength = line.length;
+                                                    }
+
+                                                });
+                                                if(!flag){
+                                                    var tempObj = [];
+                                                    for(var i=0;i<dataLength;i++){
+                                                        tempObj[i] = item[i];
+                                                    }
+                                                    objNeed2Add.push(tempObj);
+                                                }
+                                            });
+                                        }
+                                        allLines = allLines.concat(objNeed2Add);
+                                        allLines.sort(function (a, b) {
+                                            return a[0] > b[0]? 1 : -1;
+                                        });
+                                        if ($scope.showY2Btns) {
+                                            //noinspection JSDuplicatedDeclaration
+                                            series_range = {
+                                                'l0': {axis: 'y1'},
+                                                'l0': {axis: 'y2'}
+                                            };
+                                            $scope.rangeSeries = series_range;
+                                            $scope.rangeConfig = {
+                                                'file': allLines,
+                                                'labels': ['x'].concat(rangeBarLabels),
+                                                'series': series_range
+                                            };
                                             if (basicInfo && basicInfo.range_show) {
-                                                var rangeBarLabels = [];
-                                                for (var i = 0; i < fields.length; i++) {
-                                                    rangeBarLabels.push("l" + i);
-
-                                                    var f = new Function("data", "with(data) { if(data." + fields[i] + "!=null)return data." + fields[i] + ";return null;}");
-                                                    // add value
-                                                    var counter = 0;
-                                                    angular$1.forEach(allLines, function (realLine) {
-                                                        try {
-                                                            var value = f(showData[counter]);
-                                                            realLine.push(value);
-                                                        }catch (ex) {
-                                                            realLine.push(null);
-                                                        }
-                                                        counter++;
-                                                    });
-                                                }
-
-                                                var series_range = {'l0': {axis: 'y1'}};
-
-                                                if ($scope.showY2Btns) {
-                                                    //noinspection JSDuplicatedDeclaration
-                                                    series_range = {
-                                                        'l0': {axis: 'y1'},
-                                                        'l0': {axis: 'y2'}
-                                                    };
-                                                    $scope.rangeSeries = series_range;
-
-                                                    $scope.rangeSelectorBar.updateOptions({
-                                                        'file': allLines,
-                                                        'labels': ['x'].concat(rangeBarLabels),
-                                                        'series': series_range
-                                                    });
-                                                } else {
-                                                    series_range["span_y2"] = {axis: 'y2'};
-                                                    $scope.rangeSeries = series_range;
-                                                    var newLines = [];
-                                                    angular$1.copy(allLines, newLines);
-                                                    angular$1.forEach(newLines, function (line) {
-                                                        line.push(NaN);
-                                                    });
-                                                    $scope.rangeSelectorBar.updateOptions({
-                                                        'file': newLines,
-                                                        'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
-                                                        'series': series_range
-                                                    });
-                                                }
-
-
+                                                $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                                            }
+                                        } else {
+                                            series_range["span_y2"] = {axis: 'y2'};
+                                            $scope.rangeSeries = series_range;
+                                            var newLines = [];
+                                            angular$1.copy(allLines, newLines);
+                                            angular$1.forEach(newLines, function (line) {
+                                                line.push(NaN);
+                                            });
+                                            $scope.rangeConfig = {
+                                                'file': newLines,
+                                                'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
+                                                'series': series_range
+                                            };
+                                            if (basicInfo && basicInfo.range_show) {
+                                                $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                             }
                                         }
-                                        // updateDetailChart(metadata, tree.store, $scope.rangeData, showData);
                                     },
                                     function (data) {
                                         console.info(data);
@@ -1752,24 +1788,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                     }
 
-                    $scope.currentIntervalName = "";
 
-                    angular$1.forEach(conf, function (config) {
-                        if (config.interval == expectedInterval) {
-                            $scope.currentIntervalName = config.name;
-                        }
-                    });
                     $scope.loadingShow = true;
                     if ($scope.currentView == 1) {
                         // scatter detail view
                         if (expectedInterval == conf[0].interval) {
-                            // set valueRange;
-                            // re cal max and min
-                            // $scope.childrenRangeConfig["dateWindow"] = $scope.chartDateWindow;
                             $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
-                            // if ($scope.rangeSelectorBar) {
-                            // $scope.rangeSelectorBar.updateOptions({series: $scope.childRangeSeries});
-                            // }
                             $scope.loadingShow = false;
                         } else {
                             $scope.legendText = null;
@@ -1832,106 +1856,74 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
                         $scope.fixGraphWithGap();
                     } else {
-                        // if expected interval is the biggest, show range data
-                        if (expectedInterval == conf[0].interval) {
-                            if (!($scope.chartDateWindow[0] instanceof Date)) {
-                                $scope.chartDateWindow[0] = new Date($scope.chartDateWindow[0]);
-                            }
+                        // cal tree
+                        angular$1.forEach($scope.trees, function (tree, index) {
+                            if (expectedInterval == tree.frequency) {
+                                // send request
+                                var fields = [];
+                                var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
-                            if (!($scope.chartDateWindow[1] instanceof Date)) {
-                                $scope.chartDateWindow[1] = new Date($scope.chartDateWindow[1]);
-                            }
-                            $scope.rangeConfig["dateWindow"] = $scope.chartDateWindow;
-                            // set valueRange
-                            $scope.currentChart.updateOptions($scope.rangeConfig);
-                            if ($scope.rangeSelectorBar && $scope.rangeSeries) {
-                                $scope.rangeSelectorBar.updateOptions({series: $scope.rangeSeries});
-                            }
-                            // tell some other widgets, the graph is changed.
-                            $timeout(function () {
-                                $rootScope.$broadcast('chartDataChangeEvent', {
-                                    'id': element_id,
-                                    'group': 'device',
-                                    'data': {
-                                        'collection': conf[0].name,
-                                        'group': 'device',
-                                        'data': $scope.ordinalRangeData.filter(function (obj) {
-                                            return obj.timestamp >= $scope.rangeConfig["dateWindow"][0].getTime() && obj.timestamp <= $scope.rangeConfig["dateWindow"][1].getTime();
-                                        })
+                                angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                                    if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
+                                        var lines = level.rows;
+                                        if (lines) {
+                                            angular$1.forEach(lines, function (line) {
+                                                //
+                                                if (line.value) {
+                                                    var columns = (line.value).match(patt);
+                                                    angular$1.forEach(columns, function (column) {
+                                                        if ((column).startsWith('data.')) {
+                                                            fields.push(column.replace('data.', ''));
+                                                        }
+                                                    });
+
+                                                }
+
+                                            });
+                                        }
                                     }
                                 });
-                            });
 
-                            $scope.loadingShow = false;
-                        } else {
-                            // cal tree
-                            angular$1.forEach($scope.trees, function (tree, index) {
-                                if (expectedInterval == tree.frequency && index != 0) {
-                                    // send request
-                                    var fields = [];
-                                    var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
-                                    angular$1.forEach(metadata.data.groups[1].collections, function (level) {
-                                        if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
-                                            var lines = level.rows;
-                                            if (lines) {
-                                                angular$1.forEach(lines, function (line) {
-                                                    //
-                                                    if (line.value) {
-                                                        var columns = (line.value).match(patt);
-                                                        angular$1.forEach(columns, function (column) {
-                                                            if ((column).startsWith('data.')) {
-                                                                fields.push(column.replace('data.', ''));
-                                                            }
-                                                        });
-
-                                                    }
-
-                                                });
-                                            }
-                                        }
+                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function (data) {
+                                    // udpate chart
+                                    var showData = [];
+                                    angular$1.forEach(data, function (arr) {
+                                        Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
                                     });
+                                    showData = showData.filter(function (obj) {
+                                        return obj != null;
+                                    });
+                                    showData.sort(function (a, b) {
+                                        return a.timestamp > b.timestamp ? 1 : -1;
+                                    });
+                                    //get configuration
+                                    updateDetailChart(metadata, tree.store, $scope.rangeData, showData);
 
-
-                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function (data) {
-                                        // udpate chart
-                                        var showData = [];
-                                        angular$1.forEach(data, function (arr) {
-                                            Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
-                                        });
-                                        showData = showData.filter(function (obj) {
-                                            return obj != null;
-                                        });
-                                        showData.sort(function (a, b) {
-                                            return a.timestamp > b.timestamp ? 1 : -1;
-                                        });
-                                        //get configuration
-                                        updateDetailChart(metadata, tree.store, $scope.rangeData, showData);
-
-                                        // tell some other widgets, the graph is changed.
-                                        $timeout(function () {
-                                            $rootScope.$broadcast('chartDataChangeEvent', {
-                                                'id': element_id,
+                                    // tell some other widgets, the graph is changed.
+                                    $timeout(function () {
+                                        $rootScope.$broadcast('chartDataChangeEvent', {
+                                            'id': element_id,
+                                            'group': 'device',
+                                            'data': {
+                                                'collection': tree.store,
                                                 'group': 'device',
-                                                'data': {
-                                                    'collection': tree.store,
-                                                    'group': 'device',
-                                                    'data': showData
-                                                }
-                                            });
+                                                'data': showData
+                                            }
                                         });
-
-                                    }, function (data) {
-                                        console.info(data);
                                     });
-                                }
-                            });
-                        }
+
+                                }, function (data) {
+                                    console.info(data);
+                                });
+                            }
+                        });
+
                         $scope.fixGraphWithGap();
                     }
                     $scope.status = false;
                 }
-            });// not working.....
+            });
 
         });
 
@@ -1946,9 +1938,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
             if (node.children[0] == null && node.children[1] == null) {
-                if (node.data.array) {
+                if (node.data!=null && node.data.array) {
                     Array.prototype.push.apply(values, node.data.array.slice(0, node.data.size));
-                } else {
+                } else if(node.data!=null) {
                     Array.prototype.push.apply(values, node.data.slice(0, node.data.length));
                 }
 
@@ -2377,7 +2369,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 showY2axis = true;
                                 $scope.showY2Btns = true;
                             }
-                            var f = new Function("data", "with(data) { if(" + collection.rows[0].value + ")return " + collection.rows[0].value + ";return null;}");
+                            var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                             var tempData = [];
                             var tempTime = [];
                             // make data
@@ -2648,7 +2640,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             showY2axis = true;
                             $scope.showY2Btns = true;
                         }
-                        var f = new Function("data", "with(data) { if(" + row.value + ")return " + row.value + ";return null;}");
+                        var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
                         // add value
                         var counter = 0;
                         angular$1.forEach(allLines, function (realLine) {
