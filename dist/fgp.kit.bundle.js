@@ -1749,19 +1749,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         });
                                         if ($scope.showY2Btns) {
                                             //noinspection JSDuplicatedDeclaration
-                                            series_range = {
-                                                'l0': {axis: 'y1'},
-                                                'l0': {axis: 'y2'}
-                                            };
-                                            $scope.rangeSeries = series_range;
-                                            $scope.rangeConfig = {
-                                                'file': allLines,
-                                                'labels': ['x'].concat(rangeBarLabels),
-                                                'series': series_range
-                                            };
-                                            if (basicInfo && basicInfo.range_show) {
-                                                $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                                            if(!$scope.rangeConfig.axes.hasOwnProperty("y2")){
+                                                series_range = {
+                                                    'l0': {axis: 'y1'},
+                                                    'l0': {axis: 'y2'}
+                                                };
+                                                $scope.rangeSeries = series_range;
+                                                $scope.rangeConfig = {
+                                                    'file': allLines,
+                                                    'labels': ['x'].concat(rangeBarLabels),
+                                                    'series': series_range
+                                                };
+                                                if (basicInfo && basicInfo.range_show) {
+                                                    $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                                                }
                                             }
+
                                         } else {
                                             series_range["span_y2"] = {axis: 'y2'};
                                             $scope.rangeSeries = series_range;
