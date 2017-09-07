@@ -787,9 +787,7 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
         var dom_real_time_grap = '<div class="modal fade " id="real_time_graph_' + attrs.id + '" role="dialog">' +
             '<div class="modal-dialog modal-lg">' +
             '<div class="modal-content">' +
-            '<div class="modal-header">' +
-            '<div class="col-md-12"  style="height: 1px;background-color: #0e90d2;" ng-style="{ \'width\': completionPercent + \'%\' }"></div>' +
-            '</div>' +
+            '<div class="col-md-12"  style="padding-top:3px;height: 1px;background-color: #0e90d2;" ng-style="{ \'width\': completionPercent + \'%\' }"></div>' +
             '<div class="modal-body" style="width: 100%;height: 300px;">' +
             '<div class="real-time-graph" style="width: 100%;height: 100%"></div>' +
             '</div>' +
