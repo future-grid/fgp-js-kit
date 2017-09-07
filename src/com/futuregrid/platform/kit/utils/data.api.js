@@ -10,12 +10,13 @@ class dataAccessApi {
      * @param $http
      * @param $q
      */
-    constructor($http, $q, $cacheFactory) {
+    constructor($http, $q, $cacheFactory, $interval) {
         this._$http = $http;
         this._$q = $q;
         // get cache
         this.indexCache = $cacheFactory('indexCache');
         this.deviceStores = $cacheFactory('deviceStores');
+        this._$interval = $interval;
     }
 
 
@@ -136,7 +137,7 @@ class dataAccessApi {
                 relationType: relationType,
                 relationDeviceType: relationDeviceType,
                 otherLevels: otherLevels,
-                fields:[].concat(fields)
+                fields: [].concat(fields)
             },
             cache: this.deviceStores
         }).then(
@@ -285,7 +286,7 @@ class dataAccessApi {
             // get data from rest service
             var deferred = this._$q.defer();
             this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
-                {'bucketKeys':JSON.stringify(devicesNullBucket),'fields': JSON.stringify(fields)}
+                {'bucketKeys': JSON.stringify(devicesNullBucket), 'fields': JSON.stringify(fields)}
             ).then(
                 function (response) {
                     // response.data
@@ -342,7 +343,7 @@ class dataAccessApi {
             this._$http.get(host + '/rest/api/app/' + application + '/store/index/store/data/' + deviceKey + '/' + storeSchema + '/' + store, {
                 params: {
                     bucketKeys: nullBucket,
-                    fields:[].concat(fields)
+                    fields: [].concat(fields)
                 }
             }).then(
                 function (response) {
@@ -398,13 +399,70 @@ class dataAccessApi {
     }
 
 
-    static buildFactory($http, $q, $cacheFactory) {
-        dataAccessApi.instance = new dataAccessApi($http, $q, $cacheFactory);
+    autoUpdateGraph(application, device, schema, store, fields, count, callback) {
+        var _$interval = this._$interval;
+        var _$http = this._$http;
+        var fetcher = null;
+        this._$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
+            .success(function (response) {
+                var last = -1;
+                var interval = -1;
+                if (response.trees && response.trees.length === 1) {
+                    interval = response.trees[0].frequency;
+                    last = response.trees[0].last.timeKey;
+                }
+                if (interval != -1) {
+                    var start = last - (count * interval);
+                    var end = last;
+                    // first time
+                    _$http.get('/rest/api/app/' + application + '/store/devices/store/data/' + schema + '/' + store, {
+                        params: {
+                            "devices": JSON.stringify([device]),
+                            "fields": JSON.stringify(fields),
+                            "start": start,
+                            "end": end
+                        }
+                    }).success(function (graphData) {
+
+                        // start task
+                        fetcher = _$interval(function () {
+                            _$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
+                                .success(function (response) {
+                                    if (response.trees && response.trees.length === 1) {
+                                        last = response.trees[0].last.timeKey;
+                                        start = last - (count * interval);
+                                        end = last;
+                                        _$http.get('/rest/api/app/' + application + '/store/devices/store/data/' + schema + '/' + store, {
+                                            params: {
+                                                "devices": JSON.stringify([device]),
+                                                "fields": JSON.stringify(fields),
+                                                "start": start,
+                                                "end": end
+                                            }
+                                        }).success(function (graphData) {
+                                            // put the data back
+                                            callback(graphData[device], null, interval);
+                                        });
+                                    }
+                                });
+                        }, interval);
+
+                        // put the data back
+                        callback(graphData[device], fetcher, interval);
+                    });
+                }
+            });
+
+    }
+
+
+    static buildFactory($http, $q, $cacheFactory, $interval) {
+        dataAccessApi.instance = new dataAccessApi($http, $q, $cacheFactory, $interval);
         return dataAccessApi.instance;
     }
 
 }
 
-dataAccessApi.$inject = ['$http', '$q', '$cacheFactory'];
+dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval'];
 
 export {dataAccessApi as default}
