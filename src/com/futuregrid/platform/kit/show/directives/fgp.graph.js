@@ -1029,6 +1029,7 @@ class fgpWidgetGraph {
                     // change
                     if (nObj != oObj) {
                         if (nObj == -1) {
+                            $scope.autoupdate = true;
                             var rangeLevel = null;
                             var otherLevels = [];
                             angular.forEach(metadata.data.groups[1].collections, function (level) {
@@ -1070,6 +1071,7 @@ class fgpWidgetGraph {
                             }
 
                         } else {
+                            $scope.autoupdate = false;
                             //get relation config
                             if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
                                 return;
@@ -1189,8 +1191,14 @@ class fgpWidgetGraph {
                             $scope.autoupdate = false;
                         } else if (expectedInterval <= lastOne) {
                             expectedInterval = lastOne;
-                            $scope.autoupdate = true;
-                            $scope.auto_store = conf[conf.length - 1].name;
+
+
+                            if($scope.currentView == -1){
+                                $scope.autoupdate = true;
+                                $scope.auto_store = conf[conf.length - 1].name;
+                            }
+
+
                         } else {
                             for (var i = 1; i < conf.length; i++) {
                                 if (expectedInterval <= preOne && expectedInterval > conf[i].interval) {
