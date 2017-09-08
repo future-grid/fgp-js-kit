@@ -13,7 +13,8 @@ const pkg = require('./package.json');
 var paths = {
     javascriptRoot: "src/**/*.js",
     stylesheetRoot: "src/**/*.less",
-    distRoot: "dist"
+    distRoot: "dist",
+    distUI: "/Users/eric/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist"
 };
 
 var moduleName = "fgp.kit";
@@ -51,7 +52,7 @@ gulp.task('js', ['clean'], () => {
                 dygraphs: "Dygraph",
                 "chart.js": "chartJS",
                 ngmap: "ngmap",
-                ws:"angular-websocket",
+                ws: "angular-websocket",
                 underscore: '_'
             },
             external: Object.keys(pkg.dependencies),
@@ -62,7 +63,8 @@ gulp.task('js', ['clean'], () => {
         .pipe(buble({presets: ['es2015']}))
         .pipe(concat(moduleName + '.bundle.js'))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.distRoot));
+        .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distUI));
 });
 
 /**
@@ -74,17 +76,19 @@ gulp.task('less', ['clean'], () => {
         .pipe(less())
         .pipe(concat(moduleName + '.bundle.css'))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.distRoot));
+        .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distUI));
 });
 
 
-gulp.task('min', ['less', 'js'], ()=> {
+gulp.task('min', ['less', 'js'], () => {
     var css = gulp.src(paths.distRoot + "/*.css")
         .pipe(sourcemaps.init())
         .pipe(cleanCSS())
         .pipe(concat(moduleName + '.bundle.min.css'))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.distRoot));
+        .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distUI));
 
     var js = gulp.src(paths.distRoot + "/*.js")
         .pipe(sourcemaps.init())
@@ -95,7 +99,8 @@ gulp.task('min', ['less', 'js'], ()=> {
         }))
         .pipe(concat(moduleName + '.bundle.min.js'))
         .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest(paths.distRoot));
+        .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distUI));
 });
 
 /**
