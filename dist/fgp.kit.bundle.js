@@ -1237,7 +1237,12 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     scope.refersh(g, isInit);
                 }
             },
-            'interactionModel': interactionModel
+            'interactionModel': interactionModel,
+            'plugins': [
+                new Dygraph.Plugins.Crosshair({
+                    direction: "vertical"
+                })
+            ]
         };
 
         scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
