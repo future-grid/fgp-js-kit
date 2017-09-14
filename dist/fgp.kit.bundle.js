@@ -1576,6 +1576,45 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     }, {name: "1 year", interval: 31557600000}];
 
 
+    var darkenColor = function (colorStr) {
+        // Defined in dygraph-utils.js
+        var color = Dygraph.toRGB_(colorStr);
+        color.r = Math.floor((255 + color.r) / 2);
+        color.g = Math.floor((255 + color.g) / 2);
+        color.b = Math.floor((255 + color.b) / 2);
+        return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
+    };
+
+    var barChartPlotter = function (e) {
+        var ctx = e.drawingContext;
+        var points = e.points;
+        var y_bottom = e.dygraph.toDomYCoord(0);
+
+        ctx.fillStyle = darkenColor(e.color);
+
+        // Find the minimum separation between x-values.
+        // This determines the bar width.
+        var min_sep = Infinity;
+        for (var i = 1; i < points.length; i++) {
+            var sep = points[i].canvasx - points[i - 1].canvasx;
+            if (sep < min_sep) min_sep = sep;
+        }
+        var bar_width = Math.floor(2.0 / 3 * min_sep);
+
+        // Do the actual plotting.
+        for (var i = 0; i < points.length; i++) {
+            var p = points[i];
+            var center_x = p.canvasx;
+
+            ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+
+            ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+        }
+    };
+
+
     $scope.$emit('fetchWidgetMetadataEvent', {
         id: element_id, callback: function (data) {
             if (data) {
@@ -1943,7 +1982,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         expectedInterval = lastOne;
 
 
-                        if($scope.currentView == -1){
+                        if ($scope.currentView == -1) {
                             $scope.autoupdate = true;
                             $scope.auto_store = conf[conf.length - 1].name;
                         }
@@ -2444,6 +2483,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var yRange = {min: null, max: null};
             var showY2axis = false;
             var counter = 0;
+
+
+
+
             angular$1.forEach(devicesInfo, function (device, key) {
                 if ($scope.defaultColors[counter]) {
                     colors.push($scope.defaultColors[counter]);
@@ -2459,9 +2502,25 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         // always same for each device
                         if (collection.rows[0].yaxis == 0) {
-                            series[collection.rows[0].label] = {'axis': 'y1'};
+                            if (collection.rows[0].type == 'line') {
+                                series[collection.rows[0].label] = {'axis': 'y1'};
+                            } else if (collection.rows[0].type == 'bar') {
+                                series[collection.rows[0].label] = {'axis': 'y1', 'plotter': barChartPlotter};
+                            } else {
+                                series[collection.rows[0].label] = {'axis': 'y1'};
+                            }
+
                         } else {
                             series[collection.rows[0].label] = {'axis': 'y2'};
+
+                            if (collection.rows[0].type == 'line') {
+                                series[collection.rows[0].label] = {'axis': 'y2'};
+                            } else if (collection.rows[0].type == 'bar') {
+                                series[collection.rows[0].label] = {'axis': 'y2', 'plotter': barChartPlotter};
+                            } else {
+                                series[collection.rows[0].label] = {'axis': 'y2'};
+                            }
+
                             showY2axis = true;
                             $scope.showY2Btns = true;
                         }
@@ -2703,9 +2762,24 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         if (collection.name == store) {
                             $scope.currentIntervalName = store;
                             if (collection.rows[0].yaxis == 0) {
-                                series[collection.rows[0].label] = {'axis': 'y1'};
+                                if (collection.rows[0].type == 'line') {
+                                    series[collection.rows[0].label] = {'axis': 'y1'};
+                                } else if (collection.rows[0].type == 'bar') {
+                                    series[collection.rows[0].label] = {'axis': 'y1', 'plotter': barChartPlotter};
+                                } else {
+                                    series[collection.rows[0].label] = {'axis': 'y1'};
+                                }
+
                             } else {
-                                series[collection.rows[0].label] = {'axis': 'y2'};
+
+                                if (collection.rows[0].type == 'line') {
+                                    series[collection.rows[0].label] = {'axis': 'y2'};
+                                } else if (collection.rows[0].type == 'bar') {
+                                    series[collection.rows[0].label] = {'axis': 'y2', 'plotter': barChartPlotter};
+                                } else {
+                                    series[collection.rows[0].label] = {'axis': 'y2'};
+                                }
+
                                 showY2axis = true;
                                 $scope.showY2Btns = true;
                             }
@@ -3027,8 +3101,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         if (row.yaxis == 0) {
                             series[row.label] = {'axis': 'y1'};
+                            if (row.type == 'line') {
+                                series[row.label] = {'axis': 'y1'};
+                            } else if (row.type == 'bar') {
+                                series[row.label] = {'axis': 'y1', 'plotter': barChartPlotter};
+                            } else {
+                                series[row.label] = {'axis': 'y1'};
+                            }
                         } else {
                             series[row.label] = {'axis': 'y2'};
+                            if (row.type == 'line') {
+                                series[row.label] = {'axis': 'y2'};
+                            } else if (row.type == 'bar') {
+                                series[row.label] = {'axis': 'y2', 'plotter': barChartPlotter};
+                            } else {
+                                series[row.label] = {'axis': 'y2'};
+                            }
                             showY2axis = true;
                             $scope.showY2Btns = true;
                         }
@@ -3256,8 +3344,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         if (row.yaxis == 0) {
                             series[row.label] = {'axis': 'y1'};
+                            if (row.type == 'line') {
+                                series[row.label] = {'axis': 'y1'};
+                            } else if (row.type == 'bar') {
+                                series[row.label] = {'axis': 'y1', 'plotter': barChartPlotter};
+                            } else {
+                                series[row.label] = {'axis': 'y1'};
+                            }
                         } else {
                             series[row.label] = {'axis': 'y2'};
+                            if (row.type == 'line') {
+                                series[row.label] = {'axis': 'y2'};
+                            } else if (row.type == 'bar') {
+                                series[row.label] = {'axis': 'y2', 'plotter': barChartPlotter};
+                            } else {
+                                series[row.label] = {'axis': 'y2'};
+                            }
                             showY2axis = true;
                             $scope.showY2Btns = true;
                         }
