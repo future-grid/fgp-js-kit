@@ -51,6 +51,8 @@ class fgpWidgetGraph {
                 '</div>' +
                 '</div>';
 
+            // var dom_buttons = '<div><button class="btn badge"><i class="fa fa-picture-o" aria-hidden="true"></i></button></div>';
+
             var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;"  style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a ng-show="autoupdate" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: -5px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
             return html;
@@ -567,6 +569,45 @@ class fgpWidgetGraph {
                 scope.realTimeGraph.updateOptions(scope.currentChartOptions);
                 scope.realTimeGraph.updateOptions({"file": []});
 
+
+                var darkenColor = function (colorStr) {
+                    // Defined in dygraph-utils.js
+                    var color = Dygraph.toRGB_(colorStr);
+                    color.r = Math.floor((255 + color.r) / 2);
+                    color.g = Math.floor((255 + color.g) / 2);
+                    color.b = Math.floor((255 + color.b) / 2);
+                    return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
+                };
+
+                var barChartPlotter = function (e) {
+                    var ctx = e.drawingContext;
+                    var points = e.points;
+                    var y_bottom = e.dygraph.toDomYCoord(0);
+
+                    ctx.fillStyle = darkenColor(e.color);
+
+                    // Find the minimum separation between x-values.
+                    // This determines the bar width.
+                    var min_sep = Infinity;
+                    for (var i = 1; i < points.length; i++) {
+                        var sep = points[i].canvasx - points[i - 1].canvasx;
+                        if (sep < min_sep) min_sep = sep;
+                    }
+                    var bar_width = Math.floor(2.0 / 3 * min_sep);
+
+                    // Do the actual plotting.
+                    for (var i = 0; i < points.length; i++) {
+                        var p = points[i];
+                        var center_x = p.canvasx;
+
+                        ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+                            bar_width, y_bottom - p.canvasy);
+
+                        ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
+                            bar_width, y_bottom - p.canvasy);
+                    }
+                };
+
                 timer_auto = dataService.autoUpdateGraph(scope.applicationName, scope.auto_device_name, scope.auto_schema, scope.auto_store, scope.auto_fields, element.find("div[class='real-time-graph']").width() / 4, function (graph_data, worker, interval) {
                     // update graph
                     var deviceConfig = scope.auto_metadata.data.groups[1];
@@ -590,8 +631,22 @@ class fgpWidgetGraph {
 
                                 if (row.yaxis == 0) {
                                     series[row.label] = {'axis': 'y1'};
+                                    if (row.type == 'line') {
+                                        series[row.label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
+                                    } else if (row.type == 'bar') {
+                                        series[row.label] = {'axis': 'y1', 'plotter': barChartPlotter};
+                                    } else {
+                                        series[row.label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
+                                    }
                                 } else {
                                     series[row.label] = {'axis': 'y2'};
+                                    if (row.type == 'line') {
+                                        series[row.label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
+                                    } else if (row.type == 'bar') {
+                                        series[row.label] = {'axis': 'y2', 'plotter': barChartPlotter};
+                                    } else {
+                                        series[row.label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
+                                    }
                                     showY2axis = true;
                                 }
                                 var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
@@ -809,6 +864,8 @@ class fgpWidgetGraph {
 
         $scope.alertMessage;
 
+
+
         $scope.showY2Btns = false;
 
         $scope.legendText = null;
@@ -830,6 +887,31 @@ class fgpWidgetGraph {
             name: "1 month",
             interval: 2629800000
         }, {name: "1 year", interval: 31557600000}];
+
+
+
+
+
+        $scope.$emit('fetchWidgetMetadataEvent', {
+            id: element_id, callback: function (data) {
+                if (data) {
+                    widgetData = data;
+                    if (widgetData.data.metadata.data.basic.ranges) {
+                        if (widgetData.data.metadata.data.basic.hasOwnProperty("ranges")) {
+                            $scope.dateTimeIntervals = widgetData.data.metadata.data.basic.ranges;
+                            angular.forEach($scope.dateTimeIntervals, function (range) {
+                                range["interval"] = range.value;
+                                if (range.checked == true) {
+                                    $scope.currentIntervalChoosed = range;
+                                }
+                            });
+                        }
+                    } else {
+                        $scope.currentIntervalChoosed = $scope.dateTimeIntervals[1];
+                    }
+                }
+            }
+        });
 
 
         var darkenColor = function (colorStr) {
@@ -869,28 +951,6 @@ class fgpWidgetGraph {
                     bar_width, y_bottom - p.canvasy);
             }
         };
-
-
-        $scope.$emit('fetchWidgetMetadataEvent', {
-            id: element_id, callback: function (data) {
-                if (data) {
-                    widgetData = data;
-                    if (widgetData.data.metadata.data.basic.ranges) {
-                        if (widgetData.data.metadata.data.basic.hasOwnProperty("ranges")) {
-                            $scope.dateTimeIntervals = widgetData.data.metadata.data.basic.ranges;
-                            angular.forEach($scope.dateTimeIntervals, function (range) {
-                                range["interval"] = range.value;
-                                if (range.checked == true) {
-                                    $scope.currentIntervalChoosed = range;
-                                }
-                            });
-                        }
-                    } else {
-                        $scope.currentIntervalChoosed = $scope.dateTimeIntervals[1];
-                    }
-                }
-            }
-        });
 
 
         $scope.changeInterval = function (interval) {
@@ -1759,22 +1819,22 @@ class fgpWidgetGraph {
                             // always same for each device
                             if (collection.rows[0].yaxis == 0) {
                                 if (collection.rows[0].type == 'line') {
-                                    series[collection.rows[0].label] = {'axis': 'y1'};
+                                    series[collection.rows[0].label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 } else if (collection.rows[0].type == 'bar') {
                                     series[collection.rows[0].label] = {'axis': 'y1', 'plotter': barChartPlotter};
                                 } else {
-                                    series[collection.rows[0].label] = {'axis': 'y1'};
+                                    series[collection.rows[0].label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 }
 
                             } else {
                                 series[collection.rows[0].label] = {'axis': 'y2'};
 
                                 if (collection.rows[0].type == 'line') {
-                                    series[collection.rows[0].label] = {'axis': 'y2'};
+                                    series[collection.rows[0].label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 } else if (collection.rows[0].type == 'bar') {
                                     series[collection.rows[0].label] = {'axis': 'y2', 'plotter': barChartPlotter};
                                 } else {
-                                    series[collection.rows[0].label] = {'axis': 'y2'};
+                                    series[collection.rows[0].label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 }
 
                                 showY2axis = true;
@@ -2019,21 +2079,21 @@ class fgpWidgetGraph {
                                 $scope.currentIntervalName = store;
                                 if (collection.rows[0].yaxis == 0) {
                                     if (collection.rows[0].type == 'line') {
-                                        series[collection.rows[0].label] = {'axis': 'y1'};
+                                        series[collection.rows[0].label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                     } else if (collection.rows[0].type == 'bar') {
                                         series[collection.rows[0].label] = {'axis': 'y1', 'plotter': barChartPlotter};
                                     } else {
-                                        series[collection.rows[0].label] = {'axis': 'y1'};
+                                        series[collection.rows[0].label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                     }
 
                                 } else {
 
                                     if (collection.rows[0].type == 'line') {
-                                        series[collection.rows[0].label] = {'axis': 'y2'};
+                                        series[collection.rows[0].label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                     } else if (collection.rows[0].type == 'bar') {
                                         series[collection.rows[0].label] = {'axis': 'y2', 'plotter': barChartPlotter};
                                     } else {
-                                        series[collection.rows[0].label] = {'axis': 'y2'};
+                                        series[collection.rows[0].label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                     }
 
                                     showY2axis = true;
@@ -2358,20 +2418,20 @@ class fgpWidgetGraph {
                             if (row.yaxis == 0) {
                                 series[row.label] = {'axis': 'y1'};
                                 if (row.type == 'line') {
-                                    series[row.label] = {'axis': 'y1'};
+                                    series[row.label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 } else if (row.type == 'bar') {
                                     series[row.label] = {'axis': 'y1', 'plotter': barChartPlotter};
                                 } else {
-                                    series[row.label] = {'axis': 'y1'};
+                                    series[row.label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 }
                             } else {
                                 series[row.label] = {'axis': 'y2'};
                                 if (row.type == 'line') {
-                                    series[row.label] = {'axis': 'y2'};
+                                    series[row.label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 } else if (row.type == 'bar') {
                                     series[row.label] = {'axis': 'y2', 'plotter': barChartPlotter};
                                 } else {
-                                    series[row.label] = {'axis': 'y2'};
+                                    series[row.label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 }
                                 showY2axis = true;
                                 $scope.showY2Btns = true;
@@ -2601,20 +2661,20 @@ class fgpWidgetGraph {
                             if (row.yaxis == 0) {
                                 series[row.label] = {'axis': 'y1'};
                                 if (row.type == 'line') {
-                                    series[row.label] = {'axis': 'y1'};
+                                    series[row.label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 } else if (row.type == 'bar') {
                                     series[row.label] = {'axis': 'y1', 'plotter': barChartPlotter};
                                 } else {
-                                    series[row.label] = {'axis': 'y1'};
+                                    series[row.label] = {'axis': 'y1', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 }
                             } else {
                                 series[row.label] = {'axis': 'y2'};
                                 if (row.type == 'line') {
-                                    series[row.label] = {'axis': 'y2'};
+                                    series[row.label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 } else if (row.type == 'bar') {
                                     series[row.label] = {'axis': 'y2', 'plotter': barChartPlotter};
                                 } else {
-                                    series[row.label] = {'axis': 'y2'};
+                                    series[row.label] = {'axis': 'y2', 'plotter': DygraphCanvasRenderer._linePlotter};
                                 }
                                 showY2axis = true;
                                 $scope.showY2Btns = true;
