@@ -1167,12 +1167,12 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var mouseupHandler = function (e, g, context) {
             if (context.isPanning) {
                 Dygraph.endPan(e, g, context);
-            }else{
+            } else {
                 if (scope.currentView != -1 && scope.currentHighlight != "") {
                     scope.showOne(scope.currentHighlight);
                 }
             }
-            if(timer_mousedown){
+            if (timer_mousedown) {
                 timeOut.cancel(timer_mousedown);
             }
             canScroll = true;
@@ -2065,38 +2065,42 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             });
             $scope.$watch("chartDateTime", function (newValue, oldValue) {
                 if (newValue.begin != null && newValue.end != null) {
-                    var expect_points = Math.floor($element.parent().width() / 2);
+                    var expect_points = Math.floor($element.parent().width());
                     // find a interval
                     var expectedInterval = (newValue.end - newValue.begin) / expect_points;
                     var conf = $scope.intevals.device;
                     // device detail view
                     var preOne = conf[0].interval;
                     var lastOne = conf[conf.length - 1].interval;
+
+                    // get the max
+                    var expects = {interval: null, points: 0, name:""};
+                    angular$1.forEach(conf, function (config) {
+                        if (((newValue.end - newValue.begin) / config.interval) <= expect_points) {
+                            if (expects.points < ((newValue.end - newValue.begin) / config.interval)) {
+                                expects.interval = config.interval;
+                                expects.points = ((newValue.end - newValue.begin) / config.interval);
+                                expects.name = config.name;
+                            }
+                        }
+                    });
+
                     var cin = "";
-                    if (expectedInterval >= preOne) {
+                    if(expects.interval == preOne){
                         expectedInterval = preOne;
                         $scope.autoupdate = false;
-                    } else if (expectedInterval <= lastOne) {
+                    }else if(expects.interval == lastOne){
                         expectedInterval = lastOne;
-
-
                         if ($scope.currentView == -1) {
                             $scope.autoupdate = true;
                             $scope.auto_store = conf[conf.length - 1].name;
                         }
-
-
-                    } else {
-                        for (var i = 1; i < conf.length; i++) {
-                            if (expectedInterval <= preOne && expectedInterval > conf[i].interval) {
-                                expectedInterval = preOne;
-                            } else {
-                                preOne = conf[i].interval;
-                                cin = conf[i].name;
-                            }
-                        }
+                    }else{
                         $scope.autoupdate = false;
+                        cin = expects.name;
+                        expectedInterval = expects.interval;
                     }
+
 
                     $scope.currentIntervalName = "";
 
