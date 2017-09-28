@@ -1130,14 +1130,23 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         };
 
         var firstPoint = null;
+        var timer_mousedown = null;
         var mousedownHandler = function (e, g, context) {
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
 
-            context.initializeMouseDown(e, g, context);
-            firstPoint = e.clientX;
-            Dygraph.startPan(e, g, context);
+            if (timer_mousedown != null) {
+                timeOut.cancel(timer_mousedown);
+            }
+            timer_mousedown = timeOut(function () {
+                context.initializeMouseDown(e, g, context);
+                firstPoint = e.clientX;
+                Dygraph.startPan(e, g, context);
+                e.preventDefault();
+                e.stopPropagation();
+            }, 300);
+
         };
         var mousemoveHandler = function (e, g, context) {
             if (context.isPanning) {
@@ -1158,9 +1167,17 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var mouseupHandler = function (e, g, context) {
             if (context.isPanning) {
                 Dygraph.endPan(e, g, context);
+            }else{
+                if (scope.currentView != -1 && scope.currentHighlight != "") {
+                    scope.showOne(scope.currentHighlight);
+                }
+            }
+            if(timer_mousedown){
+                timeOut.cancel(timer_mousedown);
             }
             canScroll = true;
         };
+
 
         var interactionModel = {
             'mousewheel': scroll,
@@ -1229,11 +1246,11 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     }
                 }
             },
-            pointClickCallback: function (e, p) {
-                if (scope.currentView != -1) {
-                    scope.showOne(p.name);
-                }
-            },
+            // pointClickCallback: function (e, p) {
+            // if (scope.currentView != -1) {
+            //     scope.showOne(p.name);
+            // }
+            // },
             drawCallback: function (g, isInit) {
                 if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
                     scope.refersh(g, isInit);
@@ -1610,6 +1627,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
+
+    $scope.currentHighlight = "";
 
     $scope['defaultColors'] = dataService.defaultColors();
     var metadata = null;
@@ -2686,6 +2705,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'colors': colors,
                         highlightCallback: function (e, x, pts, row, seriesName) {
                             var sn = "";
+                            $scope.currentHighlight = seriesName;
                             angular$1.forEach(series, function (value, name, item) {
                                 if (value.axis === "y1") {
                                     sn = name;
@@ -2709,17 +2729,17 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     });
                                 }
                             });
-                            var legendbox = angular$1.element("#legendbox" + element_id);
-
 
                             $scope.$apply(function () {
                                 $scope.legendTop = point_show.y;
                                 $scope.legendLeft = point_show.x;
                             });
 
+
                         },
 
                         unhighlightCallback: function (e) {
+                            $scope.currentHighlight = "";
                             $scope.$apply(function () {
                                 $scope.legendText = null;
                                 $scope.legendText_device = null;
@@ -2756,6 +2776,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         },
                         highlightCallback: function (e, x, pts, row, seriesName) {
                             var sn = "";
+                            $scope.currentHighlight = seriesName;
                             angular$1.forEach(series, function (value, name, item) {
                                 if (value.axis === "y1") {
                                     sn = name;
@@ -2779,7 +2800,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     });
                                 }
                             });
-                            var legendbox = angular$1.element("#legendbox" + element_id);
                             $scope.$apply(function () {
                                 $scope.legendTop = point_show.y;
                                 $scope.legendLeft = point_show.x;
@@ -2787,6 +2807,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         },
 
                         unhighlightCallback: function (e) {
+                            $scope.currentHighlight = "";
                             $scope.$apply(function () {
                                 $scope.legendText = null;
                                 $scope.legendText_device = null;
@@ -3002,6 +3023,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             },
                             highlightCallback: function (e, x, pts, row, seriesName) {
                                 var sn = "";
+                                $scope.currentHighlight = seriesName;
                                 angular$1.forEach(series, function (value, name, item) {
                                     if (value.axis === "y1") {
                                         sn = name;
@@ -3025,7 +3047,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         });
                                     }
                                 });
-                                var legendbox = angular$1.element("#legendbox" + element_id);
                                 $scope.$apply(function () {
                                     $scope.legendTop = point_show.y;
                                     $scope.legendLeft = point_show.x;
@@ -3033,6 +3054,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             },
 
                             unhighlightCallback: function (e) {
+                                $scope.currentHighlight = "";
                                 $scope.$apply(function () {
                                     $scope.legendText = null;
                                     $scope.legendText_device = null;
@@ -3106,6 +3128,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             highlightCallback: function (e, x, pts, row, seriesName) {
 
                                 var sn = "";
+                                $scope.currentHighlight = seriesName;
                                 angular$1.forEach(series, function (value, name, item) {
                                     if (value.axis === "y1") {
                                         sn = name;
@@ -3129,7 +3152,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         });
                                     }
                                 });
-                                var legendbox = angular$1.element("#legendbox" + element_id);
 
                                 $scope.$apply(function () {
                                     $scope.legendTop = point_show.y;
@@ -3139,6 +3161,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             },
 
                             unhighlightCallback: function (e) {
+                                $scope.currentHighlight = "";
                                 $scope.$apply(function () {
                                     $scope.legendText = null;
                                     $scope.legendText_device = null;
