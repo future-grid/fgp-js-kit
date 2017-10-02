@@ -12,7 +12,367 @@ class fgpWidgetGraph {
         this.$timeout = $timeout;
         this._dataService = dataService;
         this._$interval = $interval;
+
+
+        /*jslint vars: true, nomen: true, plusplus: true, maxerr: 500, indent: 4 */
+
+        /**
+         * @license
+         * Copyright 2011 Juan Manuel Caicedo Carvajal (juan@cavorite.com)
+         * MIT-licensed (http://opensource.org/licenses/MIT)
+         */
+
+        /**
+         * @fileoverview This file contains additional features for dygraphs, which
+         * are not required but can be useful for certain use cases. Examples include
+         * exporting a dygraph as a PNG image.
+         */
+
+        /**
+         * Demo code for exporting a Dygraph object as an image.
+         *
+         * See: http://cavorite.com/labs/js/dygraphs-export/
+         */
+
+        Dygraph.Export = {};
+
+        Dygraph.Export.DEFAULT_ATTRS = {
+
+            backgroundColor: "transparent",
+
+            //Texts displayed below the chart's x-axis and to the left of the y-axis
+            titleFont: "bold 18px serif",
+            titleFontColor: "black",
+
+            //Texts displayed below the chart's x-axis and to the left of the y-axis
+            axisLabelFont: "bold 14px serif",
+            axisLabelFontColor: "black",
+
+            // Texts for the axis ticks
+            labelFont: "normal 12px serif",
+            labelFontColor: "black",
+
+            // Text for the chart legend
+            legendFont: "bold 12px serif",
+            legendFontColor: "black",
+
+            // Default position for vertical labels
+            vLabelLeft: 20,
+
+            legendHeight: 20,    // Height of the legend area
+            legendMargin: 20,
+            lineHeight: 30,
+            maxlabelsWidth: 0,
+            labelTopMargin: 35,
+            magicNumbertop: 8
+
+        };
+
+        /**
+         * Tests whether the browser supports the canvas API and its methods for
+         * drawing text and exporting it as a data URL.
+         */
+        Dygraph.Export.isSupported = function () {
+            "use strict";
+            try {
+                var canvas = document.createElement("canvas");
+                var context = canvas.getContext("2d");
+                return (!!canvas.toDataURL && !!context.fillText);
+            } catch (e) {
+                // Silent exception.
+            }
+            return false;
+        };
+
+        /**
+         * Exports a dygraph object as a PNG image.
+         *
+         *  dygraph: A Dygraph object
+         *  img: An IMG DOM node
+         *  userOptions: An object with the user specified options.
+         *
+         */
+        Dygraph.Export.asPNG = function (dygraph, img, userOptions) {
+            "use strict";
+            var canvas = Dygraph.Export.asCanvas(dygraph, userOptions);
+            img.src = canvas.toDataURL();
+        };
+
+        /**
+         * Exports a dygraph into a single canvas object.
+         *
+         * Returns a canvas object that can be exported as a PNG.
+         *
+         *  dygraph: A Dygraph object
+         *  userOptions: An object with the user specified options.
+         *
+         */
+        Dygraph.Export.asCanvas = function (dygraph, userOptions) {
+            "use strict";
+            var options = {},
+                canvas = Dygraph.createCanvas();
+
+            Dygraph.update(options, Dygraph.Export.DEFAULT_ATTRS);
+            Dygraph.update(options, userOptions);
+
+            canvas.width = dygraph.width_;
+            canvas.height = dygraph.height_ + options.legendHeight;
+
+            Dygraph.Export.drawPlot(canvas, dygraph, options);
+            Dygraph.Export.drawLegend(canvas, dygraph, options);
+
+            return canvas;
+        };
+
+        /**
+         * Adds the plot and the axes to a canvas context.
+         */
+        Dygraph.Export.drawPlot = function (canvas, dygraph, options) {
+            "use strict";
+            var ctx = canvas.getContext("2d");
+
+            // Add user defined background
+            ctx.fillStyle = options.backgroundColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Copy the plot canvas into the context of the new image.
+            var plotCanvas = dygraph.hidden_;
+
+            var i = 0;
+
+            ctx.drawImage(plotCanvas, 0, 0);
+
+
+            // Add the x and y axes
+            var axesPluginDict = Dygraph.Export.getPlugin(dygraph, 'Axes Plugin');
+            if (axesPluginDict) {
+                var axesPlugin = axesPluginDict.plugin;
+
+                for (i = 0; i < axesPlugin.ylabels_.length; i++) {
+                    Dygraph.Export.putLabel(ctx, axesPlugin.ylabels_[i], options,
+                        options.labelFont, options.labelFontColor);
+                }
+
+                for (i = 0; i < axesPlugin.xlabels_.length; i++) {
+                    Dygraph.Export.putLabel(ctx, axesPlugin.xlabels_[i], options,
+                        options.labelFont, options.labelFontColor);
+                }
+            }
+
+            // Title and axis labels
+
+            var labelsPluginDict = Dygraph.Export.getPlugin(dygraph, 'ChartLabels Plugin');
+            if (labelsPluginDict) {
+                var labelsPlugin = labelsPluginDict.plugin;
+
+                Dygraph.Export.putLabel(ctx, labelsPlugin.title_div_, options,
+                    options.titleFont, options.titleFontColor);
+
+                Dygraph.Export.putLabel(ctx, labelsPlugin.xlabel_div_, options,
+                    options.axisLabelFont, options.axisLabelFontColor);
+
+                Dygraph.Export.putVerticalLabelY1(ctx, labelsPlugin.ylabel_div_, options,
+                    options.axisLabelFont, options.axisLabelFontColor, "center");
+
+                Dygraph.Export.putVerticalLabelY2(ctx, labelsPlugin.y2label_div_, options,
+                    options.axisLabelFont, options.axisLabelFontColor, "center");
+            }
+
+
+            for (i = 0; i < dygraph.layout_.annotations.length; i++) {
+                Dygraph.Export.putLabelAnn(ctx, dygraph.layout_.annotations[i], options,
+                    options.labelFont, options.labelColor);
+            }
+
+        };
+
+        /**
+         * Draws a label (axis label or graph title) at the same position
+         * where the div containing the text is located.
+         */
+        Dygraph.Export.putLabel = function (ctx, divLabel, options, font, color) {
+            "use strict";
+
+            if (!divLabel || !divLabel.style) {
+                return;
+            }
+
+            var top = parseInt(divLabel.style.top, 10);
+            var left = parseInt(divLabel.style.left, 10);
+
+            if (!divLabel.style.top.length) {
+                var bottom = parseInt(divLabel.style.bottom, 10);
+                var height = parseInt(divLabel.style.height, 10);
+
+                top = ctx.canvas.height - options.legendHeight - bottom - height;
+            }
+
+            // FIXME: Remove this 'magic' number needed to get the line-height.
+            top = top + options.magicNumbertop;
+
+            var width = parseInt(divLabel.style.width, 10);
+
+            switch (divLabel.style.textAlign) {
+                case "center":
+                    left = left + Math.ceil(width / 2);
+                    break;
+                case "right":
+                    left = left + width;
+                    break;
+            }
+
+            Dygraph.Export.putText(ctx, left, top, divLabel, font, color);
+        };
+
+        /**
+         * Draws a label Y1 rotated 90 degrees counterclockwise.
+         */
+        Dygraph.Export.putVerticalLabelY1 = function (ctx, divLabel, options, font, color, textAlign) {
+            "use strict";
+            if (!divLabel) {
+                return;
+            }
+
+            var top = parseInt(divLabel.style.top, 10);
+            var left = parseInt(divLabel.style.left, 10) + parseInt(divLabel.style.width, 10) / 2;
+            var text = divLabel.innerText || divLabel.textContent;
+
+
+            // FIXME: The value of the 'left' property is frequently 0, used the option.
+            if (!left)
+                left = options.vLabelLeft;
+
+            if (textAlign == "center") {
+                var textDim = ctx.measureText(text);
+                top = Math.ceil((ctx.canvas.height - textDim.width) / 2 + textDim.width);
+            }
+
+            ctx.save();
+            ctx.translate(0, ctx.canvas.height);
+            ctx.rotate(-Math.PI / 2);
+
+            ctx.fillStyle = color;
+            ctx.font = font;
+            ctx.textAlign = textAlign;
+            ctx.fillText(text, top, left);
+
+            ctx.restore();
+        };
+
+        /**
+         * Draws a label Y2 rotated 90 degrees clockwise.
+         */
+        Dygraph.Export.putVerticalLabelY2 = function (ctx, divLabel, options, font, color, textAlign) {
+            "use strict";
+            if (!divLabel) {
+                return;
+            }
+
+            var top = parseInt(divLabel.style.top, 10);
+            var right = parseInt(divLabel.style.right, 10) + parseInt(divLabel.style.width, 10) * 2;
+            var text = divLabel.innerText || divLabel.textContent;
+
+            if (textAlign == "center") {
+                top = Math.ceil(ctx.canvas.height / 2);
+            }
+
+            ctx.save();
+            ctx.translate(parseInt(divLabel.style.width, 10), 0);
+            ctx.rotate(Math.PI / 2);
+
+            ctx.fillStyle = color;
+            ctx.font = font;
+            ctx.textAlign = textAlign;
+            ctx.fillText(text, top, right - ctx.canvas.width);
+
+            ctx.restore();
+        };
+
+        /**
+         * Draws the text contained in 'divLabel' at the specified position.
+         */
+        Dygraph.Export.putText = function (ctx, left, top, divLabel, font, color) {
+            "use strict";
+            var textAlign = divLabel.style.textAlign || "left";
+            var text = divLabel.innerText || divLabel.textContent;
+
+            ctx.fillStyle = color;
+            ctx.font = font;
+            ctx.textAlign = textAlign;
+            ctx.textBaseline = "middle";
+            ctx.fillText(text, left, top);
+        };
+
+        /**
+         * Draws the legend of a dygraph
+         *
+         */
+        Dygraph.Export.drawLegend = function (canvas, dygraph, options) {
+            "use strict";
+            var ctx = canvas.getContext("2d");
+
+            // Margin from the plot
+            var labelTopMargin = 10;
+
+            // Margin between labels
+            var labelMargin = 5;
+
+            var colors = dygraph.getColors();
+            // Drop the first element, which is the label for the time dimension
+            var labels = dygraph.attr_("labels").slice(1);
+
+            // 1. Compute the width of the labels:
+            var labelsWidth = 0;
+
+            var i;
+            for (i = 0; i < labels.length; i++) {
+                if(labels[i]!="span_y1" && labels[i]!="span_y2"){
+                    labelsWidth = labelsWidth + ctx.measureText("- " + labels[i]).width + labelMargin;
+                }
+            }
+
+            var labelsX = Math.floor((canvas.width - labelsWidth) / 2);
+            var labelsY = canvas.height - options.legendHeight + labelTopMargin;
+
+
+            var labelVisibility = dygraph.attr_("visibility");
+
+            ctx.font = options.legendFont;
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+
+            var usedColorCount = 0;
+            for (i = 0; i < labels.length; i++) {
+                if (labelVisibility[i]) {
+                    if(labels[i]!="span_y1" && labels[i]!="span_y2") {
+                        var txt = "- " + labels[i];
+                        ctx.fillStyle = colors[usedColorCount];
+                        usedColorCount++
+                        ctx.fillText(txt, labelsX, labelsY);
+                        labelsX = labelsX + ctx.measureText(txt).width + labelMargin;
+                    }
+                }
+            }
+        };
+
+        /**
+         * Finds a plugin by the value returned by its toString method..
+         *
+         * Returns the the dictionary corresponding to the plugin for the argument.
+         * If the plugin is not found, it returns null.
+         */
+        Dygraph.Export.getPlugin = function (dygraph, name) {
+            for (i = 0; i < dygraph.plugins_.length; i++) {
+                if (dygraph.plugins_[i].plugin.toString() == name) {
+                    return dygraph.plugins_[i];
+                }
+            }
+            return null;
+        }
+
+
     }
+
 
     template(element, attrs) {
         var flag = attrs.hasOwnProperty("shown");
@@ -34,10 +394,10 @@ class fgpWidgetGraph {
 
             var dom_alert_info = '<span class="label label-warning" ng-show="alertMessage" style="color: #000;">{{alertMessage}}</span>';
 
-            var dom_datetime_interval = '<div ng-show="rangeSelectorBar" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">{{currentIntervalChoosed.name}}<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;"><li ng-repeat="interval in dateTimeIntervals"><a href="javascript:;" ng-click="changeInterval(interval)">{{interval.name}}</a></li></ul> </div>';
+            var dom_datetime_interval = '<div ng-show="rangeSelectorBar" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">{{currentIntervalChoosed.name}}<span class="caret"></span></button> <ul class="dropdown-menu dropdown-menu-right" style="font-size:12px;"><li ng-repeat="interval in dateTimeIntervals"><a href="javascript:;" ng-click="changeInterval(interval)">{{interval.name}}</a></li></ul> </div>';
 
 
-            var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device.name}}</li></ul> </div>';
+            var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu dropdown-menu-right" style="font-size:12px;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device.name}}</li></ul> </div>';
 
 
             var dom_real_time_grap = '<div class="modal fade " id="real_time_graph_' + attrs.id + '" role="dialog">' +
@@ -51,8 +411,15 @@ class fgpWidgetGraph {
                 '</div>' +
                 '</div>';
 
-            // var dom_buttons = '<div style="float: right;"><button class="btn btn-info badge" style="margin-right: 10px;" ng-click="export_img()"><i class="fa fa-picture-o" aria-hidden="true"></i></button><button class="btn btn-info badge" ng-click="export_data()"><i class="fa fa-download" aria-hidden="true"></i></button></div>';
-            var dom_buttons = '';
+            var dom_buttons = '<div style="float: right;"  class="dropdown">' +
+                '<button class="btn btn-info badge dropdown-toggle" data-toggle="dropdown">' +
+                '<i class="fa fa-download" aria-hidden="true"></i>' +
+                '</button>' +
+                '<ul class="dropdown-menu dropdown-menu-right" style="font-size:12px;">' +
+                '<li style="text-align: center;"><div class="col-md-6 col-xs-6"><span><a href="javascript:;" ng-click="export_img();"><span class="fa fa-camera" aria-hidden="true"></span></a></span></div><div class="col-md-6 col-xs-6"><span><a href="javascript:;" ng-click="export_data();"><span class="fa fa-table" aria-hidden="true"></span></a></span></div></li>' +
+                '</ul>' +
+                '</div>';
+
             var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12">' + dom_buttons + '<a class="tooltips btn btn-xs btn-info badge" href="javascript:;"  style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a ng-show="autoupdate" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? \'#009900;\' : \'\'}}">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 1px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
             return html;
@@ -516,7 +883,8 @@ class fgpWidgetGraph {
                 'plugins': [
                     new Dygraph.Plugins.Crosshair({
                         direction: "vertical"
-                    })
+                    }),
+
                 ]
             };
 
@@ -919,14 +1287,91 @@ class fgpWidgetGraph {
         }, {name: "1 year", interval: 31557600000}];
 
 
+        var download_image = function (dataurl, name) {
+            var link = document.createElement("a");
+            link.download = name;
+            link.href = dataurl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
         $scope.export_img = function () {
             // export canvas
-            var canvas = Dygraph.Export.asCanvas(dygraph, userOptions);
-            img.src = canvas.toDataURL();
+            var canvas = Dygraph.Export.asCanvas($scope.currentChart, {});
+            download_image(canvas.toDataURL(), $scope.currentIntervalName + ".png");
         };
+
+
+        var download_data = function (content, fileName, mimeType) {
+            var a = document.createElement('a');
+            mimeType = mimeType || 'application/octet-stream';
+
+            if (navigator.msSaveBlob) { // IE10
+                navigator.msSaveBlob(new Blob([content], {
+                    type: mimeType
+                }), fileName);
+            } else if (URL && 'download' in a) { //html5 A[download]
+                a.href = URL.createObjectURL(new Blob([content], {
+                    type: mimeType
+                }));
+                a.setAttribute('download', fileName);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                location.href = 'data:application/octet-stream,' + encodeURIComponent(content); // only this mime type is supported
+            }
+        };
+
 
         $scope.export_data = function () {
 
+            // columns
+            var labels = $scope.currentChart.getLabels();
+
+            var columns = [$scope.currentIntervalName];
+
+            var csvContent = $scope.currentIntervalName;
+            angular.forEach(labels, function (label, index) {
+                if (label !== "x" && label != "span_y1" && label != "span_y2") {
+                    columns.push(index);
+                    csvContent += "," + label;
+                }
+            });
+
+            csvContent += "\n";
+
+            var result = [];
+
+            var datewindow = $scope.currentChart.dateWindow_;
+
+            if ($scope.currentChart.dateWindow_[0] instanceof Date && $scope.currentChart.dateWindow_[1] instanceof Date) {
+                datewindow[0] = $scope.currentChart.dateWindow_[0].getTime();
+                datewindow[1] = $scope.currentChart.dateWindow_[1].getTime();
+            }
+
+            // add title
+            angular.forEach($scope.currentChart.rawData_, function (data) {
+
+                if (data[0] >= datewindow[0] && data[0] <= datewindow[1]) {
+                    result.push(data);
+                }
+            });
+
+            result.forEach(function (infoArray, index) {
+                var tempArray = [].concat(infoArray[0]);
+                angular.forEach(infoArray, function (data, index) {
+                    if (columns.includes(index)) {
+                        tempArray.push(data);
+                    }
+                });
+                var dataString = tempArray.join(',');
+                csvContent += index < result.length ? dataString + '\n' : dataString;
+            });
+
+
+            download_data(csvContent, $scope.auto_device_name + '_' + new Date() + '.csv', 'text/csv;encoding:utf-8');
         };
 
 
@@ -1146,6 +1591,8 @@ class fgpWidgetGraph {
             $scope.basicInfo = metadata.data.basic;
             $scope.currentView = -1; // -1 is device view and 1 is scatter view
 
+            $scope.device_name = "";
+
             $scope.parent_container = widgetData.data.parent;
 
             $scope.data_from = "application";
@@ -1330,7 +1777,7 @@ class fgpWidgetGraph {
                         var lastOne = conf[conf.length - 1].interval;
 
                         // get the max
-                        var expects = {interval: null, points: 0, name:""};
+                        var expects = {interval: null, points: 0, name: ""};
                         angular.forEach(conf, function (config) {
                             if (((newValue.end - newValue.begin) / config.interval) <= expect_points) {
                                 if (expects.points < ((newValue.end - newValue.begin) / config.interval)) {
@@ -1342,16 +1789,16 @@ class fgpWidgetGraph {
                         });
 
                         var cin = "";
-                        if(expects.interval == preOne){
+                        if (expects.interval == preOne) {
                             expectedInterval = preOne;
                             $scope.autoupdate = false;
-                        }else if(expects.interval == lastOne){
+                        } else if (expects.interval == lastOne) {
                             expectedInterval = lastOne;
                             if ($scope.currentView == -1) {
                                 $scope.autoupdate = true;
                                 $scope.auto_store = conf[conf.length - 1].name;
                             }
-                        }else{
+                        } else {
                             $scope.autoupdate = false;
                             cin = expects.name;
                             expectedInterval = expects.interval;
