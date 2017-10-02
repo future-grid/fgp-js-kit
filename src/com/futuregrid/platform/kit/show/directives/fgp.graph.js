@@ -120,7 +120,6 @@ class fgpWidgetGraph {
 
             Dygraph.Export.drawPlot(canvas, dygraph, options);
             Dygraph.Export.drawLegend(canvas, dygraph, options);
-
             return canvas;
         };
 
@@ -177,6 +176,10 @@ class fgpWidgetGraph {
                 Dygraph.Export.putVerticalLabelY2(ctx, labelsPlugin.y2label_div_, options,
                     options.axisLabelFont, options.axisLabelFontColor, "center");
             }
+
+
+
+
 
 
             for (i = 0; i < dygraph.layout_.annotations.length; i++) {
@@ -269,11 +272,17 @@ class fgpWidgetGraph {
             }
 
             var top = parseInt(divLabel.style.top, 10);
+
+            if(divLabel.style.right == ""){
+                divLabel.style.right = "10px";
+            }
+
             var right = parseInt(divLabel.style.right, 10) + parseInt(divLabel.style.width, 10) * 2;
             var text = divLabel.innerText || divLabel.textContent;
 
             if (textAlign == "center") {
-                top = Math.ceil(ctx.canvas.height / 2);
+                var textDim = ctx.measureText(text);
+                top = Math.ceil((ctx.canvas.height + textDim.width) / 2 - textDim.width);
             }
 
             ctx.save();
@@ -1298,7 +1307,7 @@ class fgpWidgetGraph {
 
         $scope.export_img = function () {
             // export canvas
-            var canvas = Dygraph.Export.asCanvas($scope.currentChart, {});
+            var canvas = Dygraph.Export.asCanvas($scope.currentChart, {"series":$scope.currentChart.attributes_.series_});
             download_image(canvas.toDataURL(), $scope.currentIntervalName + ".png");
         };
 
