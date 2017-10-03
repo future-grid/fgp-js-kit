@@ -1182,6 +1182,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
     scope.status = true;
     var timeOut = this.$timeout;
     scope.completionPercent = 0;
+
+
     this.$timeout(function () {
         var getData = function (numSeries, numRows, name) {
             var result = {labels: null, data: null};
@@ -1444,8 +1446,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 
 
         var mouseEnterHandler = function (e, g, context) {
-            e.preventDefault();
-            e.stopPropagation();
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
@@ -1460,8 +1460,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         };
 
         var mouseOutHandler = function (e, g, context) {
-            e.preventDefault();
-            e.stopPropagation();
             // set flag to false
             if (timer != null) {
                 timeOut.cancel(timer);
@@ -1518,8 +1516,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var firstPoint = null;
         var timer_mousedown = null;
         var mousedownHandler = function (e, g, context) {
-            e.preventDefault();
-            e.stopPropagation();
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
@@ -1555,8 +1551,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 
 
         var mouseupHandler = function (e, g, context) {
-            e.preventDefault();
-            e.stopPropagation();
+
             if (context.isPanning) {
                 Dygraph.endPan(e, g, context);
             } else {
@@ -2003,10 +1998,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
 
 
-            scope.$on('changeSize', function (event) {
-                scope.currentChart.resize();
-                scope.rangeSelectorBar.resize();
-            });
 
 
             //bind chart
@@ -2017,6 +2008,14 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 }
                 scope.$emit('bindChildChartEvent', param);
             }
+
+            scope.$on('changeSize', function (event) {
+                scope.currentChart.resize();
+                if(scope.rangeSelectorBar){
+                    scope.rangeSelectorBar.resize();
+                }
+            });
+
 
         }
     }, 0);

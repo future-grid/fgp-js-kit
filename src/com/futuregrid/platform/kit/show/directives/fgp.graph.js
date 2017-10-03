@@ -438,6 +438,8 @@ class fgpWidgetGraph {
         scope.status = true;
         var timeOut = this.$timeout;
         scope.completionPercent = 0;
+
+
         this.$timeout(function () {
             var getData = function (numSeries, numRows, name) {
                 var result = {labels: null, data: null};
@@ -700,8 +702,6 @@ class fgpWidgetGraph {
 
 
             var mouseEnterHandler = function (e, g, context) {
-                e.preventDefault();
-                e.stopPropagation();
                 if (scope.basicInfo && !scope.basicInfo.zoom) {
                     return;
                 }
@@ -716,8 +716,6 @@ class fgpWidgetGraph {
             };
 
             var mouseOutHandler = function (e, g, context) {
-                e.preventDefault();
-                e.stopPropagation();
                 // set flag to false
                 if (timer != null) {
                     timeOut.cancel(timer);
@@ -774,8 +772,6 @@ class fgpWidgetGraph {
             var firstPoint = null;
             var timer_mousedown = null;
             var mousedownHandler = function (e, g, context) {
-                e.preventDefault();
-                e.stopPropagation();
                 if (scope.basicInfo && !scope.basicInfo.zoom) {
                     return;
                 }
@@ -811,8 +807,7 @@ class fgpWidgetGraph {
 
 
             var mouseupHandler = function (e, g, context) {
-                e.preventDefault();
-                e.stopPropagation();
+
                 if (context.isPanning) {
                     Dygraph.endPan(e, g, context);
                 } else {
@@ -1259,10 +1254,6 @@ class fgpWidgetGraph {
                 });
 
 
-                scope.$on('changeSize', function (event) {
-                    scope.currentChart.resize();
-                    scope.rangeSelectorBar.resize();
-                });
 
 
                 //bind chart
@@ -1273,6 +1264,14 @@ class fgpWidgetGraph {
                     }
                     scope.$emit('bindChildChartEvent', param);
                 }
+
+                scope.$on('changeSize', function (event) {
+                    scope.currentChart.resize();
+                    if(scope.rangeSelectorBar){
+                        scope.rangeSelectorBar.resize();
+                    }
+                });
+
 
             }
         }, 0);
