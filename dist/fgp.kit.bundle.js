@@ -922,10 +922,6 @@ var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, 
         }
 
 
-
-
-
-
         for (i = 0; i < dygraph.layout_.annotations.length; i++) {
             Dygraph.Export.putLabelAnn(ctx, dygraph.layout_.annotations[i], options,
                 options.labelFont, options.labelColor);
@@ -1017,7 +1013,7 @@ var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, 
 
         var top = parseInt(divLabel.style.top, 10);
 
-        if(divLabel.style.right == ""){
+        if (divLabel.style.right == "") {
             divLabel.style.right = "10px";
         }
 
@@ -1079,7 +1075,7 @@ var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, 
 
         var i;
         for (i = 0; i < labels.length; i++) {
-            if(labels[i]!="span_y1" && labels[i]!="span_y2"){
+            if (labels[i] != "span_y1" && labels[i] != "span_y2") {
                 labelsWidth = labelsWidth + ctx.measureText("- " + labels[i]).width + labelMargin;
             }
         }
@@ -1097,7 +1093,7 @@ var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, 
         var usedColorCount = 0;
         for (i = 0; i < labels.length; i++) {
             if (labelVisibility[i]) {
-                if(labels[i]!="span_y1" && labels[i]!="span_y2") {
+                if (labels[i] != "span_y1" && labels[i] != "span_y2") {
                     var txt = "- " + labels[i];
                     ctx.fillStyle = colors[usedColorCount];
                     usedColorCount++;
@@ -1214,7 +1210,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var sampleData = getData(1, 10, 'Device');
 
         function movePan(event, g, context, side) {
-
+            event.preventDefault();
+            event.stopPropagation();
             context.dragEndX = Dygraph.dragGetX_(event, context);
             context.dragEndY = Dygraph.dragGetY_(event, context);
 
@@ -1317,6 +1314,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 }
             }
             g.drawGraph_(false);
+
         }
 
 
@@ -1418,6 +1416,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     });
                 }
             }
+
         }
 
 
@@ -1426,6 +1425,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var timer = null;
         var mouseOverHandler = function (e, g, context) {
             //
+            e.preventDefault();
+            e.stopPropagation();
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
@@ -1436,10 +1437,15 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             timer = timeOut(function () {
                 canScroll = true;
             }, 1000);
+
+
+
         };
 
 
         var mouseEnterHandler = function (e, g, context) {
+            e.preventDefault();
+            e.stopPropagation();
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
@@ -1450,14 +1456,18 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             timer = timeOut(function () {
                 canScroll = true;
             }, 1000);
+
         };
 
         var mouseOutHandler = function (e, g, context) {
+            e.preventDefault();
+            e.stopPropagation();
             // set flag to false
             if (timer != null) {
                 timeOut.cancel(timer);
             }
             canScroll = false;
+
         };
 
         var scroll = function (e, g, context) {
@@ -1508,6 +1518,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var firstPoint = null;
         var timer_mousedown = null;
         var mousedownHandler = function (e, g, context) {
+            e.preventDefault();
+            e.stopPropagation();
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
@@ -1519,12 +1531,13 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 context.initializeMouseDown(e, g, context);
                 firstPoint = e.clientX;
                 Dygraph.startPan(e, g, context);
-                e.preventDefault();
-                e.stopPropagation();
+
             }, 300);
 
         };
         var mousemoveHandler = function (e, g, context) {
+            e.preventDefault();
+            e.stopPropagation();
             if (context.isPanning) {
                 if (e.offsetX <= (g.plotter_.area.x)) {
                     movePan(e, g, context, 'r');
@@ -1536,11 +1549,14 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 timeOut(function () {
                     scope.chartDateWindow = scope.currentChart.xAxisRange();
                 });
+
             }
         };
 
 
         var mouseupHandler = function (e, g, context) {
+            e.preventDefault();
+            e.stopPropagation();
             if (context.isPanning) {
                 Dygraph.endPan(e, g, context);
             } else {
@@ -1978,15 +1994,20 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function (event) {
                 if (status) {
-                    timeOut(function () {
-                        scope.chartDateWindow = scope.currentChart.xAxisRange();
-                    });
+                    scope.chartDateWindow = scope.currentChart.xAxisRange();
                 }
             });
 
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousedown', function (event) {
                 status = true;
             });
+
+
+            scope.$on('changeSize', function (event) {
+                scope.currentChart.resize();
+                scope.rangeSelectorBar.resize();
+            });
+
 
             //bind chart
             if (basicInfo && basicInfo.childrenChart.length > 0) {
@@ -1996,6 +2017,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 }
                 scope.$emit('bindChildChartEvent', param);
             }
+
         }
     }, 0);
 };
@@ -2051,7 +2073,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
     $scope.export_img = function () {
         // export canvas
-        var canvas = Dygraph.Export.asCanvas($scope.currentChart, {"series":$scope.currentChart.attributes_.series_});
+        var canvas = Dygraph.Export.asCanvas($scope.currentChart, {"series": $scope.currentChart.attributes_.series_});
         download_image(canvas.toDataURL(), $scope.currentIntervalName + ".png");
     };
 
