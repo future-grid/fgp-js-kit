@@ -2751,7 +2751,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     if ($scope.currentView == 1) {
                         // scatter detail view
                         if (expectedInterval == conf[0].interval) {
-                            $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                            $scope.currentChart.updateOptions({labels:$scope.childrenRangeConfig.labels,dateWindow: $scope.chartDateWindow});
                             $scope.loadingShow = false;
                         } else {
                             $scope.legendText = null;
@@ -2765,7 +2765,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 angular$1.forEach(device.trees, function (tree, index) {
                                     if (expectedInterval == tree.frequency && index != 0) {
                                         currentStore = tree.store;
-                                        deviceInfo.push({name: device.name, tree: tree.tree});
+                                        deviceInfo.push({name: device.name, device:device, tree: tree.tree});
                                         device["show"] = true;
                                         $scope.childrenDevices.push(device);
                                     }
@@ -2803,7 +2803,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
                                         }
                                     });
-                                    showData.push({device: arr.device, data: deviceData});
+
+                                    var currentDeviceInfo = {};
+                                    angular$1.forEach(deviceInfo, function (device) {
+                                        if(device.name == arr.device){
+                                            currentDeviceInfo = device;
+                                        }
+
+                                    });
+                                    showData.push({device: arr.device, extension:currentDeviceInfo, data: deviceData});
                                 });
                                 //get configuration
                                 updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
@@ -2978,7 +2986,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 device["show"] = true;
                 $scope.childrenDevices.push(device);
                 var trees = deviceData.trees;
-                $scope.childTrees.push({name: device.name, trees: trees});
+                $scope.childTrees.push({name: device.name, device:device, trees: trees});
                 var rangeTree = null;
                 angular$1.forEach(trees, function (tree) {
                     if (tree.range) {
@@ -3012,6 +3020,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     //
                     deviceObj["range"] = rangeTree;
                     deviceObj["data"] = allData;
+                    deviceObj["device"] = device;
                 } else {
                     console.info(device.name + " has none data.");
                 }
@@ -3113,7 +3122,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             showY2axis = true;
                             $scope.showY2Btns = true;
                         }
-                        labels.push(key);
+
+                        if(collection.rows[0].legend_label){
+                            labels.push(device.device[collection.rows[0].legend_label]);
+                        }else{
+                            labels.push(key);
+                        }
+
+
+
                         // make a line
                         var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                         // add value
@@ -3348,9 +3365,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 counter++;
 
                 if (device.data.length > 0) {
-                    labels.push(device.device);
+
                     angular$1.forEach(collections, function (collection) {
                         if (collection.name == store) {
+                            if(collection.rows[0].legend_label){
+                                labels.push(device.extension.device.device[collection.rows[0].legend_label]);
+                            }else{
+                                labels.push(device.device);
+                            }
+
                             $scope.currentIntervalName = store;
                             if (collection.rows[0].yaxis == 0) {
                                 if (collection.rows[0].type == 'line') {
