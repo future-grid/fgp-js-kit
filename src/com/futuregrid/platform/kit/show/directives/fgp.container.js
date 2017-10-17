@@ -6,7 +6,9 @@ class fgpWidgetContainer {
 
     constructor() {
         this.restrict = 'E';
-        this.scope = {};
+        this.scope = {
+            interactions: "="
+        };
     }
 
     template(element, attrs) {
