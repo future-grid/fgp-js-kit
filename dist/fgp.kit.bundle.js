@@ -4328,7 +4328,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
                         // call interactions back
-                        if($scope['interactions'] && $scope['interactions'].graphs){
+                        if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData){
                             $scope['interactions'].graphs.fetchData(allLines);
                         }
                         //bind
