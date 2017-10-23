@@ -1,25 +1,20 @@
-# fgp-js-kit
-###### How to deploy a standalone FGP-Graph
 
-[![logo](document/asserts/logo.svg)](https://github.com/future-grid/fgp-js-kit)
+# [![logo](document/asserts/logo.svg)](https://github.com/future-grid/fgp-js-kit) fgp-js-kit
 
 Future Grid JavaScript Library.
   - Dygraph--eric_dygraphs(Reactive, Responsive)
   - Responsive Design
   - Bootstrap(3.*)
 
+fgp-kit-js is a lightweight font-end lib for all Future-Grid's customers. By using this lib they can put their graphs into the other online website or systems.  
+
 # New Features!
 
   - Support barchart, group-bar chart
   - Buttons and Intervals labels can be hided
 
+# How to deploy a standalone FGP-Graph
 
-You can also:
-  - Import and save files from GitHub, Dropbox, Google Drive and One Drive
-  - Drag and drop markdown and HTML files into Dillinger
-  - Export documents as Markdown, HTML and PDF
-
-fgp-kit-js is a lightweight font-end lib for all Future-Grid's customers. By using this lib they can put their graphs into the other online website or systems.  
 
 ### Installation
 
@@ -294,4 +289,6 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
 });
 ```
 All done. enjory~
+
+### Examples
 ![Graphs](document/asserts/graph.png)
