@@ -1,5 +1,5 @@
-#fgp-js-kit
-######How to deploy a standalone FGP-Graph
+# fgp-js-kit
+###### How to deploy a standalone FGP-Graph
 
 [![logo](document/asserts/logo.svg)](https://github.com/future-grid/fgp-js-kit)
 
