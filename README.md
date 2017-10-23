@@ -1,32 +1,62 @@
-# fgp-js-kit  # 1.0.41
+#fgp-js-kit
+######How to deploy a standalone FGP-Graph
+
+[![logo](document/asserts/logo.svg)](https://github.com/future-grid/fgp-js-kit)
+
 Future Grid JavaScript Library.
+  - Dygraph--eric_dygraphs(Reactive, Responsive)
+  - Responsive Design
+  - Bootstrap(3.*)
 
-Reactive, responsive Graph. using [Dygraphs](http://dygraphs.com). 
+# New Features!
 
-# v1.0.* - fgp-js-kit
+  - Support barchart, group-bar chart
+  - Buttons and Intervals labels can be hided
 
-This is the first version of graph library that uses the v1.1.1 version of Dygraphs. You can also use "eric_dygraphs".
 
-# Installation
+You can also:
+  - Import and save files from GitHub, Dropbox, Google Drive and One Drive
+  - Drag and drop markdown and HTML files into Dillinger
+  - Export documents as Markdown, HTML and PDF
 
-### bower
+fgp-kit-js is a lightweight font-end lib for all Future-Grid's customers. By using this lib they can put their graphs into the other online website or systems.  
 
-    bower install --save fgp-js-kit#~1.0.0
+### Installation
 
-### npm
+[fgp-js-kit] uses a number of open source frameworks to work properly:
 
-    Not support right now!
+* [AngularJS1.5.7] - HTML enhanced for web apps!
+* [Fontawesome] - icons
+* [jQuery] - a fast, small, and feature-rich JavaScript library
+* [Dygraph] - graph
 
-### cdn
+But you don't need to install all the libs by yourself.
 
-    Not support right now!
+fgp-js-kit requires [Node.js](https://nodejs.org/) v4+ and [Bower](https://bower.io/) to run.
 
-### manually
+Install the dependencies and devDependencies and start the server.
 
-or copy the files from `dist/`. 
+```sh
+$ cd demo
+$ bower init
+$ bower install --save fgp-js-kit
+```
+You will find some javascript libs in bower_components/
+[npm]
+Not support right now!
+[cdn]
+Not support right now!
 
-Then add the sources to your code (adjust paths as needed) after 
-adding the dependencies for Angular and Dygraphs first:
+### Manually
+
+You can deploy fgp-js-kit into your web application project or just copy the */dist/* into your project.
+
+
+### Utilisation & Development
+
+Want to show graphs on the other web system? Great!
+
+Add the sources to your code (adjust paths as needed) after adding the dependencies for Angular and Dygraphs first:
 
 ```html
 <head>
@@ -38,40 +68,27 @@ adding the dependencies for Angular and Dygraphs first:
   <script src="bower_components/angular/angular.min.js"></script>
   <script src="bower_components/dygraphs/dygraph-combined.js"></script>
   <script src="bower_components/dygraphs/extras/synchronizer.js"></script>
-  <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
   <!--
    <script src="bower_components/eric_dygraphs/dygraph-combined-dev.js"></script>
    <script src="bower_components/eric_dygraphs/extras/synchronizer.js"></script>
    -->
   <script src="bower_components/fgp-js-kit/dist/fgp.kit.bundle.min.js"></script>
+  <script src="**/**/app.js"></script> <!-- create a application js file -->
 ```
 
-# Utilisation
-
-There are 4 attributes of this directive. 
-`application-name="'node-agent'"` 
-`device-name="'127.0.0.1'"`
-`configuration="configuration"`
-`server="'http://localhost:8081'"`
-`standalone="true"`
-
-*DEPRECATION WARNING*: Note that 'configuration' attribute should be a Array.
-
-# Example
-
-## Markup
-
+And create a dom ```html <div></div> ``` like this:
 ```html
-<div fgp-container application-name="'node-agent'" device-name="'127.0.0.1'"
-         configuration="configuration"
-         server="'http://localhost:8081'" standalone="true"></div>
+<div fgp-container application-name="'node-agent'" device-name="'127.0.0.1'" configuration="configuration" server="'http://localhost:8081'"></div>
 ```
+4 attributes
+ - application-name:  Graphs will loading data from "application".(PUF, **-neutral-health)
+ - device-name: Device that you are going to look at.(site001, staticon_busbar_001)
+ - server: The server that running fgp-rest-ui.(don't forget the port)
+ - configuration: widget configuration, you can create your page in fgp platform and then export as a json.(The fgp-js-kit cann't use *.json directly, copy the content to [\*\*/\*app.js])
 
-## Javascript
-
-```javascript
+```sh
 angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
-    // you can find your pages configuratiion in FGP_PLATEFORM
+
     $scope.configuration = [{
         "html": "<titlecontainer id=\"item4094\"></titlecontainer>",
         "configTemplate": "",
@@ -276,16 +293,5 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
 
 });
 ```
-
-## Contributors
-
-Thank you to the [contributors](https://github.com/future-grid/fgp-js-kit/contributors)!
-
-# Author
-
-Eric Wang, [[About me](https://github.com/flexdeviser)]
-
-# License
-
-fgp-js-kit is copyright 2016 future-grid and contributors. 
-It is licensed under the Apache license. See the include LICENSE file for details.
+All done. enjory~
+![Graphs](document/asserts/graph.png)
