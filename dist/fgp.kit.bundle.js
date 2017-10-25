@@ -51,11 +51,6 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     $rootScope['standalone'] = $scope.standalone;
 
 
-    // if($scope.interactions){
-    // $rootScope['interactions'] = $scope.interactions;
-    // }
-
-
     var graphBindingArray = [];
 
     $scope.$on('bindChildChartEvent', function (evt, msg) {
@@ -143,52 +138,51 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
         }
     }
 
-    angular$1
-        .forEach($scope
 
-                .configuration
-            ,
-            function (item) {
+
+    $scope.$watch('deviceName', function (newVal, oldVal) {
+        if(newVal){
+            $element.empty();
+            // refersh
+            angular$1.forEach($scope.configuration, function (item) {
                 if ('workingArea' === item.parent) {
                     var currentItem = angular$1.element(item.html_render);
                     $scope.showdata[item.id] = item;
                     $element.append($compile(currentItem)($scope));
                     findChild(item.id, currentItem, $scope.configuration);
                 }
+            });
+            /**
+             * get device information
+             */
+            if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+                // first time
+                sendDeviceData();
             }
-        )
-    ;
+            // all item created;
+            $timeout(function () {
+                angular$1.forEach(graphBindingArray, function (graph) {
+                    $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
+                });
+            });
+        }
+    });
 
-    var
-        sendDeviceData = function () {
+
+    var sendDeviceData = function () {
             dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
                 // send device info to all widget
                 $timeout(function () {
                     $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
                 });
             });
-        };
-
-    /**
-     * get device information
-     */
-    if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
-        // first time
-        sendDeviceData();
-
-        // after every 30 seconds
-        // $interval(function () {
-        // sendDeviceData();
-        // }, 30000);
-    }
+    };
 
 
-// all item created;
-    $timeout(function () {
-        angular$1.forEach(graphBindingArray, function (graph) {
-            $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
-        });
-    });
+
+
+
+
 };
 
 
@@ -3844,6 +3838,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var allLines = [];
             //0 for y  1 for y2
             var yRanges = [{min: null, max: null}, {min: null, max: null}];
+
+
+            // call interactions back
+            if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData){
+                $scope['interactions'].graphs.fetchData(allData);
+            }
+
+
             angular$1.forEach(collections, function (collection) {
                 if (collection.name == store) {
                     angular$1.forEach(allData, function (line) {
@@ -4057,6 +4059,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 });
                             }
+
+
+
+
                             $scope.loadingShow = false;
                         }
                     }
@@ -4325,11 +4331,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
 
-                        }
-
-                        // call interactions back
-                        if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData){
-                            $scope['interactions'].graphs.fetchData(allLines);
                         }
                         //bind
                         $scope.loadingShow = false;

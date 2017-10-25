@@ -38,11 +38,6 @@ class fgpStage {
         $rootScope['standalone'] = $scope.standalone;
 
 
-        // if($scope.interactions){
-        //     $rootScope['interactions'] = $scope.interactions;
-        // }
-
-
         var graphBindingArray = [];
 
         $scope.$on('bindChildChartEvent', function (evt, msg) {
@@ -130,52 +125,51 @@ class fgpStage {
             }
         }
 
-        angular
-            .forEach($scope
 
-                    .configuration
-                ,
-                function (item) {
+
+        $scope.$watch('deviceName', function (newVal, oldVal) {
+            if(newVal){
+                $element.empty();
+                // refersh
+                angular.forEach($scope.configuration, function (item) {
                     if ('workingArea' === item.parent) {
                         var currentItem = angular.element(item.html_render);
                         $scope.showdata[item.id] = item;
                         $element.append($compile(currentItem)($scope));
                         findChild(item.id, currentItem, $scope.configuration);
                     }
+                });
+                /**
+                 * get device information
+                 */
+                if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+                    // first time
+                    sendDeviceData();
                 }
-            )
-        ;
+                // all item created;
+                $timeout(function () {
+                    angular.forEach(graphBindingArray, function (graph) {
+                        $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
+                    });
+                });
+            }
+        });
 
-        var
-            sendDeviceData = function () {
+
+        var sendDeviceData = function () {
                 dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
                     // send device info to all widget
                     $timeout(function () {
                         $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
                     });
                 });
-            };
-
-        /**
-         * get device information
-         */
-        if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
-            // first time
-            sendDeviceData();
-
-            // after every 30 seconds
-            // $interval(function () {
-            //     sendDeviceData();
-            // }, 30000);
-        }
+        };
 
 
-// all item created;
-        $timeout(function () {
-            angular.forEach(graphBindingArray, function (graph) {
-                $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
-            });
-        });
+
+
+
+
     }
 
 

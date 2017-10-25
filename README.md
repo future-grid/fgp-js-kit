@@ -1,10 +1,4 @@
-
-# [![logo](document/asserts/logo.svg)](https://github.com/future-grid/fgp-js-kit) fgp-js-kit
-
-Future Grid JavaScript Library.
-  - Dygraph--eric_dygraphs(Reactive, Responsive)
-  - Responsive Design
-  - Bootstrap(3.*)
+# Future Grid JavaScript Library(fgp-js-kit).
 
 fgp-kit-js is a lightweight font-end lib for all Future-Grid's customers. By using this lib they can put their graphs into the other online website or systems.  
 
@@ -12,6 +6,11 @@ fgp-kit-js is a lightweight font-end lib for all Future-Grid's customers. By usi
 
   - Support barchart, group-bar chart
   - Buttons and Intervals labels can be hided
+# Base on
+
+  - Dygraph--eric_dygraphs(Reactive, Responsive)
+  - Responsive Design
+  - Bootstrap(3.\*)
 
 # How to deploy a standalone FGP-Graph
 
@@ -37,9 +36,13 @@ $ bower init
 $ bower install --save fgp-js-kit
 ```
 You will find some javascript libs in bower_components/
+
 [npm]
+
 Not support right now!
+
 [cdn]
+
 Not support right now!
 
 ### Manually
@@ -49,9 +52,13 @@ You can deploy fgp-js-kit into your web application project or just copy the */d
 
 ### Utilisation & Development
 
-Want to show graphs on the other web system? Great!
+Want to show graphs on the other web-app? Great!
 
-Add the sources to your code (adjust paths as needed) after adding the dependencies for Angular and Dygraphs first:
+Add the dependencies for Angular and Dygraps
+
+Add the sources to your code
+
+(careful the paths)
 
 ```html
 <head>

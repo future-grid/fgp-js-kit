@@ -3092,6 +3092,14 @@ class fgpWidgetGraph {
                 var allLines = [];
                 //0 for y  1 for y2
                 var yRanges = [{min: null, max: null}, {min: null, max: null}];
+
+
+                // call interactions back
+                if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData){
+                    $scope['interactions'].graphs.fetchData(allData);
+                }
+
+
                 angular.forEach(collections, function (collection) {
                     if (collection.name == store) {
                         angular.forEach(allData, function (line) {
@@ -3305,6 +3313,10 @@ class fgpWidgetGraph {
                                         // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                     });
                                 }
+
+
+
+
                                 $scope.loadingShow = false;
                             }
                         }
@@ -3573,11 +3585,6 @@ class fgpWidgetGraph {
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
 
-                            }
-
-                            // call interactions back
-                            if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData){
-                                $scope['interactions'].graphs.fetchData(allLines);
                             }
                             //bind
                             $scope.loadingShow = false;
