@@ -2272,8 +2272,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             for (var i = 0; i < newSets[j].length; i++) {
                 var p = newSets[j][i];
                 var center_x = p.canvasx;
-                var x_left = center_x - (bar_width / 2) * (1 - j / (newSets.length - 1));
-
+                // var x_left = center_x - (bar_width / 2) * (1 - j / (newSets.length - 1));
+                var x_left = center_x - (bar_width / 2) + (bar_width / newSets.length) * j + 1;
                 ctx.fillRect(x_left, p.canvasy,
                     bar_width / newSets.length, y_bottom - p.canvasy);
 
@@ -3841,7 +3841,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
             // call interactions back
-            if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData){
+            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData) {
                 $scope['interactions'].graphs.fetchData(allData);
             }
 
@@ -4059,8 +4059,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 });
                             }
-
-
 
 
                             $scope.loadingShow = false;
