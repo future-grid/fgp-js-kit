@@ -1194,7 +1194,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             var data = [];
             var labels = [];
             //init date
-            var initDate = new Date("2014/01/01 00:00:00");
+            var initDate = new Date();
             for (var j = 0; j < numRows; ++j) {
                 data[j] = [new Date(initDate.getTime() + 900000)];
                 initDate = new Date(initDate.getTime() + 900000);
@@ -1203,8 +1203,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 labels.push(name + i);
                 var val = 0;
                 for (var j = 0; j < numRows; ++j) {
-                    val += Math.random() - 0.5;
-                    data[j][i + 1] = val;
+                    // val += Math.random() - 0.5;
+                    data[j][i + 1] = NaN;
                 }
             }
             result.labels = labels;
@@ -1213,7 +1213,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         };
 
 
-        var sampleData = getData(1, 10, 'Device');
+        var sampleData = getData(1, 1, 'Device');
 
         function movePan(event, g, context, side) {
             event.preventDefault();
@@ -1590,7 +1590,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             labelsKMB: true,
             labelsSeparateLines: true,
             // data formate
-            labels: ['x'],
+            labels: ['x'].concat(sampleData.labels),
             // highlightSeriesOpts: {
             // strokeWidth: 2,
             // strokeBorderWidth: 1,
@@ -1655,7 +1655,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             ]
         };
 
-        scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], [], configuration);
+        scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
         element.find("canvas").css("zIndex", 99);
 
         var timer_auto = null;
@@ -1717,7 +1717,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 interactionModel: {}
             };
 
-            scope.realTimeGraph = new Dygraph(element.find("div[class='real-time-graph']")[0], [], tempConifg);
+            scope.realTimeGraph = new Dygraph(element.find("div[class='real-time-graph']")[0], sampleData.data, tempConifg);
             scope.realTimeGraph.updateOptions(scope.currentChartOptions);
             scope.realTimeGraph.updateOptions({"file": []});
 
@@ -1940,7 +1940,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 
 
             if (basicInfo && basicInfo.range_show) {
-                scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], [], {
+                scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
                         xAxisHeight: 0,
                         axes: {
                             x: {
@@ -3313,7 +3313,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         labelsKMB: true,
                         labelsSeparateLines: false,
                         // data formate
-                        labels: ['x'],
+                        labels: ['x'].concat(sampleData.labels),
                         highlightSeriesOpts: {
                             strokeWidth: 2,
                             strokeBorderWidth: 1,
