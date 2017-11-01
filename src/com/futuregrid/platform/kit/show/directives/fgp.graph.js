@@ -385,11 +385,11 @@ class fgpWidgetGraph {
         var flag = attrs.hasOwnProperty("shown");
         if (flag) {
             var dom_loading = '<div ng-show="loadingShow" id="loading_' + attrs.id + '" style="width: 100%;height:100%;position: absolute;background: rgba(255, 255, 255, 0.1);" data-chartloading><div class="spinner">' +
-                '<div class="rect1"></div>' +
-                '<div class="rect2"></div>' +
-                '<div class="rect3"></div>' +
-                '<div class="rect4"></div>' +
-                '<div class="rect5"></div>' +
+                '<div class="rect1" style="background-color: darkgreen"></div>' +
+                '<div class="rect2" style="background-color: #3cb0fd"></div>' +
+                '<div class="rect3" style="background-color: #777777"></div>' +
+                '<div class="rect4" style="background-color: coral"></div>' +
+                '<div class="rect5" style="background-color: deeppink"></div>' +
                 '</div></div>';
 
 
@@ -844,7 +844,7 @@ class fgpWidgetGraph {
                 labelsKMB: true,
                 labelsSeparateLines: true,
                 // data formate
-                labels: ['x'].concat(sampleData.labels),
+                labels: ['x'],
                 // highlightSeriesOpts: {
                 //     strokeWidth: 2,
                 //     strokeBorderWidth: 1,
@@ -909,7 +909,7 @@ class fgpWidgetGraph {
                 ]
             };
 
-            scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
+            scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], [], configuration);
             element.find("canvas").css("zIndex", 99);
 
             var timer_auto = null;
@@ -971,7 +971,7 @@ class fgpWidgetGraph {
                     interactionModel: {}
                 };
 
-                scope.realTimeGraph = new Dygraph(element.find("div[class='real-time-graph']")[0], sampleData.data, tempConifg);
+                scope.realTimeGraph = new Dygraph(element.find("div[class='real-time-graph']")[0], [], tempConifg);
                 scope.realTimeGraph.updateOptions(scope.currentChartOptions);
                 scope.realTimeGraph.updateOptions({"file": []});
 
@@ -1194,7 +1194,7 @@ class fgpWidgetGraph {
 
 
                 if (basicInfo && basicInfo.range_show) {
-                    scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], sampleData.data, {
+                    scope.rangeSelectorBar = new Dygraph(element.find("div[class='range-selector-bar']")[0], [], {
                             xAxisHeight: 0,
                             axes: {
                                 x: {
@@ -1786,6 +1786,7 @@ class fgpWidgetGraph {
                                     }
                                 });
                                 $scope.auto_fields = fields;
+                                $scope.loadingShow = true;
                                 dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
                                     initChart(data);
                                 }, function (error) {
@@ -1833,6 +1834,7 @@ class fgpWidgetGraph {
                                     });
                                     $scope.auto_fields = fields;
                                     // show children view
+                                    $scope.loadingShow = true;
                                     dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function (data) {
                                         // get all device trees
                                         if (data != null && data.length > 0) {
@@ -1892,6 +1894,7 @@ class fgpWidgetGraph {
 
                         $scope.auto_fields = fields;
                         //send a rest request
+                        $scope.loadingShow = true;
                         dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
                             initChart(data);
                         }, function (error) {
@@ -1995,6 +1998,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
+                                    $scope.loadingShow = true;
                                     dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function (data) {
                                             // udpate chart
                                             var showData = [];
@@ -2156,6 +2160,7 @@ class fgpWidgetGraph {
                                 });
 
                                 $scope.auto_fields = fields;
+                                $scope.loadingShow = true;
                                 dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function (data) {
                                     var showData = [];
                                     angular.forEach(data, function (arr) {
@@ -2217,6 +2222,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
+                                    $scope.loadingShow = true;
                                     dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function (data) {
                                         // udpate chart
                                         var showData = [];
@@ -2561,7 +2567,7 @@ class fgpWidgetGraph {
                             labelsKMB: true,
                             labelsSeparateLines: false,
                             // data formate
-                            labels: ['x'].concat(sampleData.labels),
+                            labels: ['x'],
                             highlightSeriesOpts: {
                                 strokeWidth: 2,
                                 strokeBorderWidth: 1,
