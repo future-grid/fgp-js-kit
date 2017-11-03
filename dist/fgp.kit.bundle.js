@@ -2071,32 +2071,26 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 //
                 if (newValue && newValue.start) {
                     $timeout(function () {
-                        var currentInterval = {name: "", interval: newValue.start};
-
-
-                        if ($scope.currentChart["xAxisZoomRange"]) {
-                            var range = $scope.currentChart["xAxisZoomRange"];
-
-                            if (range[0] instanceof Date) {
-                                range[0] = range[0].getTime();
-                            }
-
-                            if (range[1] instanceof Date) {
-                                range[1] = range[1].getTime();
-                            }
-
-                            if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
-                                $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
-                                $scope.currentChart.updateOptions($scope.rangeConfig);
-                                $scope.currentIntervalChoosed = currentInterval;
-                            }
-                        } else {
-                            $scope.currentIntervalChoosed = currentInterval;
+                    var currentInterval = {name: "", interval: newValue.start};
+                    if ($scope.currentChart["xAxisZoomRange"]) {
+                        var range = $scope.currentChart["xAxisZoomRange"];
+                        if (range[0] instanceof Date) {
+                            range[0] = range[0].getTime();
+                        }
+                        if (range[1] instanceof Date) {
+                            range[1] = range[1].getTime();
                         }
 
-
-                    });
-                }
+                        if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
+                            $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
+                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                            $scope.currentIntervalChoosed = currentInterval;
+                        }
+                    } else {
+                        $scope.currentIntervalChoosed = currentInterval;
+                    }
+                });
+            }
             });
 
         }
@@ -4305,15 +4299,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
 
-                        if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
+                        if ($scope.chartDateWindow && $scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
                             // keep the current range bar refresh once.
                             $scope.chartDateTime = {
                                 begin: $scope.chartDateTime.begin,
                                 end: $scope.chartDateTime.end
                             };
                             $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                        }else if($scope.chartDateWindow && !$scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])){
+                            $scope.chartDateTime = {
+                                begin: $scope.chartDateTime.begin,
+                                end: $scope.chartDateTime.end
+                            };
+                            $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                            $scope.currentChart.updateOptions({dateWindow:$scope.chartDateWindow});
                         } else {
-
                             $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
                                 // $scope.chartDateTime = {
