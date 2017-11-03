@@ -1194,7 +1194,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             var data = [];
             var labels = [];
             //init date
-            var initDate = new Date();
+            var initDate = new Date("2014/01/01 00:00:00");
             for (var j = 0; j < numRows; ++j) {
                 data[j] = [new Date(initDate.getTime() + 900000)];
                 initDate = new Date(initDate.getTime() + 900000);
