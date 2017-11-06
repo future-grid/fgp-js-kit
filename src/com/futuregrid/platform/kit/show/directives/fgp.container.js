@@ -15,15 +15,15 @@ class fgpWidgetContainer {
         var flag = attrs.hasOwnProperty("shown");
         var showTitle = attrs.hasOwnProperty("showtitle");
         var element_id = attrs.id;
-        var dom_show = '<div class="" id="' + element_id + '">' +
+        var dom_show = '<div class="" id="' + element_id + '" style="margin-top:10px;margin-bottom:10px;">' +
             '<div class="{{css.width}}" style="padding: 0px;">' +
             '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}}</div>' +
             '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
             '</div>' +
             '</div></div>';
-        var dom_show_notitle = '<div class="" id="' + element_id + '">' +
-            '<div class="{{css.width}}" style="margin-bottom:15px;">' +
+        var dom_show_notitle = '<div class="" id="' + element_id + '" style="height: 100%;">' +
+            '<div class="{{css.width}}" style="margin-top:10px;margin-bottom:10px;">' +
             '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
             '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
             '</div>' +
