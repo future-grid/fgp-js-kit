@@ -1521,12 +1521,12 @@ class fgpWidgetGraph {
                     var p = newSets[j][i];
                     var center_x = p.canvasx;
                     // var x_left = center_x - (bar_width / 2) * (1 - j / (newSets.length - 1));
-                    var x_left = center_x - (bar_width / 2) + (bar_width / newSets.length) * j + 1;
+                    var x_left = center_x - (bar_width / 2) + (bar_width / newSets.length) * j;
                     ctx.fillRect(x_left, p.canvasy,
-                        bar_width / newSets.length, y_bottom - p.canvasy);
+                        bar_width / newSets.length - 1, y_bottom - p.canvasy);
 
                     ctx.strokeRect(x_left, p.canvasy,
-                        bar_width / newSets.length, y_bottom - p.canvasy);
+                        bar_width / newSets.length - 1, y_bottom - p.canvasy);
                 }
 
             }
