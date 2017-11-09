@@ -2941,7 +2941,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             // get all data
             var allData = [];
             // fetchData(allData, rangeTree.tree);only get first and last
-            allData = allData.concat([rangeTree.first, rangeTree.last]);
+
+            if(rangeTree.first.timestamp == rangeTree.last.timestamp){
+                allData = allData.concat([rangeTree.first]);
+            }else{
+                allData = allData.concat([rangeTree.first, rangeTree.last]);
+            }
 
             allData = allData.filter(function (obj) {
                 return obj != null;
