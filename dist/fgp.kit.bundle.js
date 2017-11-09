@@ -1194,7 +1194,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             var data = [];
             var labels = [];
             //init date
-            var initDate = new Date("2014/01/01 00:00:00");
+            var initDate = new Date();
             for (var j = 0; j < numRows; ++j) {
                 data[j] = [new Date(initDate.getTime() + 900000)];
                 initDate = new Date(initDate.getTime() + 900000);
@@ -1608,6 +1608,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             ylabel: 'Value',
             xLabelHeight: 0,
             colors: scope.defaultColors,
+            fillGraph: true,
             // multiple Y axis
             series: {
                 'Device0': {
@@ -2071,26 +2072,26 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 //
                 if (newValue && newValue.start) {
                     $timeout(function () {
-                    var currentInterval = {name: "", interval: newValue.start};
-                    if ($scope.currentChart["xAxisZoomRange"]) {
-                        var range = $scope.currentChart["xAxisZoomRange"];
-                        if (range[0] instanceof Date) {
-                            range[0] = range[0].getTime();
-                        }
-                        if (range[1] instanceof Date) {
-                            range[1] = range[1].getTime();
-                        }
+                        var currentInterval = {name: "", interval: newValue.start};
+                        if ($scope.currentChart["xAxisZoomRange"]) {
+                            var range = $scope.currentChart["xAxisZoomRange"];
+                            if (range[0] instanceof Date) {
+                                range[0] = range[0].getTime();
+                            }
+                            if (range[1] instanceof Date) {
+                                range[1] = range[1].getTime();
+                            }
 
-                        if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
-                            $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
-                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                            if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
+                                $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
+                                $scope.currentChart.updateOptions($scope.rangeConfig);
+                                $scope.currentIntervalChoosed = currentInterval;
+                            }
+                        } else {
                             $scope.currentIntervalChoosed = currentInterval;
                         }
-                    } else {
-                        $scope.currentIntervalChoosed = currentInterval;
-                    }
-                });
-            }
+                    });
+                }
             });
 
         }
@@ -2275,6 +2276,36 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     bar_width / newSets.length - 1, y_bottom - p.canvasy);
             }
 
+        }
+    };
+
+
+    var stackedBarPlotter = function (e) {
+        var ctx = e.drawingContext;
+        var points = e.points;
+        var y_bottom = e.dygraph.toDomYCoord(0);
+
+        ctx.fillStyle = darkenColor(e.color);
+
+        // Find the minimum separation between x-values.
+        // This determines the bar width.
+        var min_sep = Infinity;
+        for (var i = 1; i < points.length; i++) {
+            var sep = points[i].canvasx - points[i - 1].canvasx;
+            if (sep < min_sep) min_sep = sep;
+        }
+        var bar_width = Math.floor(2.0 / 3 * min_sep);
+
+        // Do the actual plotting.
+        for (var i = 0; i < points.length; i++) {
+            var p = points[i];
+            var center_x = p.canvasx;
+
+            ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+
+            ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
         }
     };
 
@@ -2665,7 +2696,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     });
 
                     var cin = "";
-                    if (expects.interval == preOne) {
+                    if (expects.interval == null || expects.interval == "") {
+                        // that's mean the start and end are same.
+                        var rangeTree = null;
+                        angular$1.forEach($scope.trees, function (tree) {
+                            if (tree.range) {
+                                rangeTree = tree;
+                            }
+                        });
+                        // get the current level
+                        expectedInterval = rangeTree.frequency;
+
+                    } else if(expects.interval == preOne) {
                         expectedInterval = preOne;
                         $scope.autoupdate = false;
                     } else if (expects.interval == lastOne) {
@@ -3957,6 +3999,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: null,
                                     'labelsKMB': true,
+                                    fillGraph: true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
                                     'ylabel': leftAndRight.left,
@@ -3977,6 +4020,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
+                                    fillGraph: true,
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: null,
                                     'labelsKMB': true,
@@ -4014,6 +4058,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
+                                    fillGraph: true,
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: null,
                                     'labelsKMB': true,
@@ -4038,6 +4083,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
+                                    fillGraph: true,
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: null,
                                     'labelsKMB': true,
@@ -4231,6 +4277,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
                                 'legend': 'follow',
+                                fillGraph: true,
                                 labelsSeparateLines: true,
                                 highlightSeriesOpts: null,
                                 'labelsKMB': true,
@@ -4265,6 +4312,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
                                 'legend': 'follow',
+                                fillGraph: true,
                                 labelsSeparateLines: true,
                                 highlightSeriesOpts: null,
                                 'labelsKMB': true,
@@ -4301,18 +4349,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         if ($scope.chartDateWindow && $scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
                             // keep the current range bar refresh once.
+
+
+                            // make sure the begin != end
                             $scope.chartDateTime = {
                                 begin: $scope.chartDateTime.begin,
                                 end: $scope.chartDateTime.end
                             };
                             $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                        }else if($scope.chartDateWindow && !$scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])){
+                        } else if ($scope.chartDateWindow && !$scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
                             $scope.chartDateTime = {
                                 begin: $scope.chartDateTime.begin,
                                 end: $scope.chartDateTime.end
                             };
                             $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                            $scope.currentChart.updateOptions({dateWindow:$scope.chartDateWindow});
+                            $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
                         } else {
                             $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
