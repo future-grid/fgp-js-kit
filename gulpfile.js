@@ -14,7 +14,7 @@ var paths = {
     javascriptRoot: "src/**/*.js",
     stylesheetRoot: "src/**/*.less",
     distRoot: "dist",
-    distUI: "/Users/eric/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist"
+    distUI: "/Users/haiyangwang/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist"
 };
 
 var moduleName = "fgp.kit";

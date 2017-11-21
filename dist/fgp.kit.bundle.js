@@ -2070,7 +2070,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         if ($scope['interactions'] && $scope['interactions'].graphs) {
             $scope.$watch('interactions.graphs.dateWindow', function (newValue, oldValue) {
                 //
-                if (newValue && newValue.start) {
+                if (newValue && newValue.start && !newValue.end) {
                     $timeout(function () {
                         var currentInterval = {name: "", interval: newValue.start};
                         if ($scope.currentChart["xAxisZoomRange"]) {
@@ -2091,6 +2091,31 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.currentIntervalChoosed = currentInterval;
                         }
                     });
+                } else if (newValue && newValue.start && newValue.end) {
+                    // need to change start and end
+                    $timeout(function () {
+                        var currentInterval = {name: "", interval: newValue.end - newValue.start};
+                        if ($scope.currentChart["xAxisZoomRange"]) {
+                            var range = $scope.currentChart["xAxisZoomRange"];
+                            if (range[0] instanceof Date) {
+                                range[0] = range[0].getTime();
+                            }
+                            if (range[1] instanceof Date) {
+                                range[1] = range[1].getTime();
+                            }
+                            // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
+                                $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
+                                $scope.currentChart.updateOptions($scope.rangeConfig);
+                                $scope.currentIntervalChoosed = currentInterval;
+                            // }
+                        } else {
+                            $scope.currentIntervalChoosed = currentInterval;
+                        }
+
+
+                    });
+
+
                 }
             });
 
@@ -2696,18 +2721,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     });
 
                     var cin = "";
-                    if (expects.interval == null || expects.interval == "") {
-                        // that's mean the start and end are same.
-                        var rangeTree = null;
-                        angular$1.forEach($scope.trees, function (tree) {
-                            if (tree.range) {
-                                rangeTree = tree;
-                            }
-                        });
-                        // get the current level
-                        expectedInterval = rangeTree.frequency;
-
-                    } else if(expects.interval == preOne) {
+                    if (expects.interval == preOne) {
                         expectedInterval = preOne;
                         $scope.autoupdate = false;
                     } else if (expects.interval == lastOne) {
@@ -3095,7 +3109,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             // get all data
             var allData = [];
             // fetchData(allData, rangeTree.tree);only get first and last
-            allData = allData.concat([rangeTree.first, rangeTree.last]);
+            if (rangeTree.first.timestamp == rangeTree.last.timestamp) {
+                allData = allData.concat([rangeTree.first]);
+            } else {
+                allData = allData.concat([rangeTree.first, rangeTree.last]);
+            }
 
             allData = allData.filter(function (obj) {
                 return obj != null;
