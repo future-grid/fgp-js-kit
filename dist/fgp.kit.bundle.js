@@ -4379,7 +4379,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 end: $scope.chartDateTime.end
                             };
                             $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                        } else if ($scope.chartDateWindow && !$scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
+                        } else if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != $scope.chartDateWindow[1]) && !$scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
                             $scope.chartDateTime = {
                                 begin: $scope.chartDateTime.begin,
                                 end: $scope.chartDateTime.end
