@@ -2104,9 +2104,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 range[1] = range[1].getTime();
                             }
                             // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
-                                $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
-                                $scope.currentChart.updateOptions($scope.rangeConfig);
-                                $scope.currentIntervalChoosed = currentInterval;
+                            $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
+                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                            $scope.currentIntervalChoosed = currentInterval;
                             // }
                         } else {
                             $scope.currentIntervalChoosed = currentInterval;
@@ -2241,7 +2241,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                 //
-
 
 
             }
@@ -3906,12 +3905,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var yRanges = [{min: null, max: null}, {min: null, max: null}];
 
 
-            // call interactions back
-            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData) {
-                $scope['interactions'].graphs.fetchData(allData);
-            }
-
-
             angular$1.forEach(collections, function (collection) {
                 if (collection.name == store) {
                     angular$1.forEach(allData, function (line) {
@@ -4138,6 +4131,27 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                 }
             });
+
+            // call interactions back
+            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData) {
+                $scope['interactions'].graphs.fetchData(allData);
+                // check if the last guy is older than the end of the range bar, update graph again
+                if ($scope['interactions'].graphs.dateWindow && !$scope['interactions'].graphs.dateWindow.end) {
+                    var end = null;
+                    if($scope.chartDateWindow[1] instanceof Date){
+                        end = $scope.chartDateWindow[1].getTime();
+                    }else{
+                        end = $scope.chartDateWindow[1];
+                    }
+
+                    if(end > allData[allData.length - 1].timestamp){
+                        // need to move rang bar
+                        $scope.chartDateWindow = [allData[allData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, allData[allData.length - 1].timestamp];
+                        $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                    }
+                }
+
+            }
 
 
         };
