@@ -705,8 +705,6 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
     });
 
 
-
-
     var metadata = widgetData.data.metadata;
     $scope.css = {};
     $scope.css["color"] = metadata.css.color;
@@ -2523,7 +2521,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
         metadata = widgetData.data.metadata;
         $scope.basicInfo = metadata.data.basic;
-        $scope.currentView = -1; // -1 is device view and 1 is scatter view
+        $scope.currentView = 0; // -1 is device view and 1 is scatter view
+
+        if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
+            $scope.currentView = 1;
+        } else {
+            $scope.currentView = -1;
+        }
+
 
         $scope.device_name = "";
 
@@ -2549,14 +2554,81 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.auto_schema = metadata.data.source.store;
             $scope.auto_metadata = metadata;
             $scope.auto_device_name = deviceData.device.name;
+
+            // add a timer just make sure the user is not playing with the button.
+
+            var viewTimer = null;
+
             $scope.$watch('currentView', function (nObj, oObj) {
                 // change
-                if (nObj != oObj) {
-                    if (nObj == -1) {
-                        $scope.autoupdate = true;
+                if (viewTimer != null) {
+                    $timeout.cancel(viewTimer);
+                    // create new one
+                    viewTimer = $timeout(function () {
+                        changeViewFunc(nObj, oObj);
+                    }, 500);
+                } else {
+                    viewTimer = $timeout(function () {
+                        changeViewFunc(nObj, oObj);
+                    }, 500);
+                }
+                $scope.fixInterval = false;
+
+            });
+
+            var changeViewFunc = function (nObj, oObj) {
+                if (nObj == -1) {
+                    $scope.autoupdate = true;
+                    var rangeLevel = null;
+                    var otherLevels = [];
+                    angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                        if (level.rows.length > 0) {
+                            if (rangeLevel != null) {
+                                otherLevels.push(rangeLevel);
+                            }
+                            rangeLevel = level.name;
+                        }
+                    });
+                    if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
+                        // show device view
+                        var fields = [];
+                        var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
+
+                        angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                            if (level.rows.length > 0 && level.name === rangeLevel) {
+                                var lines = level.rows;
+                                if (lines) {
+                                    angular$1.forEach(lines, function (line) {
+                                        if (line.value) {
+                                            var columns = (line.value).match(patt);
+                                            angular$1.forEach(columns, function (column) {
+                                                if (column.startsWith('data.')) {
+                                                    fields.push(column.replace('data.', ''));
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        $scope.auto_fields = fields;
+                        $scope.loadingShow = true;
+                        dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
+                            initChart(data);
+                        }, function (error) {
+                            console.error(error);
+                        });
+                    }
+
+                } else {
+                    $scope.autoupdate = false;
+                    //get relation config
+                    if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
+                        return;
+                    } else {
                         var rangeLevel = null;
                         var otherLevels = [];
-                        angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                        angular$1.forEach(metadata.data.groups[2].collections, function (level) {
                             if (level.rows.length > 0) {
                                 if (rangeLevel != null) {
                                     otherLevels.push(rangeLevel);
@@ -2565,11 +2637,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         });
                         if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
-                            // show device view
+
                             var fields = [];
                             var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
 
-                            angular$1.forEach(metadata.data.groups[1].collections, function (level) {
+                            angular$1.forEach(metadata.data.groups[2].collections, function (level) {
                                 if (level.rows.length > 0 && level.name === rangeLevel) {
                                     var lines = level.rows;
                                     if (lines) {
@@ -2587,74 +2659,26 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             });
                             $scope.auto_fields = fields;
+                            // show children view
                             $scope.loadingShow = true;
-                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function (data) {
-                                initChart(data);
+                            dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function (data) {
+                                // get all device trees
+                                if (data != null && data.length > 0) {
+                                    initChildrenChart(data);
+                                } else {
+                                    return;
+                                }
+
                             }, function (error) {
                                 console.error(error);
                             });
-                        }
 
-                    } else {
-                        $scope.autoupdate = false;
-                        //get relation config
-                        if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
-                            return;
-                        } else {
-                            var rangeLevel = null;
-                            var otherLevels = [];
-                            angular$1.forEach(metadata.data.groups[2].collections, function (level) {
-                                if (level.rows.length > 0) {
-                                    if (rangeLevel != null) {
-                                        otherLevels.push(rangeLevel);
-                                    }
-                                    rangeLevel = level.name;
-                                }
-                            });
-                            if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
-
-                                var fields = [];
-                                var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
-
-                                angular$1.forEach(metadata.data.groups[2].collections, function (level) {
-                                    if (level.rows.length > 0 && level.name === rangeLevel) {
-                                        var lines = level.rows;
-                                        if (lines) {
-                                            angular$1.forEach(lines, function (line) {
-                                                if (line.value) {
-                                                    var columns = (line.value).match(patt);
-                                                    angular$1.forEach(columns, function (column) {
-                                                        if (column.startsWith('data.')) {
-                                                            fields.push(column.replace('data.', ''));
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
-                                $scope.auto_fields = fields;
-                                // show children view
-                                $scope.loadingShow = true;
-                                dataService.childrenDeviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function (data) {
-                                    // get all device trees
-                                    if (data != null && data.length > 0) {
-                                        initChildrenChart(data);
-                                    } else {
-                                        return;
-                                    }
-
-                                }, function (error) {
-                                    console.error(error);
-                                });
-
-                            }
                         }
                     }
                 }
-                $scope.fixInterval = false;
+            };
 
-            });
+
             // first time of showing chart
             $scope.$watch('currentChart', function (newValue) {
                 if (newValue) {
@@ -2914,84 +2938,78 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.loadingShow = true;
                     if ($scope.currentView == 1) {
                         // scatter detail view
-                        if (expectedInterval == conf[0].interval) {
-                            $scope.currentChart.updateOptions({
-                                labels: $scope.childrenRangeConfig.labels,
-                                dateWindow: $scope.chartDateWindow
-                            });
-                            $scope.loadingShow = false;
-                        } else {
-                            $scope.legendText = null;
-                            var deviceInfo = [];
-                            var currentStore = "";
 
-                            $scope.childrenDevices = [];
+                        $scope.legendText = null;
+                        var deviceInfo = [];
+                        var currentStore = "";
 
-                            // has problem....
-                            angular$1.forEach($scope.childTrees, function (device) {
-                                angular$1.forEach(device.trees, function (tree, index) {
-                                    if (expectedInterval == tree.frequency && index != 0) {
-                                        currentStore = tree.store;
-                                        deviceInfo.push({name: device.name, device: device, tree: tree.tree});
-                                        device["show"] = true;
-                                        $scope.childrenDevices.push(device);
-                                    }
-                                });
-                            });
+                        $scope.childrenDevices = [];
 
-                            var fields = [];
-                            var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
-
-                            angular$1.forEach(metadata.data.groups[2].collections, function (level) {
-                                if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
-                                    var lines = level.rows;
-                                    if (lines) {
-                                        angular$1.forEach(lines, function (line) {
-                                            if (line.value) {
-                                                var columns = (line.value).match(patt);
-                                                angular$1.forEach(columns, function (column) {
-                                                    if (column && (column).startsWith('data.')) {
-                                                        fields.push(column.replace('data.', ''));
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
+                        // has problem....
+                        angular$1.forEach($scope.childTrees, function (device) {
+                            angular$1.forEach(device.trees, function (tree, index) {
+                                if (expectedInterval == tree.frequency) {
+                                    currentStore = tree.store;
+                                    deviceInfo.push({name: device.name, device: device, tree: tree.tree});
+                                    device["show"] = true;
+                                    $scope.childrenDevices.push(device);
                                 }
                             });
+                        });
 
-                            $scope.auto_fields = fields;
-                            $scope.loadingShow = true;
-                            dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function (data) {
-                                var showData = [];
-                                angular$1.forEach(data, function (arr) {
-                                    var deviceData = [];
-                                    angular$1.forEach(arr.data, function (bucket) {
-                                        if (bucket.data != null) {
-                                            Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
+                        var fields = [];
+                        var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
+
+                        angular$1.forEach(metadata.data.groups[2].collections, function (level) {
+                            if (level.rows.length > 0 && level.name === $scope.currentIntervalName) {
+                                var lines = level.rows;
+                                if (lines) {
+                                    angular$1.forEach(lines, function (line) {
+                                        if (line.value) {
+                                            var columns = (line.value).match(patt);
+                                            angular$1.forEach(columns, function (column) {
+                                                if (column && (column).startsWith('data.')) {
+                                                    fields.push(column.replace('data.', ''));
+                                                }
+                                            });
                                         }
                                     });
+                                }
+                            }
+                        });
 
-                                    var currentDeviceInfo = {};
-                                    angular$1.forEach(deviceInfo, function (device) {
-                                        if (device.name == arr.device) {
-                                            currentDeviceInfo = device;
-                                        }
-
-                                    });
-                                    showData.push({
-                                        device: arr.device,
-                                        extension: currentDeviceInfo,
-                                        data: deviceData
-                                    });
+                        $scope.auto_fields = fields;
+                        $scope.loadingShow = true;
+                        dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function (data) {
+                            var showData = [];
+                            angular$1.forEach(data, function (arr) {
+                                var deviceData = [];
+                                angular$1.forEach(arr.data, function (bucket) {
+                                    if (bucket.data != null) {
+                                        Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
+                                    }
                                 });
-                                //get configuration
-                                updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
 
-                            }, function (data) {
-                                console.info(data);
+                                var currentDeviceInfo = {};
+                                angular$1.forEach(deviceInfo, function (device) {
+                                    if (device.name == arr.device) {
+                                        currentDeviceInfo = device;
+                                    }
+
+                                });
+                                showData.push({
+                                    device: arr.device,
+                                    extension: currentDeviceInfo,
+                                    data: deviceData
+                                });
                             });
-                        }
+                            //get configuration
+                            updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
+
+                        }, function (data) {
+                            console.info(data);
+                        });
+
                         $scope.fixGraphWithGap();
                     } else {
                         // cal tree
@@ -3187,7 +3205,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     var deviceObj = devicesInfo[device.name] = {};
                     // get all data
                     var allData = [];
-                    fetchData(allData, rangeTree.tree);
+                    // fetchData(allData, rangeTree.tree);
+                    if (rangeTree.first.timestamp == rangeTree.last.timestamp) {
+                        allData = allData.concat([rangeTree.first]);
+                    } else {
+                        allData = allData.concat([rangeTree.first, rangeTree.last]);
+                    }
+
                     allData = allData.filter(function (obj) {
                         return obj != null;
                     });
@@ -3512,11 +3536,50 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         // showRangeSelector: true
                     };
                 }
-                //
-                $scope.currentChart.updateOptions($scope.childrenRangeConfig);
-                //  keep the same time window and refersh
-                $scope.chartDateTime = {begin: $scope.chartDateTime.begin, end: $scope.chartDateTime.end};
-                $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+
+
+                if ($scope.chartDateWindow && $scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
+                    // keep the current range bar refresh once.
+                    // make sure the begin != end
+                    $scope.chartDateTime = {
+                        begin: $scope.chartDateTime.begin,
+                        end: $scope.chartDateTime.end
+                    };
+                    $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                } else if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != $scope.chartDateWindow[1]) && !$scope.rangeSelectorBar && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
+                    $scope.chartDateTime = {
+                        begin: $scope.chartDateTime.begin,
+                        end: $scope.chartDateTime.end
+                    };
+                    $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                    $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                } else {
+                    $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
+                    if (begin_path && end_path && !init_flag) {
+                        // $scope.chartDateTime = {
+                        // "begin": new Date(new Number(begin_path)),
+                        // "end": new Date(new Number(end_path))
+                        // };
+                        $scope.chartDateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                        $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                        init_flag = true;
+                    } else {
+                        if ($scope.currentIntervalChoosed && ((allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= allLines[0][0].getTime())) {
+                            $scope.rangeConfig.dateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
+                        } else {
+                            $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                            $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                        }
+                    }
+                    $scope.currentChart.updateOptions($scope.childrenRangeConfig);
+                    $scope.currentChartOptions = $scope.childrenRangeConfig;
+                }
+                updateInteraction();
+                // //
+                // $scope.currentChart.updateOptions($scope.childrenRangeConfig);
+                // //  keep the same time window and refersh
+                // $scope.chartDateTime = {begin: $scope.chartDateTime.begin, end: $scope.chartDateTime.end};
+                // $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
                 $scope.loadingShow = false;
             }
 
@@ -4138,13 +4201,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 // check if the last guy is older than the end of the range bar, update graph again
                 if ($scope['interactions'].graphs.dateWindow && !$scope['interactions'].graphs.dateWindow.end) {
                     var end = null;
-                    if($scope.chartDateWindow[1] instanceof Date){
+                    if ($scope.chartDateWindow[1] instanceof Date) {
                         end = $scope.chartDateWindow[1].getTime();
-                    }else{
+                    } else {
                         end = $scope.chartDateWindow[1];
                     }
 
-                    if(end > allData[allData.length - 1].timestamp){
+                    if (end > allData[allData.length - 1].timestamp) {
                         // need to move rang bar
                         $scope.chartDateWindow = [allData[allData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, allData[allData.length - 1].timestamp];
                         $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
@@ -4496,6 +4559,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.showOne = function (deviceName) {
 
             if ($rootScope['standalone'] && $rootScope['standalone'] == true) {
+                return false;
+            }
+
+            if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter){
                 return false;
             }
 

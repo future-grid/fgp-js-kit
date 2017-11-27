@@ -2,6 +2,7 @@
  * Created by ericwang on 15/06/2016.
  */
 'use strict';
+
 class fgpWidgetContainer {
 
     constructor() {
@@ -55,8 +56,6 @@ class fgpWidgetContainer {
                 }
             }
         });
-
-
 
 
         var metadata = widgetData.data.metadata;
