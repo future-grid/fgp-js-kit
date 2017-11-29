@@ -2372,6 +2372,11 @@ class fgpWidgetGraph {
                 //
                 $scope.intevals.device = [];
                 var trees = data.trees;
+                
+                if(trees.length == 0) {
+                    return false;
+                }
+                
                 $scope.trees = trees;
                 var rangeTree = null;
                 angular.forEach(trees, function (tree) {
@@ -2380,8 +2385,7 @@ class fgpWidgetGraph {
                     }
                     $scope.intevals.device.push({name: tree.store, interval: tree.frequency});
                 });
-
-
+                
                 // init chart with range data
                 var store = rangeTree.store;
 
@@ -2440,7 +2444,7 @@ class fgpWidgetGraph {
                     $scope.childTrees.push({name: device.name, device: device, trees: trees});
                     var rangeTree = null;
                     angular.forEach(trees, function (tree) {
-                        if (tree.range) {
+                        if (tree.range && tree.first && tree.last) {
                             rangeTree = tree;
                         }
 
@@ -2821,10 +2825,16 @@ class fgpWidgetGraph {
                             init_flag = true;
                         } else {
                             if ($scope.currentIntervalChoosed && ((allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= allLines[0][0].getTime())) {
-                                $scope.rangeConfig.dateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
+                                if($scope.rangeConfig) {
+                                    $scope.rangeConfig.dateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
+                                }
+                                $scope.chartDateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
                             } else {
                                 $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
-                                $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                                if($scope.rangeConfig){
+                                    $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                                }
+
                             }
                         }
                         $scope.currentChart.updateOptions($scope.childrenRangeConfig);
@@ -3768,8 +3778,11 @@ class fgpWidgetGraph {
                                         }
 
                                         if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
-                                            $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
-                                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                                            if($scope.rangeConfig){
+                                                $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
+                                            }
+
+                                            $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
                                             $scope.currentIntervalChoosed = currentInterval;
                                         }
                                     } else {
@@ -3789,8 +3802,11 @@ class fgpWidgetGraph {
                                             range[1] = range[1].getTime();
                                         }
                                         // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
-                                        $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
-                                        $scope.currentChart.updateOptions($scope.rangeConfig);
+                                        if($scope.rangeConfig){
+                                            $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
+                                        }
+
+                                        $scope.currentChart.updateOptions({dateWindow:[new Date(newValue.start), new Date(newValue.end)]});
                                         $scope.currentIntervalChoosed = currentInterval;
                                         // }
                                     } else {
