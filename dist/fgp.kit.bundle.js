@@ -3006,6 +3006,29 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             //get configuration
                             updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
 
+                            $timeout(function () {
+                                // call interactions back
+                                if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData) {
+                                    $scope['interactions'].graphs.fetchData(showData);
+                                    // check if the last guy is older than the end of the range bar, update graph again
+                                    if ($scope['interactions'].graphs.dateWindow && !$scope['interactions'].graphs.dateWindow.end) {
+                                        var end = null;
+                                        if ($scope.chartDateWindow[1] instanceof Date) {
+                                            end = $scope.chartDateWindow[1].getTime();
+                                        } else {
+                                            end = $scope.chartDateWindow[1];
+                                        }
+                                        if (end > showData[showData.length - 1].timestamp) {
+                                            // need to move rang bar
+                                            $scope.chartDateWindow = [showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, showData[showData.length - 1].timestamp];
+                                            $scope.chartDateTime = [showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, showData[showData.length - 1].timestamp];
+                                        }
+                                    }
+
+                                }
+                            });
+
+
                         }, function (data) {
                             console.info(data);
                         });
@@ -3068,6 +3091,31 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 'data': showData
                                             }
                                         });
+
+
+                                        // call interactions back
+                                        if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData) {
+                                            $scope['interactions'].graphs.fetchData(showData);
+                                            // check if the last guy is older than the end of the range bar, update graph again
+                                            if ($scope['interactions'].graphs.dateWindow && !$scope['interactions'].graphs.dateWindow.end) {
+                                                var end = null;
+                                                if ($scope.chartDateWindow[1] instanceof Date) {
+                                                    end = $scope.chartDateWindow[1].getTime();
+                                                } else {
+                                                    end = $scope.chartDateWindow[1];
+                                                }
+                                                if (end > showData[showData.length - 1].timestamp) {
+                                                    // need to move rang bar
+                                                    $scope.chartDateWindow = [showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, showData[showData.length - 1].timestamp];
+                                                    // $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                                                    $scope.chartDateTime = [showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, showData[showData.length - 1].timestamp];
+                                                }
+
+                                            }
+
+                                        }
+
+
                                     });
 
                                 }, function (data) {
@@ -3116,25 +3164,39 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             //
             $scope.intevals.device = [];
             var trees = data.trees;
-                
-            if(trees.length == 0) {
+
+            if (trees.length == 0) {
                 return false;
             }
-                
+
             $scope.trees = trees;
             var rangeTree = null;
             angular$1.forEach(trees, function (tree) {
                 if (tree.range) {
-                    rangeTree = tree;
+                    if(tree.first != null && tree.last != null){
+                        rangeTree = tree;
+                    }
+                }else{
+                    // the next on after range tree
+                    if(tree.first != null && tree.last != null){
+                        rangeTree = tree;
+                    }
                 }
                 $scope.intevals.device.push({name: tree.store, interval: tree.frequency});
             });
-                
+
             // init chart with range data
             var store = rangeTree.store;
 
             // get all data
             var allData = [];
+
+            if (!rangeTree.first || !rangeTree.last) {
+                $scope.emptyDataShow = true;
+                $scope.loadingShow = false;
+                return;
+            }
+
             // fetchData(allData, rangeTree.tree);only get first and last
             if (rangeTree.first.timestamp == rangeTree.last.timestamp) {
                 allData = allData.concat([rangeTree.first]);
@@ -3153,6 +3215,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
             if ($scope.trees.length == 0 || allData.length == 0) {
                 $scope.emptyDataShow = true;
+                $scope.loadingShow = false;
                 return;
             }
 
@@ -3170,7 +3233,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
             $scope.ordinalRangeData = allData;
             // get configuration and make real data
-            updateChart(metadata, store, allData);
+            updateChart(metadata, store, allData, true);
         };
 
         var initChildrenChart = function (deviceDatas) {
@@ -3232,11 +3295,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
             });
 
-            updateChildrenChart(metadata, devicesInfo);
+            updateChildrenChart(metadata, devicesInfo, true);
         };
 
 
-        var updateChildrenChart = function (metadata, devicesInfo) {
+        var updateChildrenChart = function (metadata, devicesInfo, init) {
             //relation
             var relationConfig = metadata.data.groups[2];
             // scatter view shows only one collection
@@ -3390,12 +3453,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
             //update chart
             if ($scope.currentChart) {
+
                 $scope.rangeChildrenData = allLines;
 
                 if (showY2axis) {
                     $scope.childrenRangeConfig = {
                         'labelsKMB': true,
-                        'file': allLines,
+                        'file': init ? [] : allLines,
                         legend: 'never',
                         labelsKMB: true,
                         labelsSeparateLines: false,
@@ -3475,7 +3539,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'pointSize': 3,
                         'legend': 'never',
                         'labelsKMB': true,
-                        'file': newLines,
+                        'file': init ? [] : newLines,
                         'labelsSeparateLines': false,
                         'highlightSeriesOpts': {
                             strokeWidth: 2,
@@ -3569,18 +3633,19 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         init_flag = true;
                     } else {
                         if ($scope.currentIntervalChoosed && ((allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= allLines[0][0].getTime())) {
-                            if($scope.rangeConfig) {
+                            if ($scope.rangeConfig) {
                                 $scope.rangeConfig.dateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
                             }
                             $scope.chartDateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
                         } else {
                             $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
-                            if($scope.rangeConfig){
+                            if ($scope.rangeConfig) {
                                 $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                             }
 
                         }
                     }
+
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
                     $scope.currentChartOptions = $scope.childrenRangeConfig;
                 }
@@ -3597,7 +3662,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         };
 
 
-        var updateChildrenDetailChart = function (metadata, store, rangeData, allData) {
+        var updateChildrenDetailChart = function (metadata, store, rangeData, allData, init) {
             //relation
             var relationConfig = metadata.data.groups[2];
             // scatter view shows only one collection
@@ -3765,7 +3830,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 highlightCircleSize: 2
                             },
                             labelsSeparateLines: false,
-                            'file': chartData,
+                            'file': init ? [] : chartData,
                             'labels': ['x'].concat(labels),
                             'ylabel': leftAndRight.left,
                             'y2label': leftAndRight.right,
@@ -3829,7 +3894,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
                             },
                             labelsSeparateLines: false,
-                            'file': chartData,
+                            'file': init ? [] : chartData,
                             'labels': ['x'].concat(labels),
                             'ylabel': leftAndRight.left,
                             'y2label': leftAndRight.right,
@@ -3853,7 +3918,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             'pointSize': 3,
                             'legend': 'never',
                             'labelsKMB': true,
-                            'file': newLines,
+                            'file': init ? [] : newLines,
                             labelsSeparateLines: false,
                             'labels': ['x'].concat(labels).concat(["span_y2"]),
                             'ylabel': leftAndRight.left,
@@ -3881,7 +3946,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             'pointSize': 3,
                             'legend': 'never',
                             'labelsKMB': true,
-                            'file': newLines,
+                            'file': init ? [] : newLines,
                             labelsSeparateLines: false,
                             'labels': ['x'].concat(labels).concat(["span_y2"]),
                             'ylabel': leftAndRight.left,
@@ -4204,29 +4269,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                 }
             });
-
-            // call interactions back
-            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.fetchData) {
-                $scope['interactions'].graphs.fetchData(allData);
-                // check if the last guy is older than the end of the range bar, update graph again
-                if ($scope['interactions'].graphs.dateWindow && !$scope['interactions'].graphs.dateWindow.end) {
-                    var end = null;
-                    if ($scope.chartDateWindow[1] instanceof Date) {
-                        end = $scope.chartDateWindow[1].getTime();
-                    } else {
-                        end = $scope.chartDateWindow[1];
-                    }
-
-                    if (end > allData[allData.length - 1].timestamp) {
-                        // need to move rang bar
-                        $scope.chartDateWindow = [allData[allData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, allData[allData.length - 1].timestamp];
-                        $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
-                    }
-                }
-
-            }
-
-
         };
 
         $scope.autoUpdateChart = updateDetailChart;
@@ -4237,7 +4279,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
          * @param store
          * @param allData
          */
-        var updateChart = function (metadata, store, allData) {
+        var updateChart = function (metadata, store, allData, init) {
             var deviceConfig = metadata.data.groups[1];
             var collections = deviceConfig.collections;
             var labels = [];
@@ -4392,7 +4434,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 labelsSeparateLines: true,
                                 highlightSeriesOpts: null,
                                 'labelsKMB': true,
-                                'file': allLines,
+                                'file': init ? []: allLines,
                                 'labels': ['x'].concat(labels),
                                 'ylabel': leftAndRight.left,
                                 'y2label': leftAndRight.right,
@@ -4427,7 +4469,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 labelsSeparateLines: true,
                                 highlightSeriesOpts: null,
                                 'labelsKMB': true,
-                                'file': newLines,
+                                'file': init ? []: newLines,
                                 'labels': ['x'].concat(labels).concat(['span_y2']),
                                 'ylabel': leftAndRight.left,
                                 'y2label': "",
@@ -4472,7 +4514,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 end: $scope.chartDateTime.end
                             };
                             $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                            $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                                $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
                         } else {
                             $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
@@ -4491,7 +4533,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 }
                             }
-                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                                $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
                         }
                         updateInteraction();
@@ -4522,11 +4564,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     }
 
                                     if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
-                                        if($scope.rangeConfig){
+                                        if ($scope.rangeConfig) {
                                             $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
                                         }
-
-                                        $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
+                                        $scope.chartDateTime = [new Date(range[1] - currentInterval.interval), range[1]];
                                         $scope.currentIntervalChoosed = currentInterval;
                                     }
                                 } else {
@@ -4546,11 +4587,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         range[1] = range[1].getTime();
                                     }
                                     // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
-                                    if($scope.rangeConfig){
+                                    if ($scope.rangeConfig) {
                                         $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
                                     }
-
-                                    $scope.currentChart.updateOptions({dateWindow:[new Date(newValue.start), new Date(newValue.end)]});
+                                    $scope.chartDateTime = [new Date(range[1] - currentInterval.interval), range[1]];
                                     $scope.currentIntervalChoosed = currentInterval;
                                     // }
                                 } else {
@@ -4578,7 +4618,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 return false;
             }
 
-            if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter){
+            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
                 return false;
             }
 
