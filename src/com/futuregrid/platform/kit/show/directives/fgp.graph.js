@@ -2429,12 +2429,12 @@ class fgpWidgetGraph {
                 var rangeTree = null;
                 angular.forEach(trees, function (tree) {
                     if (tree.range) {
-                        if(tree.first != null && tree.last != null){
+                        if (tree.first != null && tree.last != null) {
                             rangeTree = tree;
                         }
-                    }else{
+                    } else {
                         // the next on after range tree
-                        if(tree.first != null && tree.last != null){
+                        if (tree.first != null && tree.last != null) {
                             rangeTree = tree;
                         }
                     }
@@ -3690,7 +3690,7 @@ class fgpWidgetGraph {
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: null,
                                     'labelsKMB': true,
-                                    'file': init ? []: allLines,
+                                    'file': init ? [] : allLines,
                                     'labels': ['x'].concat(labels),
                                     'ylabel': leftAndRight.left,
                                     'y2label': leftAndRight.right,
@@ -3725,7 +3725,7 @@ class fgpWidgetGraph {
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: null,
                                     'labelsKMB': true,
-                                    'file': init ? []: newLines,
+                                    'file': init ? [] : newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
                                     'ylabel': leftAndRight.left,
                                     'y2label': "",
@@ -3770,7 +3770,7 @@ class fgpWidgetGraph {
                                     end: $scope.chartDateTime.end
                                 };
                                 $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                                    $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                                $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
                             } else {
                                 $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
@@ -3789,7 +3789,7 @@ class fgpWidgetGraph {
                                         $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                                     }
                                 }
-                                    $scope.currentChart.updateOptions($scope.rangeConfig);
+                                $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
                             }
                             updateInteraction();
@@ -3825,6 +3825,11 @@ class fgpWidgetGraph {
                                             }
                                             $scope.chartDateTime = [new Date(range[1] - currentInterval.interval), range[1]];
                                             $scope.currentIntervalChoosed = currentInterval;
+                                        } else {
+                                            // send the date window back to outside.
+                                            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.errorHandler) {
+                                                $scope['interactions'].graphs.errorHandler("G_OUT_RANG",range);
+                                            }
                                         }
                                     } else {
                                         $scope.currentIntervalChoosed = currentInterval;
