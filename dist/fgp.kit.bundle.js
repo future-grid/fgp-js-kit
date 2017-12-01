@@ -3021,7 +3021,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         if (end > showData[showData.length - 1].timestamp) {
                                             // need to move rang bar
                                             $scope.chartDateWindow = [showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, showData[showData.length - 1].timestamp];
-                                            $scope.chartDateTime = {begin:showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, end:showData[showData.length - 1].timestamp};
+                                            $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                                            // $scope.chartDateTime = {begin:showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, end:showData[showData.length - 1].timestamp};
                                         }
                                     }
 
@@ -3107,8 +3108,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 if (end > showData[showData.length - 1].timestamp) {
                                                     // need to move rang bar
                                                     $scope.chartDateWindow = [showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, showData[showData.length - 1].timestamp];
-                                                    // $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
-                                                    $scope.chartDateTime = {begin:showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, end:showData[showData.length - 1].timestamp};
+                                                    $scope.currentChart.updateOptions({dateWindow: $scope.chartDateWindow});
+                                                    // $scope.chartDateTime = {begin:showData[showData.length - 1].timestamp - $scope['interactions'].graphs.dateWindow.start, end:showData[showData.length - 1].timestamp};
                                                 }
 
                                             }
