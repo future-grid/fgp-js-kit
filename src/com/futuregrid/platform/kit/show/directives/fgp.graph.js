@@ -3823,7 +3823,7 @@ class fgpWidgetGraph {
                                             if ($scope.rangeConfig) {
                                                 $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
                                             }
-                                            $scope.chartDateTime = [new Date(range[1] - currentInterval.interval), range[1]];
+                                            $scope.chartDateTime = {begin:new Date(range[1] - currentInterval.interval),end: range[1]};
                                             $scope.currentIntervalChoosed = currentInterval;
                                         } else {
                                             // send the date window back to outside.
@@ -3851,7 +3851,7 @@ class fgpWidgetGraph {
                                         if ($scope.rangeConfig) {
                                             $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
                                         }
-                                        $scope.chartDateTime = [new Date(range[1] - currentInterval.interval), range[1]];
+                                        $scope.chartDateTime = {begin:new Date(range[1] - currentInterval.interval),end: range[1]};
                                         $scope.currentIntervalChoosed = currentInterval;
                                         // }
                                     } else {
