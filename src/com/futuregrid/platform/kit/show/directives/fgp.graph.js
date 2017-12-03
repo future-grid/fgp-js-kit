@@ -1320,63 +1320,6 @@ class fgpWidgetGraph {
         $scope.buttonsShow = true;
 
 
-        $timeout(function () {
-            if ($scope['interactions'] && $scope['interactions'].graphs) {
-                $scope.$watch('interactions.graphs.dateWindow', function (newValue, oldValue) {
-                    //
-                    if (newValue && newValue.start && !newValue.end) {
-                        $timeout(function () {
-                            var currentInterval = {name: "", interval: newValue.start};
-                            if ($scope.currentChart["xAxisZoomRange"]) {
-                                var range = $scope.currentChart["xAxisZoomRange"];
-                                if (range[0] instanceof Date) {
-                                    range[0] = range[0].getTime();
-                                }
-                                if (range[1] instanceof Date) {
-                                    range[1] = range[1].getTime();
-                                }
-
-                                if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
-                                    $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
-                                    $scope.currentChart.updateOptions($scope.rangeConfig);
-                                    $scope.currentIntervalChoosed = currentInterval;
-                                }
-                            } else {
-                                $scope.currentIntervalChoosed = currentInterval;
-                            }
-                        });
-                    } else if (newValue && newValue.start && newValue.end) {
-                        // need to change start and end
-                        $timeout(function () {
-                            var currentInterval = {name: "", interval: newValue.end - newValue.start};
-                            if ($scope.currentChart["xAxisZoomRange"]) {
-                                var range = $scope.currentChart["xAxisZoomRange"];
-                                if (range[0] instanceof Date) {
-                                    range[0] = range[0].getTime();
-                                }
-                                if (range[1] instanceof Date) {
-                                    range[1] = range[1].getTime();
-                                }
-                                // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
-                                $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
-                                $scope.currentChart.updateOptions($scope.rangeConfig);
-                                $scope.currentIntervalChoosed = currentInterval;
-                                // }
-                            } else {
-                                $scope.currentIntervalChoosed = currentInterval;
-                            }
-
-
-                        });
-
-
-                    }
-                });
-
-            }
-        });
-
-
         // default data-time intervals
         $scope.dateTimeIntervals = [{name: "5 minutes", interval: 300000}, {
             name: "1 hour",
