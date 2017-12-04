@@ -2473,6 +2473,71 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         }
 
 
+        if ($scope['interactions'] && $scope['interactions'].graphs) {
+            $scope.$watch('interactions.graphs.dateWindow', function (newValue, oldValue) {
+                //
+                if (newValue && newValue.start && !newValue.end) {
+                    $timeout(function () {
+                        var currentInterval = {name: "", interval: newValue.start};
+                        if ($scope.currentChart["xAxisZoomRange"]) {
+                            var range = $scope.currentChart["xAxisZoomRange"];
+                            if (range[0] instanceof Date) {
+                                range[0] = range[0].getTime();
+                            }
+                            if (range[1] instanceof Date) {
+                                range[1] = range[1].getTime();
+                            }
+
+                            if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
+                                if ($scope.rangeConfig) {
+                                    $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
+                                }
+                                $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
+                                $scope.currentIntervalChoosed = currentInterval;
+                            } else {
+                                // send the date window back to outside.
+                                if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.errorHandler) {
+                                    $scope['interactions'].graphs.errorHandler("G_OUT_RANG",range);
+                                }
+                            }
+                        } else {
+                            $scope.currentIntervalChoosed = currentInterval;
+                        }
+                    });
+                } else if (newValue && newValue.start && newValue.end) {
+                    // need to change start and end
+                    $timeout(function () {
+                        var currentInterval = {name: "", interval: newValue.end - newValue.start};
+                        if ($scope.currentChart["xAxisZoomRange"]) {
+                            var range = $scope.currentChart["xAxisZoomRange"];
+                            if (range[0] instanceof Date) {
+                                range[0] = range[0].getTime();
+                            }
+                            if (range[1] instanceof Date) {
+                                range[1] = range[1].getTime();
+                            }
+                            // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
+                            if ($scope.rangeConfig) {
+                                $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
+                            }
+
+                            $scope.currentChart.updateOptions({dateWindow:[new Date(newValue.start), new Date(newValue.end)]});
+                            $scope.currentIntervalChoosed = currentInterval;
+                            // }
+                        } else {
+                            $scope.currentIntervalChoosed = currentInterval;
+                        }
+
+
+                    });
+
+
+                }
+            });
+
+        }
+
+
         $scope.device_name = "";
 
         $scope.parent_container = widgetData.data.parent;
@@ -4483,9 +4548,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
                         }
-                        if(init){
-                            updateInteraction();
-                        }
+
 
                         //bind
                         $scope.loadingShow = false;
@@ -4496,73 +4559,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         };
 
 
-        var updateInteraction = function () {
-            $timeout(function () {
-                if ($scope['interactions'] && $scope['interactions'].graphs) {
-                    $scope.$watch('interactions.graphs.dateWindow', function (newValue, oldValue) {
-                        //
-                        if (newValue && newValue.start && !newValue.end) {
-                            $timeout(function () {
-                                var currentInterval = {name: "", interval: newValue.start};
-                                if ($scope.currentChart["xAxisZoomRange"]) {
-                                    var range = $scope.currentChart["xAxisZoomRange"];
-                                    if (range[0] instanceof Date) {
-                                        range[0] = range[0].getTime();
-                                    }
-                                    if (range[1] instanceof Date) {
-                                        range[1] = range[1].getTime();
-                                    }
-
-                                    if (currentInterval && ((range[1] - currentInterval.interval) >= range[0])) {
-                                        if ($scope.rangeConfig) {
-                                            $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
-                                        }
-                                        $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
-                                        $scope.currentIntervalChoosed = currentInterval;
-                                    } else {
-                                        // send the date window back to outside.
-                                        if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.errorHandler) {
-                                            $scope['interactions'].graphs.errorHandler("G_OUT_RANG",range);
-                                        }
-                                    }
-                                } else {
-                                    $scope.currentIntervalChoosed = currentInterval;
-                                }
-                            });
-                        } else if (newValue && newValue.start && newValue.end) {
-                            // need to change start and end
-                            $timeout(function () {
-                                var currentInterval = {name: "", interval: newValue.end - newValue.start};
-                                if ($scope.currentChart["xAxisZoomRange"]) {
-                                    var range = $scope.currentChart["xAxisZoomRange"];
-                                    if (range[0] instanceof Date) {
-                                        range[0] = range[0].getTime();
-                                    }
-                                    if (range[1] instanceof Date) {
-                                        range[1] = range[1].getTime();
-                                    }
-                                    // if (currentInterval && range[0] <= newValue.start && range[1] >= newValue.end) {
-                                    if ($scope.rangeConfig) {
-                                        $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
-                                    }
-
-                                    $scope.currentChart.updateOptions({dateWindow:[new Date(newValue.start), new Date(newValue.end)]});
-                                    $scope.currentIntervalChoosed = currentInterval;
-                                    // }
-                                } else {
-                                    $scope.currentIntervalChoosed = currentInterval;
-                                }
-
-
-                            });
-
-
-                        }
-                    });
-
-                }
-            });
-        };
 
 
         $scope.chartDateTime = {begin: null, end: null};
