@@ -2063,6 +2063,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
     $scope.buttonsShow = true;
 
+
     // default data-time intervals
     $scope.dateTimeIntervals = [{name: "5 minutes", interval: 300000}, {
         name: "1 hour",
@@ -3592,7 +3593,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
                     $scope.currentChartOptions = $scope.childrenRangeConfig;
                 }
-                updateInteraction();
+                if(init){
+                    updateInteraction();
+                }
+
                 // //
                 // $scope.currentChart.updateOptions($scope.childrenRangeConfig);
                 // //  keep the same time window and refersh
@@ -4479,7 +4483,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
                         }
-                        updateInteraction();
+                        if(init){
+                            updateInteraction();
+                        }
+
                         //bind
                         $scope.loadingShow = false;
                     }
@@ -4510,7 +4517,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         if ($scope.rangeConfig) {
                                             $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
                                         }
-
                                         $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
                                         $scope.currentIntervalChoosed = currentInterval;
                                     } else {

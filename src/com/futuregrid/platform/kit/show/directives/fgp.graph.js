@@ -2849,7 +2849,10 @@ class fgpWidgetGraph {
                         $scope.currentChart.updateOptions($scope.childrenRangeConfig);
                         $scope.currentChartOptions = $scope.childrenRangeConfig;
                     }
-                    updateInteraction();
+                    if(init){
+                        updateInteraction();
+                    }
+
                     // //
                     // $scope.currentChart.updateOptions($scope.childrenRangeConfig);
                     // //  keep the same time window and refersh
@@ -3736,7 +3739,10 @@ class fgpWidgetGraph {
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
                             }
-                            updateInteraction();
+                            if(init){
+                                updateInteraction();
+                            }
+
                             //bind
                             $scope.loadingShow = false;
                         }
@@ -3767,7 +3773,6 @@ class fgpWidgetGraph {
                                             if ($scope.rangeConfig) {
                                                 $scope.rangeConfig.dateWindow = [new Date(range[1] - currentInterval.interval), range[1]];
                                             }
-
                                             $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
                                             $scope.currentIntervalChoosed = currentInterval;
                                         } else {
