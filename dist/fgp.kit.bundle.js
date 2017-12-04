@@ -2494,11 +2494,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                                 $scope.currentChart.updateOptions({dateWindow: [new Date(range[1] - currentInterval.interval), range[1]]});
                                 $scope.currentIntervalChoosed = currentInterval;
-                            } else {
-                                // send the date window back to outside.
-                                if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.errorHandler) {
-                                    $scope['interactions'].graphs.errorHandler("G_OUT_RANG",range);
-                                }
                             }
                         } else {
                             $scope.currentIntervalChoosed = currentInterval;
@@ -2521,7 +2516,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.rangeConfig.dateWindow = [new Date(newValue.start), new Date(newValue.end)];
                             }
 
-                            $scope.currentChart.updateOptions({dateWindow:[new Date(newValue.start), new Date(newValue.end)]});
+                            $scope.currentChart.updateOptions({dateWindow: [new Date(newValue.start), new Date(newValue.end)]});
                             $scope.currentIntervalChoosed = currentInterval;
                             // }
                         } else {
@@ -3658,9 +3653,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
                     $scope.currentChartOptions = $scope.childrenRangeConfig;
                 }
-                if(init){
-                    updateInteraction();
-                }
 
                 // //
                 // $scope.currentChart.updateOptions($scope.childrenRangeConfig);
@@ -4031,6 +4023,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
             }
 
+
+            if (init) {
+                // send the date window back to outside.
+                if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.errorHandler) {
+                    $scope['interactions'].graphs.errorHandler("G_OUT_RANG", $scope.currentChart["xAxisZoomRange"]);
+                }
+            }
 
         };
 
@@ -4550,6 +4549,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
 
+                        if (init) {
+                            // send the date window back to outside.
+                            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.errorHandler) {
+                                $scope['interactions'].graphs.errorHandler("G_OUT_RANG", $scope.currentChart["xAxisZoomRange"]);
+                            }
+                        }
+
+
                         //bind
                         $scope.loadingShow = false;
                     }
@@ -4557,8 +4564,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
             });
         };
-
-
 
 
         $scope.chartDateTime = {begin: null, end: null};
