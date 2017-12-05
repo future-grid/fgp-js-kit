@@ -2889,18 +2889,18 @@ class fgpWidgetGraph {
                             //     "end": new Date(new Number(end_path))
                             // };
                             $scope.chartDateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
-                            $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                            $scope.childrenRangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
                             init_flag = true;
                         } else {
                             if ($scope.currentIntervalChoosed && ((allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= allLines[0][0].getTime())) {
-                                if ($scope.rangeConfig) {
-                                    $scope.rangeConfig.dateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
+                                if ($scope.childrenRangeConfig) {
+                                    $scope.childrenRangeConfig.dateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
                                 }
                                 $scope.chartDateWindow = [new Date(allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), allLines[allLines.length - 1][0]];
                             } else {
                                 $scope.chartDateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
-                                if ($scope.rangeConfig) {
-                                    $scope.rangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
+                                if ($scope.childrenRangeConfig) {
+                                    $scope.childrenRangeConfig.dateWindow = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 }
 
                             }
