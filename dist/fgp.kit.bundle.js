@@ -2746,7 +2746,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     // device detail view
                     var preOne = conf[0].interval;
                     var lastOne = conf[conf.length - 1].interval;
-
                     // get the max
                     var expects = {interval: null, points: 0, name: ""};
                     angular$1.forEach(conf, function (config) {
@@ -2758,23 +2757,31 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         }
                     });
-
                     var cin = "";
-                    if (expects.interval == preOne) {
-                        expectedInterval = preOne;
-                        $scope.autoupdate = false;
-                    } else if (expects.interval == lastOne) {
-                        expectedInterval = lastOne;
+                    // only have one interval
+                    if(conf && conf.length == 1){
+                        expects.interval = conf[0].interval;
+                        expectedInterval = conf[0].interval;
                         if ($scope.currentView == -1) {
                             $scope.autoupdate = true;
                             $scope.auto_store = conf[conf.length - 1].name;
                         }
-                    } else {
-                        $scope.autoupdate = false;
-                        cin = expects.name;
-                        expectedInterval = expects.interval;
+                    }else{
+                      if (expects.interval == preOne) {
+                          expectedInterval = preOne;
+                          $scope.autoupdate = false;
+                      } else if (expects.interval == lastOne) {
+                          expectedInterval = lastOne;
+                          if ($scope.currentView == -1) {
+                              $scope.autoupdate = true;
+                              $scope.auto_store = conf[conf.length - 1].name;
+                          }
+                      } else {
+                          $scope.autoupdate = false;
+                          cin = expects.name;
+                          expectedInterval = expects.interval;
+                      }
                     }
-
 
                     $scope.currentIntervalName = "";
 
@@ -3661,15 +3668,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.currentChartOptions = $scope.childrenRangeConfig;
                 }
 
-                // //
+                //
                 // $scope.currentChart.updateOptions($scope.childrenRangeConfig);
-                // //  keep the same time window and refersh
+                // keep the same time window and refersh
                 // $scope.chartDateTime = {begin: $scope.chartDateTime.begin, end: $scope.chartDateTime.end};
                 // $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
                 $scope.loadingShow = false;
             }
-
-
         };
 
 

@@ -14,7 +14,8 @@ var paths = {
     javascriptRoot: "src/**/*.js",
     stylesheetRoot: "src/**/*.less",
     distRoot: "dist",
-    distUI: "/Users/haiyangwang/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist"
+    distUI: "/Users/haiyangwang/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist",
+    distWatt:"/Users/haiyangwang/Development/ww/wattwatchers/fgp-ww-ui/bower_components/fgp-js-kit/dist"
 };
 
 var moduleName = "fgp.kit";
@@ -64,6 +65,7 @@ gulp.task('js', ['clean'], () => {
         .pipe(concat(moduleName + '.bundle.js'))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distWatt))
         .pipe(gulp.dest(paths.distUI));
 });
 
@@ -77,6 +79,7 @@ gulp.task('less', ['clean'], () => {
         .pipe(concat(moduleName + '.bundle.css'))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distWatt))
         .pipe(gulp.dest(paths.distUI));
 });
 
@@ -88,6 +91,7 @@ gulp.task('min', ['less', 'js'], () => {
         .pipe(concat(moduleName + '.bundle.min.css'))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distWatt))
         .pipe(gulp.dest(paths.distUI));
 
     var js = gulp.src(paths.distRoot + "/*.js")
@@ -100,6 +104,7 @@ gulp.task('min', ['less', 'js'], () => {
         .pipe(concat(moduleName + '.bundle.min.js'))
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(paths.distRoot))
+        .pipe(gulp.dest(paths.distWatt))
         .pipe(gulp.dest(paths.distUI));
 });
 

@@ -15,7 +15,6 @@
   "license": "ISC",
   "devDependencies": {
     "del": "2.2.1",
-    "gulp": "3.9.1",
     "gulp-buble": "0.7.0",
     "gulp-clean-css": "2.0.11",
     "gulp-concat": "2.6.0",
@@ -28,15 +27,16 @@
   },
   "dependencies": {
     "angular": "1.5.7",
+    "angular-route": "1.5.7",
+    "angular-ui-router": "~0.3.0",
     "angular-websocket": "2.0.1",
     "bootstrap": "3.3.6",
     "chart.js": "2.1.6",
     "dygraphs": "1.1.1",
+    "gulp": "^3.9.1",
     "jquery": "2.2.2",
     "moment": "2.13.0",
     "ngmap": "1.17.1",
-    "rollup": "0.36.3",
-    "angular-route": "1.5.7",
-    "angular-ui-router": "~0.3.0"
+    "rollup": "0.36.3"
   }
 }
