@@ -2366,37 +2366,6 @@ class fgpWidgetGraph {
 
                             $scope.auto_fields = fields;
                             $scope.loadingShow = true;
-
-                            if ($scope['interactions'] && $scope['interactions'].graphs) {
-                                //$scope.currentIntervalsInfo
-                                var end = null;
-                                var begin = null;
-                                if (newValue.begin instanceof Date) {
-                                    begin = newValue.begin.getTime();
-                                } else {
-                                    begin = newValue.begin;
-                                }
-                                if (newValue.end instanceof Date) {
-                                    end = newValue.end.getTime();
-                                } else {
-                                    end = newValue.end;
-                                }
-
-                                for (var i = 0; i < $scope.currentIntervalsInfo.length; i++) {
-                                    var item = $scope.currentIntervalsInfo[i];
-                                    if (item.interval == currentStore) {
-                                        if (item.info.last.timestamp < end) {
-                                            // reset chartDateTime
-                                            $scope.chartDateTime = {
-                                                begin: begin - (end - item.info.last.timestamp),
-                                                end: item.info.last.timestamp
-                                            }
-                                            return false;
-                                        }
-                                    }
-                                }
-
-                            }
                             dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function(data) {
                                 var showData = [];
                                 angular.forEach(data, function(arr) {
