@@ -46,7 +46,7 @@ class dataAccessApi {
             type: 'GET',
             url: url,
             contentType: "application/json",
-            success: function (data) {
+            success: function(data) {
                 var url = host + "/rest/api/";
                 if (applicationName) {
                     url += "app/" + applicationName + "/devices/extension-types?device_type=";
@@ -58,10 +58,10 @@ class dataAccessApi {
                     type: 'GET',
                     url: url + data.type,
                     contentType: "application/json",
-                    success: function (types) {
-                        angular.forEach(types, function (type) {
+                    success: function(types) {
+                        angular.forEach(types, function(type) {
                             Object.defineProperty(data, type.name, {
-                                get: function () {
+                                get: function() {
                                     var result = null;
                                     var url = host + "/rest/api/";
                                     if (applicationName) {
@@ -74,10 +74,10 @@ class dataAccessApi {
                                         type: 'GET',
                                         url: url + this.name + '&extension_type=' + type.name,
                                         contentType: "application/json",
-                                        success: function (field) {
+                                        success: function(field) {
                                             result = field;
                                         },
-                                        error: function (e) {
+                                        error: function(e) {
                                             deferred.reject(e);
                                         }
                                     });
@@ -86,14 +86,14 @@ class dataAccessApi {
                             });
                         });
                     },
-                    error: function (e) {
+                    error: function(e) {
                         console.log(e.message);
                     }
                 });
 
                 deferred.resolve(data);
             },
-            error: function (e) {
+            error: function(e) {
                 deferred.reject(e);
             }
         });
@@ -110,18 +110,42 @@ class dataAccessApi {
     deviceInitInfo(host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-            params: {'otherLevels': otherLevels, 'fields': [].concat(fields)}, cache: this.deviceStores
+            params: {
+                'otherLevels': otherLevels,
+                'fields': [].concat(fields)
+            },
+            cache: this.deviceStores
         }).then(
-            function (response) {
+            function(response) {
                 deferred.resolve(response.data);
             },
-            function (response) {
+            function(response) {
                 deferred.reject(response.data);
             }
         );
         return deferred.promise;
     }
 
+    deviceStoreSchemaInfo(host, application, device, storeSchema, stores, fields) {
+        var deferred = this._$q.defer();
+        var results = [];
+        var promises = [];
+        for (var i = 0; i < stores.length; i++) {
+            var key = stores[i];
+            promises.push(this._$http.get(host + '/rest/api/app/' + application + '/store/devices/store_schema_info/' + storeSchema + '/' + key + '?device=' + device).then(function(response) {
+                return {
+                    data: response.data
+                };
+            }));
+        }
+        this._$q.all(promises).then(function(result) {
+            for (var j = 0; j < result.length; j++) {
+                results.push(result[j]);
+            }
+            deferred.resolve(results);
+        });
+        return deferred.promise;
+    }
 
     /**
      *
@@ -141,10 +165,10 @@ class dataAccessApi {
             },
             cache: this.deviceStores
         }).then(
-            function (response) {
+            function(response) {
                 deferred.resolve(response.data);
             },
-            function (response) {
+            function(response) {
                 deferred.reject(response.data);
             }
         );
@@ -164,13 +188,13 @@ class dataAccessApi {
 
         if (tree.children[0] == null && tree.children[1] == null) {
 
-            angular.forEach(buckets, function (value, key) {
+            angular.forEach(buckets, function(value, key) {
                 if (key == tree.id && value != null) {
                     tree.data = value;
                     tree['size'] = value.length;
 
                     var flag = false;
-                    angular.forEach(showData, function (data) {
+                    angular.forEach(showData, function(data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
                             tree['size'] = value.length;
@@ -186,7 +210,6 @@ class dataAccessApi {
         }
     }
 
-
     fillTree(buckets, tree, showData) {
         if (tree.children[0] != null) {
             fillTree(buckets, tree.children[0], showData);
@@ -197,12 +220,12 @@ class dataAccessApi {
         }
 
         if (tree.children[0] == null && tree.children[1] == null) {
-            angular.forEach(buckets, function (value, key) {
+            angular.forEach(buckets, function(value, key) {
                 if (key == tree.id) {
                     tree.data = value;
                     tree['size'] = value.size;
                     var flag = false;
-                    angular.forEach(showData, function (data) {
+                    angular.forEach(showData, function(data) {
                         if (data.id == tree.id) {
                             data.data = tree.data;
                             data['size'] = tree.size;
@@ -229,14 +252,11 @@ class dataAccessApi {
 
         if (tree.children[0] == null && tree.children[1] == null) {
             // is overlap?
-            if (((start >= tree.start) && start < tree.end)
-                ||
-                ((start > tree.start) && start <= tree.end)
-                ||
-                ((tree.start >= start) && tree.start < end)
-                ||
+            if (((start >= tree.start) && start < tree.end) ||
+                ((start > tree.start) && start <= tree.end) ||
+                ((tree.start >= start) && tree.start < end) ||
                 ((tree.start > start) && tree.start <= end)) {
-                if (buckets.filter(function (elem) {
+                if (buckets.filter(function(elem) {
                         return elem.id == tree.id
                     }).length == 0) {
                     buckets.push(tree);
@@ -261,20 +281,26 @@ class dataAccessApi {
         var devicesNullBucket = [];
         var calTree = this.calTree;
         var fillChildrenTree = this.fillChildrenTree;
-        angular.forEach(deviceInfo, function (device, index) {
+        angular.forEach(deviceInfo, function(device, index) {
             var bucketKeys = [];
             calTree(bucketKeys, device.tree, start, end);
             var nullBucket = [];
             // get null buckets
-            angular.forEach(bucketKeys, function (bucket) {
+            angular.forEach(bucketKeys, function(bucket) {
                 if (bucket.data == null) {
                     nullBucket.push(bucket.id);
                 }
             });
             if (nullBucket.length != 0) {
-                devicesNullBucket.push({device: device.name, nullBucket: nullBucket});
+                devicesNullBucket.push({
+                    device: device.name,
+                    nullBucket: nullBucket
+                });
             }
-            bucketsData.push({device: device.name, data: bucketKeys});
+            bucketsData.push({
+                device: device.name,
+                data: bucketKeys
+            });
         });
 
         if (devicesNullBucket.length == 0) {
@@ -285,18 +311,19 @@ class dataAccessApi {
         } else {
             // get data from rest service
             var deferred = this._$q.defer();
-            this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
-                {'bucketKeys': JSON.stringify(devicesNullBucket), 'fields': JSON.stringify(fields)}
-            ).then(
-                function (response) {
+            this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store, {
+                'bucketKeys': JSON.stringify(devicesNullBucket),
+                'fields': JSON.stringify(fields)
+            }).then(
+                function(response) {
                     // response.data
-                    angular.forEach(response.data, function (deviceData) {
+                    angular.forEach(response.data, function(deviceData) {
 
                         var currentBucketShowData = null;
-                        angular.forEach(bucketsData, function (showData) {
+                        angular.forEach(bucketsData, function(showData) {
                             if (showData.device == deviceData.device) {
                                 currentBucketShowData = showData.data; //  bucketKeys
-                                angular.forEach(deviceInfo, function (device, index) {
+                                angular.forEach(deviceInfo, function(device, index) {
                                     if (deviceData.device == device.name) {
                                         fillChildrenTree(deviceData.data, device.tree, currentBucketShowData);
                                     }
@@ -308,7 +335,7 @@ class dataAccessApi {
                     // fill bucketKeys
                     deferred.resolve(bucketsData);
                 },
-                function (response) {
+                function(response) {
                     deferred.reject(response.data);
                 }
             );
@@ -326,7 +353,7 @@ class dataAccessApi {
         calTree(bucketKeys, tree, start, end);
         var nullBucket = [];
         // get null buckets
-        angular.forEach(bucketKeys, function (bucket) {
+        angular.forEach(bucketKeys, function(bucket) {
             if (bucket.data == null) {
                 nullBucket.push(bucket.id);
             }
@@ -346,12 +373,12 @@ class dataAccessApi {
                     fields: [].concat(fields)
                 }
             }).then(
-                function (response) {
+                function(response) {
                     fillTree(response.data, tree, bucketKeys);
                     // fill bucketKeys
                     deferred.resolve(bucketKeys);
                 },
-                function (response) {
+                function(response) {
                     deferred.reject(response.data);
                 }
             );
@@ -366,10 +393,9 @@ class dataAccessApi {
             this['colors'] = [];
             for (var i = 0; i < 300; i++) {
                 this.colors.push('#' + (function co(lor) {
-                        return (lor +=
-                            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)])
-                        && (lor.length == 6) ? lor : co(lor);
-                    })(''));
+                    return (lor += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)]) &&
+                        (lor.length == 6) ? lor : co(lor);
+                })(''));
             }
         }
         return this.colors;
@@ -390,7 +416,7 @@ class dataAccessApi {
             return;
         }
         this._$http.get('/rest/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
-            .success(function (response) {
+            .success(function(response) {
                 console.info(response);
                 return response;
             });
@@ -404,7 +430,7 @@ class dataAccessApi {
         var _$http = this._$http;
         var fetcher = null;
         this._$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
-            .success(function (response) {
+            .success(function(response) {
                 var last = -1;
                 var interval = -1;
                 if (response.trees && response.trees.length === 1) {
@@ -422,12 +448,12 @@ class dataAccessApi {
                             "start": start,
                             "end": end
                         }
-                    }).success(function (graphData) {
+                    }).success(function(graphData) {
 
                         // start task
-                        fetcher = _$interval(function () {
+                        fetcher = _$interval(function() {
                             _$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
-                                .success(function (response) {
+                                .success(function(response) {
                                     if (response.trees && response.trees.length === 1) {
                                         last = response.trees[0].last.timeKey;
                                         start = last - (count * interval);
@@ -439,7 +465,7 @@ class dataAccessApi {
                                                 "start": start,
                                                 "end": end
                                             }
-                                        }).success(function (graphData) {
+                                        }).success(function(graphData) {
                                             // put the data back
                                             callback(graphData[device], null, interval);
                                         });
@@ -465,4 +491,7 @@ class dataAccessApi {
 
 dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval'];
 
-export {dataAccessApi as default}
+export {
+    dataAccessApi as
+    default
+}
