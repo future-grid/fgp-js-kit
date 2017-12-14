@@ -2934,15 +2934,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.rangeConfig.dateWindow = [new Date(newValue.end - (expect_points - 1) * expectedInterval), new Date(newValue.end)];
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
-
                             $scope.alertMessage = "Limit the number of \"Zoom-Out\" points to " + expect_points * 2 + ".";
                             $timeout(function() {
                                 $scope.alertMessage = null;
                             }, 5000);
-
                             return;
                         }
-
                     }
                     // update range-bar
                     if ($scope.rangeSelectorBar) {
@@ -3389,6 +3386,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             });
 
             // init chart with range data
+
+            if (!rangeTree) {
+                // data is empty
+                $scope.emptyDataShow = true;
+                $scope.loadingShow = false;
+                return false;
+            }
+
+
             var store = rangeTree.store;
 
             // get all data
