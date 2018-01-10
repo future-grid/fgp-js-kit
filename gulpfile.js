@@ -14,8 +14,8 @@ var paths = {
     javascriptRoot: "src/**/*.js",
     stylesheetRoot: "src/**/*.less",
     distRoot: "dist",
-    distUI: "/Users/haiyangwang/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist",
-    distWatt:"/Users/haiyangwang/Development/ww/wattwatchers/fgp-ww-ui/bower_components/fgp-js-kit/dist"
+    distUI: "~/Development/workspace/futuregrid-platform/fgp-rest-ui/src/main/webapp/bower_components/fgp-js-kit/dist",
+    distWatt:"~/Development/ww/wattwatchers/fgp-ww-ui/bower_components/fgp-js-kit/dist"
 };
 
 var moduleName = "fgp.kit";
