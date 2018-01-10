@@ -2426,7 +2426,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
             $scope.ordinalRangeData = allData;
             // get configuration and make real data
-            updateChart(metadata, store, allDatam, rangeTree);
+            updateChart(metadata, store, allData, rangeTree);
         };
 
         var initChildrenChart = function(deviceDatas) {
