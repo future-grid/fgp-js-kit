@@ -169,7 +169,6 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
         // first time
         sendDeviceData();
-
         // after every 30 seconds
         // $interval(function () {
         // sendDeviceData();
@@ -177,7 +176,12 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
     }
 
 
-// all item created;
+    $scope.$on('graphScatterViewChangeEvent', function(event, obj){
+        //tell all the children graphs the scatter view changed
+        $scope.$broadcast('parentScatterViewChangedEvent', {children: obj.children, view:obj.view});
+    });
+
+    // all item created;
     $timeout(function () {
         angular$1.forEach(graphBindingArray, function (graph) {
             $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
@@ -1521,6 +1525,15 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 }
             });
 
+            scope.$on('parentScatterViewChangedEvent', function (event, params) {
+                    angular$1.forEach(params.children, function(item) {
+                        if(item == attrs.id){
+                            scope.currentView = params.view;
+                        }
+                    });
+            });
+
+
             scope.$on('bindFatherGraphEvent', function(event, data) {
                 angular$1.forEach(data.children, function(child) {
                     if (child == attrs.id) {
@@ -1829,9 +1842,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.auto_schema = metadata.data.source.store;
             $scope.auto_metadata = metadata;
             $scope.auto_device_name = deviceData.device.name;
+
             $scope.$watch('currentView', function(nObj, oObj) {
                 // change
                 if (nObj != oObj) {
+                    $scope.$emit('graphScatterViewChangeEvent', {children: $scope.basicInfo.childrenChart, view:nObj});
                     if (nObj == -1) {
                         $scope.autoupdate = true;
                         var rangeLevel = null;

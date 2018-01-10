@@ -156,7 +156,6 @@ class fgpStage {
         if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
             // first time
             sendDeviceData();
-
             // after every 30 seconds
             // $interval(function () {
             //     sendDeviceData();
@@ -164,7 +163,12 @@ class fgpStage {
         }
 
 
-// all item created;
+        $scope.$on('graphScatterViewChangeEvent', function(event, obj){
+            //tell all the children graphs the scatter view changed
+            $scope.$broadcast('parentScatterViewChangedEvent', {children: obj.children, view:obj.view});
+        });
+
+        // all item created;
         $timeout(function () {
             angular.forEach(graphBindingArray, function (graph) {
                 $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});

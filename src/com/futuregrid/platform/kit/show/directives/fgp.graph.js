@@ -776,6 +776,15 @@ class fgpWidgetGraph {
                     }
                 });
 
+                scope.$on('parentScatterViewChangedEvent', function (event, params) {
+                        angular.forEach(params.children, function(item) {
+                            if(item == attrs.id){
+                                scope.currentView = params.view;
+                            }
+                        });
+                });
+
+
                 scope.$on('bindFatherGraphEvent', function(event, data) {
                     angular.forEach(data.children, function(child) {
                         if (child == attrs.id) {
@@ -1084,9 +1093,11 @@ class fgpWidgetGraph {
                 $scope.auto_schema = metadata.data.source.store;
                 $scope.auto_metadata = metadata;
                 $scope.auto_device_name = deviceData.device.name;
+
                 $scope.$watch('currentView', function(nObj, oObj) {
                     // change
                     if (nObj != oObj) {
+                        $scope.$emit('graphScatterViewChangeEvent', {children: $scope.basicInfo.childrenChart, view:nObj});
                         if (nObj == -1) {
                             $scope.autoupdate = true;
                             var rangeLevel = null;
