@@ -2457,6 +2457,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
         };
 
+        $scope.$watchCollection('interactions.highlightGraph', function(newValue){
+                if(newValue && $scope.currentView == 1){
+                    // hide some devices only one left
+                    var graph = $scope.currentChart;
+                    angular$1.forEach($scope.childrenDevices, function(item, index) {
+                        if(index == 0){
+                            graph.setVisibility(index, true);
+                        }else{
+                            graph.setVisibility(index, false);
+                        }
+                    });
+                }
+            });
+
+
         $scope.showOrHideDevice = function(device) {
             angular$1.forEach($scope.childrenDevices, function(item, index) {
                 if (item.name === device.name) {
@@ -4814,16 +4829,20 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 return false;
             }
 
-
-            // device type is
-            if ($location.url().indexOf('/app/page/param/') != -1) {
-                //open window
-                $window.open("/#/app/page/param/" + $rootScope.applicationName + "/" + metadata.data.source.relation_group + "/" + deviceName + "/" + Math.floor($scope.chartDateWindow[0]) + "/" + Math.floor($scope.chartDateWindow[1]));
-            } else {
-                //open window
-                $window.open("/#" + $location.url().replace("show", "param").replace($location.url().substr($location.url().lastIndexOf('/', $location.url().lastIndexOf('/') - 1) + 1), metadata.data.source.relation_group + "/" + deviceName + "/" + Math.floor($scope.chartDateWindow[0]) + "/" + Math.floor($scope.chartDateWindow[1])));
+            //TODO: highlight the map
+            if($scope['interactions']&& $scope['interactions'].graphs && $scope['interactions'].graphs['highlightMap']){
+                // call highlight highlightMap
+                $scope.interactions.graphs.highlightMap(deviceName);
+            }else{
+                // device type is
+                if ($location.url().indexOf('/app/page/param/') != -1) {
+                    //open window
+                    $window.open("/#/app/page/param/" + $rootScope.applicationName + "/" + metadata.data.source.relation_group + "/" + deviceName + "/" + Math.floor($scope.chartDateWindow[0]) + "/" + Math.floor($scope.chartDateWindow[1]));
+                } else {
+                    //open window
+                    $window.open("/#" + $location.url().replace("show", "param").replace($location.url().substr($location.url().lastIndexOf('/', $location.url().lastIndexOf('/') - 1) + 1), metadata.data.source.relation_group + "/" + deviceName + "/" + Math.floor($scope.chartDateWindow[0]) + "/" + Math.floor($scope.chartDateWindow[1])));
+                }
             }
-
         };
 
 
