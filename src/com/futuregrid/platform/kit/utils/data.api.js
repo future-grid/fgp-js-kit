@@ -285,7 +285,7 @@ class dataAccessApi {
         // send request to back-end
         this._$http({
             method: 'GET',
-            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=' + devices + '&start=' + start + '&end=' + end
+            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=' + devices + '&fields='+JSON.stringify(fields)+'&start=' + start + '&end=' + end
         }).then(
             function(response) {
                 var result = {};
@@ -335,7 +335,7 @@ class dataAccessApi {
         // send request to back-end
         this._$http({
             method: 'GET',
-            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&start=' + start + '&end=' + end
+            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&fields='+JSON.stringify(fields)+'&start=' + start + '&end=' + end
         }).then(
             function(response) {
                 // only return 1 device data

@@ -473,7 +473,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
     // send request to back-end
     this._$http({
         method: 'GET',
-        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=' + devices + '&start=' + start + '&end=' + end
+        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=' + devices + '&fields='+JSON.stringify(fields)+'&start=' + start + '&end=' + end
     }).then(
         function(response) {
             var result = {};
@@ -523,7 +523,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, applic
     // send request to back-end
     this._$http({
         method: 'GET',
-        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&start=' + start + '&end=' + end
+        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&fields='+JSON.stringify(fields)+'&start=' + start + '&end=' + end
     }).then(
         function(response) {
             // only return 1 device data
@@ -2519,9 +2519,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             };
             var allLines = [];
             var allXLabels = [];
-            debugger;
             angular$1.forEach(devicesInfo, function(device, key) {
-                debugger;
                 angular$1.forEach(device.data, function(item) {
                     var flag = false;
                     angular$1.forEach(allXLabels, function(label) {

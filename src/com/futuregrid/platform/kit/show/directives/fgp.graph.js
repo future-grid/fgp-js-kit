@@ -1765,9 +1765,7 @@ class fgpWidgetGraph {
                 };
                 var allLines = [];
                 var allXLabels = [];
-                debugger;
                 angular.forEach(devicesInfo, function(device, key) {
-                    debugger;
                     angular.forEach(device.data, function(item) {
                         var flag = false;
                         angular.forEach(allXLabels, function(label) {
