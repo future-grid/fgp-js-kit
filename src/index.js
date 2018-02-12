@@ -20,9 +20,9 @@ import fgpWidgetIcon from "./com/futuregrid/platform/kit/show/directives/fgp.ico
 import fgpWidgetAppContainer from "./com/futuregrid/platform/kit/show/directives/fgp.app.container.js";
 import fgpWidgetChartTable from "./com/futuregrid/platform/kit/show/directives/fgp.chart.table.js";
 // angular module
-angular.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataApi.buildFactory)
-    .filter('removeSlash', function () {
-        return function (input) {
+angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('dataService', dataApi.buildFactory)
+    .filter('removeSlash', function() {
+        return function(input) {
             if (input.startsWith("/")) {
                 return input.substring(1, input.length);
             }
@@ -30,26 +30,26 @@ angular.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataApi.
         }
     })
     .factory('$graphstorage', ['$window', function($window) {
-    return {
-        setTree: function(key, value) {
-            $window.localStorage[key] = JSON.stringify(value);
-        },
-        getTree: function(key) {
-            return JSON.parse($window.localStorage[key]) || false;
-        },
-        addTree: function (key,value) {
-            if($window.localStorage[key]){
-                var trees = JSON.parse($window.localStorage[key]);
-                trees.push(value);
-                this.setTree(key,trees);
-            }else{
-                this.setTree(key, [value]);
+        return {
+            setTree: function(key, value) {
+                $window.localStorage[key] = JSON.stringify(value);
+            },
+            getTree: function(key) {
+                return JSON.parse($window.localStorage[key]) || false;
+            },
+            addTree: function(key, value) {
+                if ($window.localStorage[key]) {
+                    var trees = JSON.parse($window.localStorage[key]);
+                    trees.push(value);
+                    this.setTree(key, trees);
+                } else {
+                    this.setTree(key, [value]);
+                }
+            },
+            clear: function() {
+                $window.localStorage.clear();
             }
-        },
-        clear: function(){
-            $window.localStorage.clear();
         }
-    }
     }])
     .directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
@@ -66,25 +66,47 @@ angular.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataApi.
     .directive('widgetIcon', fgpWidgetIcon.buildFactory)
     .directive('widgetAppContainer', fgpWidgetAppContainer.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory)
-    .directive('emitLastRepeaterElement', [function () {
-        return function (scope) {
+    .directive('emitLastRepeaterElement', [function() {
+        return function(scope) {
             if (scope.$last) {
                 scope.$emit('LastRepeaterElement');
             }
         };
-    }]).filter('tableformatter', ['$filter', function ($filter) {
-    return function (input, obj, field, formatter) {
-        if (formatter) {
-            if (obj[field]) {
-                if ("date" == formatter) {
-                    return $filter('date')(new Date(obj[field]), 'd/M/yy h:mm a');
-                } else {
-                    return input;
-                }
-            }
-        } else {
-            return input;
+    }]).config(function(CacheFactoryProvider) {
+        angular.extend(CacheFactoryProvider.defaults, {
+            maxAge: 30 * 60 * 1000, // half an hour
+            deleteOnExpire: 'aggressive',
+        });
+    }).service('graphDataService', function(CacheFactory) {
+        var graphCache = null;
+        if (!CacheFactory.get('graphCache')) {
+            graphCache = CacheFactory('graphCache',{
+                maxAge: 30 * 60 * 1000, // half an hour
+                deleteOnExpire: 'aggressive'
+            });
         }
-    };
-}]);
+        return {
+            get: function(name) {
+                return graphCache.get('/graph/'+name);
+            },
+            put: function(name, data) {
+                return graphCache.put('/graph/'+name, data);
+            }
+        };
+    })
+    .filter('tableformatter', ['$filter', function($filter) {
+        return function(input, obj, field, formatter) {
+            if (formatter) {
+                if (obj[field]) {
+                    if ("date" == formatter) {
+                        return $filter('date')(new Date(obj[field]), 'd/M/yy h:mm a');
+                    } else {
+                        return input;
+                    }
+                }
+            } else {
+                return input;
+            }
+        };
+    }]);
 export default 'fgp-kit';

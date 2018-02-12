@@ -835,7 +835,7 @@ class fgpWidgetGraph {
     }
 
     //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-    controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
+    controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams,graphDataService) {
         var element_id = $element.attr("id");
         $scope.elementId = element_id;
 
@@ -1134,7 +1134,7 @@ class fgpWidgetGraph {
                                 });
                                 $scope.auto_fields = fields;
                                 dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
-                                    initChart(data);
+                                    initChart(data,deviceData.device.name);
                                 }, function(error) {
                                     console.error(error)
                                 });
@@ -1240,7 +1240,7 @@ class fgpWidgetGraph {
                         $scope.auto_fields = fields;
                         //send a rest request
                         dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
-                            initChart(data);
+                            initChart(data,deviceData.device.name);
                         }, function(error) {
                             console.error(error)
                         });
@@ -1338,12 +1338,9 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function(data) {
+                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                             // udpate chart
-                                            var showData = [];
-                                            angular.forEach(data, function(arr) {
-                                                Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
-                                            });
+                                            var showData = data;
                                             showData = showData.filter(function(obj) {
                                                 return obj != null;
                                             });
@@ -1511,17 +1508,12 @@ class fgpWidgetGraph {
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function(data) {
+                                dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                     var showData = [];
-                                    angular.forEach(data, function(arr) {
-                                        var deviceData = [];
-                                        angular.forEach(arr.data, function(bucket) {
-                                            if (bucket.data != null) {
-                                                Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
-                                            }
-                                        });
+                                    angular.forEach(data, function(arr, key) {
+                                        var deviceData = [].concat(arr);
                                         showData.push({
-                                            device: arr.device,
+                                            device: key,
                                             data: deviceData
                                         });
                                     });
@@ -1563,12 +1555,9 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function(data) {
+                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                         // udpate chart
-                                        var showData = [];
-                                        angular.forEach(data, function(arr) {
-                                            Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
-                                        });
+                                        var showData = data;
                                         showData = showData.filter(function(obj) {
                                             return obj != null;
                                         });
@@ -1632,7 +1621,7 @@ class fgpWidgetGraph {
 
             $scope.ordinalRangeData = [];
 
-            var initChart = function(data) {
+            var initChart = function(data, deviceName) {
                 $scope.intevalforshow = [];
                 //
                 $scope.intevals.device = [];
@@ -1691,6 +1680,11 @@ class fgpWidgetGraph {
                     allData = newData;
                 }
                 $scope.ordinalRangeData = allData;
+                // put the data into range tree cache
+                if(rangeTree){
+                    //
+                    graphDataService.put(deviceName+"/"+rangeTree.store,[rangeTree.first,rangeTree.last]);
+                }
                 // get configuration and make real data
                 updateChart(metadata, store, allData, rangeTree);
             };
@@ -1771,7 +1765,9 @@ class fgpWidgetGraph {
                 };
                 var allLines = [];
                 var allXLabels = [];
+                debugger;
                 angular.forEach(devicesInfo, function(device, key) {
+                    debugger;
                     angular.forEach(device.data, function(item) {
                         var flag = false;
                         angular.forEach(allXLabels, function(label) {
@@ -2815,6 +2811,7 @@ class fgpWidgetGraph {
                                         'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
                                         'series': series_range
                                     });
+                                    // save
                                 }
 
 

@@ -198,13 +198,14 @@ fgpStage.buildFactory = function buildFactory () {
 /**
  * Created by ericwang on 15/06/2016.
  */
-var dataAccessApi = function dataAccessApi($http, $q, $cacheFactory, $interval) {
+var dataAccessApi = function dataAccessApi($http, $q, $cacheFactory, $interval, graphDataService) {
     this._$http = $http;
     this._$q = $q;
     // get cache
     this.indexCache = $cacheFactory('indexCache');
     this.deviceStores = $cacheFactory('deviceStores');
     this._$interval = $interval;
+    this._$graphDataService = graphDataService;
 };
 
 
@@ -234,7 +235,7 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
         type: 'GET',
         url: url,
         contentType: "application/json",
-        success: function (data) {
+        success: function(data) {
             var url = host + "/rest/api/";
             if (applicationName) {
                 url += "app/" + applicationName + "/devices/extension-types?device_type=";
@@ -246,10 +247,10 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
                 type: 'GET',
                 url: url + data.type,
                 contentType: "application/json",
-                success: function (types) {
-                    angular$1.forEach(types, function (type) {
+                success: function(types) {
+                    angular$1.forEach(types, function(type) {
                         Object.defineProperty(data, type.name, {
-                            get: function () {
+                            get: function() {
                                 var result = null;
                                 var url = host + "/rest/api/";
                                 if (applicationName) {
@@ -262,10 +263,10 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
                                     type: 'GET',
                                     url: url + this.name + '&extension_type=' + type.name,
                                     contentType: "application/json",
-                                    success: function (field) {
+                                    success: function(field) {
                                         result = field;
                                     },
-                                    error: function (e) {
+                                    error: function(e) {
                                         deferred.reject(e);
                                     }
                                 });
@@ -274,14 +275,14 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
                         });
                     });
                 },
-                error: function (e) {
+                error: function(e) {
                     console.log(e.message);
                 }
             });
 
             deferred.resolve(data);
         },
-        error: function (e) {
+        error: function(e) {
             deferred.reject(e);
         }
     });
@@ -298,12 +299,16 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
 dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
     var deferred = this._$q.defer();
     this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-        params: {'otherLevels': otherLevels, 'fields': [].concat(fields)}, cache: this.deviceStores
+        params: {
+            'otherLevels': otherLevels,
+            'fields': [].concat(fields)
+        },
+        cache: this.deviceStores
     }).then(
-        function (response) {
+        function(response) {
             deferred.resolve(response.data);
         },
-        function (response) {
+        function(response) {
             deferred.reject(response.data);
         }
     );
@@ -329,10 +334,10 @@ dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo
         },
         cache: this.deviceStores
     }).then(
-        function (response) {
+        function(response) {
             deferred.resolve(response.data);
         },
-        function (response) {
+        function(response) {
             deferred.reject(response.data);
         }
     );
@@ -352,13 +357,13 @@ dataAccessApi.prototype.fillChildrenTree = function fillChildrenTree (buckets, t
 
     if (tree.children[0] == null && tree.children[1] == null) {
 
-        angular$1.forEach(buckets, function (value, key) {
+        angular$1.forEach(buckets, function(value, key) {
             if (key == tree.id && value != null) {
                 tree.data = value;
                 tree['size'] = value.length;
 
                 var flag = false;
-                angular$1.forEach(showData, function (data) {
+                angular$1.forEach(showData, function(data) {
                     if (data.id == tree.id) {
                         data.data = tree.data;
                         tree['size'] = value.length;
@@ -385,12 +390,12 @@ dataAccessApi.prototype.fillTree = function fillTree (buckets, tree, showData) {
     }
 
     if (tree.children[0] == null && tree.children[1] == null) {
-        angular$1.forEach(buckets, function (value, key) {
+        angular$1.forEach(buckets, function(value, key) {
             if (key == tree.id) {
                 tree.data = value;
                 tree['size'] = value.size;
                 var flag = false;
-                angular$1.forEach(showData, function (data) {
+                angular$1.forEach(showData, function(data) {
                     if (data.id == tree.id) {
                         data.data = tree.data;
                         data['size'] = tree.size;
@@ -417,14 +422,11 @@ dataAccessApi.prototype.calTree = function calTree (buckets, tree, start, end) {
 
     if (tree.children[0] == null && tree.children[1] == null) {
         // is overlap?
-        if (((start >= tree.start) && start < tree.end)
-            ||
-            ((start > tree.start) && start <= tree.end)
-            ||
-            ((tree.start >= start) && tree.start < end)
-            ||
+        if (((start >= tree.start) && start < tree.end) ||
+            ((start > tree.start) && start <= tree.end) ||
+            ((tree.start >= start) && tree.start < end) ||
             ((tree.start > start) && tree.start <= end)) {
-            if (buckets.filter(function (elem) {
+            if (buckets.filter(function(elem) {
                     return elem.id == tree.id
                 }).length == 0) {
                 buckets.push(tree);
@@ -445,108 +447,112 @@ dataAccessApi.prototype.calTree = function calTree (buckets, tree, start, end) {
  */
 dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, application, deviceInfo, storeSchema, store, start, end, fields) {
 
-    var bucketsData = [];
-    var devicesNullBucket = [];
-    var calTree = this.calTree;
-    var fillChildrenTree = this.fillChildrenTree;
-    angular$1.forEach(deviceInfo, function (device, index) {
-        var bucketKeys = [];
-        calTree(bucketKeys, device.tree, start, end);
-        var nullBucket = [];
-        // get null buckets
-        angular$1.forEach(bucketKeys, function (bucket) {
-            if (bucket.data == null) {
-                nullBucket.push(bucket.id);
-            }
-        });
-        if (nullBucket.length != 0) {
-            devicesNullBucket.push({device: device.name, nullBucket: nullBucket});
-        }
-        bucketsData.push({device: device.name, data: bucketKeys});
-    });
-
-    if (devicesNullBucket.length == 0) {
-        // get data from rest service
-        var deferred = this._$q.defer();
-        deferred.resolve(bucketsData);
-        return deferred.promise;
-    } else {
-        // get data from rest service
-        var deferred = this._$q.defer();
-        this._$http.post(host + '/rest/api/app/' + application + '/store/index/devices/store/data/' + storeSchema + '/' + store,
-            {'bucketKeys': JSON.stringify(devicesNullBucket), 'fields': JSON.stringify(fields)}
-        ).then(
-            function (response) {
-                // response.data
-                angular$1.forEach(response.data, function (deviceData) {
-
-                    var currentBucketShowData = null;
-                    angular$1.forEach(bucketsData, function (showData) {
-                        if (showData.device == deviceData.device) {
-                            currentBucketShowData = showData.data; //  bucketKeys
-                            angular$1.forEach(deviceInfo, function (device, index) {
-                                if (deviceData.device == device.name) {
-                                    fillChildrenTree(deviceData.data, device.tree, currentBucketShowData);
-                                }
-                            });
-                        }
-                    });
-
-                });
-                // fill bucketKeys
-                deferred.resolve(bucketsData);
-            },
-            function (response) {
-                deferred.reject(response.data);
-            }
-        );
-        return deferred.promise;
+    if(!deviceInfo || deviceInfo.length == 0){
+        return false;
     }
 
+    var devices = "[";
 
+    deviceInfo.forEach(function(device, index) {
+        if (index < deviceInfo.length - 1) {
+            devices += "\""+device.name +"\",";
+        } else {
+            devices += "\""+device.name +"\"]";
+        }
+    });
+    //
+    var $graphDataService = this._$graphDataService;
+    // new way to get the data without tree index.
+    var deferred = this._$q.defer();
+    if (start instanceof Date) {
+        start = start.getTime();
+    }
+    if (end instanceof Date) {
+        end = end.getTime();
+    }
+    // send request to back-end
+    this._$http({
+        method: 'GET',
+        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=' + devices + '&start=' + start + '&end=' + end
+    }).then(
+        function(response) {
+            var result = {};
+            var data = response.data;
+            for(key in data){
+                var deviceGraphData = $graphDataService.get(key + "/" + store) ? $graphDataService.get(key + "/" + store) :[];
+                var newComeResult = data[key].data;
+                newComeResult.forEach(function(item) {
+                    if (deviceGraphData.indexOf(item) == -1) {
+                        // add
+                        deviceGraphData.push(item);
+                    }
+                });
+                // order by timestamp
+                deviceGraphData.sort(function(a, b) {
+                    if (a.timestamp > b.timestamp) {
+                        return 1;
+                    } else if (a.timestamp < b.timestamp) {
+                        return -1;
+                    }
+                    return 0;
+                });
+                $graphDataService.put(key + "/" + store, deviceGraphData);
+                result[key] = deviceGraphData;
+            }
+            deferred.resolve(result);
+        },
+        function(response) {
+            deferred.reject(response.data);
+        }
+    );
+    return deferred.promise;
 };
 
 
 dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
-    var fillTree = this.fillTree;
-    var calTree = this.calTree;
-    var bucketKeys = [];
-    calTree(bucketKeys, tree, start, end);
-    var nullBucket = [];
-    // get null buckets
-    angular$1.forEach(bucketKeys, function (bucket) {
-        if (bucket.data == null) {
-            nullBucket.push(bucket.id);
-        }
-    });
-
-    if (nullBucket.length == 0) {
-        // send rest request
-        var deferred = this._$q.defer();
-        deferred.resolve(bucketKeys);
-        return deferred.promise;
-    } else {
-        // send rest request
-        var deferred = this._$q.defer();
-        this._$http.get(host + '/rest/api/app/' + application + '/store/index/store/data/' + deviceKey + '/' + storeSchema + '/' + store, {
-            params: {
-                bucketKeys: nullBucket,
-                fields: [].concat(fields)
-            }
-        }).then(
-            function (response) {
-                fillTree(response.data, tree, bucketKeys);
-                // fill bucketKeys
-                deferred.resolve(bucketKeys);
-            },
-            function (response) {
-                deferred.reject(response.data);
-            }
-        );
-        return deferred.promise;
+    //
+    var $graphDataService = this._$graphDataService;
+    // new way to get the data without tree index.
+    var deferred = this._$q.defer();
+    if (start instanceof Date) {
+        start = start.getTime();
     }
+    if (end instanceof Date) {
+        end = end.getTime();
+    }
+    // send request to back-end
+    this._$http({
+        method: 'GET',
+        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&start=' + start + '&end=' + end
+    }).then(
+        function(response) {
+            // only return 1 device data
+            var deviceGraphData = $graphDataService.get(deviceKey + "/" + store) ? $graphDataService.get(deviceKey + "/" + store) : [];
+            var newComeResult = response.data[deviceKey].data;
+            newComeResult.forEach(function(item) {
+                if (deviceGraphData.indexOf(item) == -1) {
+                    // add
+                    deviceGraphData.push(item);
+                }
+            });
+            // order by timestamp
+            deviceGraphData.sort(function(a, b) {
+                if (a.timestamp > b.timestamp) {
+                    return 1;
+                } else if (a.timestamp < b.timestamp) {
+                    return -1;
+                }
+                return 0;
+            });
+            $graphDataService.put(deviceKey + "/" + store, deviceGraphData);
+            deferred.resolve(deviceGraphData);
+        },
+        function(response) {
+            deferred.reject(response.data);
+        }
+    );
 
-
+    return deferred.promise;
 };
 
 dataAccessApi.prototype.defaultColors = function defaultColors () {
@@ -556,10 +562,9 @@ dataAccessApi.prototype.defaultColors = function defaultColors () {
         this['colors'] = [];
         for (var i = 0; i < 300; i++) {
             this$1.colors.push('#' + (function co(lor) {
-                    return (lor +=
-                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)])
-                    && (lor.length == 6) ? lor : co(lor);
-                })(''));
+                return (lor += [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f'][Math.floor(Math.random() * 16)]) &&
+                    (lor.length == 6) ? lor : co(lor);
+            })(''));
         }
     }
     return this.colors;
@@ -580,7 +585,7 @@ dataAccessApi.prototype.healthcheck = function healthcheck (application, id) {
         return;
     }
     this._$http.get('/rest/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
-        .success(function (response) {
+        .success(function(response) {
             console.info(response);
             return response;
         });
@@ -594,7 +599,7 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
     var _$http = this._$http;
     var fetcher = null;
     this._$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
-        .success(function (response) {
+        .success(function(response) {
             var last = -1;
             var interval = -1;
             if (response.trees && response.trees.length === 1) {
@@ -612,12 +617,12 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
                         "start": start,
                         "end": end
                     }
-                }).success(function (graphData) {
+                }).success(function(graphData) {
 
                     // start task
-                    fetcher = _$interval(function () {
+                    fetcher = _$interval(function() {
                         _$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
-                            .success(function (response) {
+                            .success(function(response) {
                                 if (response.trees && response.trees.length === 1) {
                                     last = response.trees[0].last.timeKey;
                                     start = last - (count * interval);
@@ -629,7 +634,7 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
                                             "start": start,
                                             "end": end
                                         }
-                                    }).success(function (graphData) {
+                                    }).success(function(graphData) {
                                         // put the data back
                                         callback(graphData[device], null, interval);
                                     });
@@ -646,12 +651,12 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
 };
 
 
-dataAccessApi.buildFactory = function buildFactory ($http, $q, $cacheFactory, $interval) {
-    dataAccessApi.instance = new dataAccessApi($http, $q, $cacheFactory, $interval);
+dataAccessApi.buildFactory = function buildFactory ($http, $q, $cacheFactory, $interval, graphDataService) {
+    dataAccessApi.instance = new dataAccessApi($http, $q, $cacheFactory, $interval, graphDataService);
     return dataAccessApi.instance;
 };
 
-dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval'];
+dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval', 'graphDataService'];
 
 /**
  * Created by ericwang on 15/06/2016.
@@ -1584,7 +1589,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 };
 
 //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams) {
+fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams,graphDataService) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
 
@@ -1883,7 +1888,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             });
                             $scope.auto_fields = fields;
                             dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
-                                initChart(data);
+                                initChart(data,deviceData.device.name);
                             }, function(error) {
                                 console.error(error);
                             });
@@ -1989,7 +1994,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.auto_fields = fields;
                     //send a rest request
                     dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
-                        initChart(data);
+                        initChart(data,deviceData.device.name);
                     }, function(error) {
                         console.error(error);
                     });
@@ -2087,12 +2092,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function(data) {
+                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                         // udpate chart
-                                        var showData = [];
-                                        angular$1.forEach(data, function(arr) {
-                                            Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
-                                        });
+                                        var showData = data;
                                         showData = showData.filter(function(obj) {
                                             return obj != null;
                                         });
@@ -2260,17 +2262,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             });
 
                             $scope.auto_fields = fields;
-                            dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, newValue.begin, newValue.end, fields).then(function(data) {
+                            dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                 var showData = [];
-                                angular$1.forEach(data, function(arr) {
-                                    var deviceData = [];
-                                    angular$1.forEach(arr.data, function(bucket) {
-                                        if (bucket.data != null) {
-                                            Array.prototype.push.apply(deviceData, bucket.data.slice(0, bucket.size));
-                                        }
-                                    });
+                                angular$1.forEach(data, function(arr, key) {
+                                    var deviceData = [].concat(arr);
                                     showData.push({
-                                        device: arr.device,
+                                        device: key,
                                         data: deviceData
                                     });
                                 });
@@ -2312,12 +2309,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, newValue.begin, newValue.end, fields).then(function(data) {
+                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                     // udpate chart
-                                    var showData = [];
-                                    angular$1.forEach(data, function(arr) {
-                                        Array.prototype.push.apply(showData, arr.data.slice(0, arr.size));
-                                    });
+                                    var showData = data;
                                     showData = showData.filter(function(obj) {
                                         return obj != null;
                                     });
@@ -2381,7 +2375,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
         $scope.ordinalRangeData = [];
 
-        var initChart = function(data) {
+        var initChart = function(data, deviceName) {
             $scope.intevalforshow = [];
             //
             $scope.intevals.device = [];
@@ -2440,6 +2434,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 allData = newData;
             }
             $scope.ordinalRangeData = allData;
+            // put the data into range tree cache
+            if(rangeTree){
+                //
+                graphDataService.put(deviceName+"/"+rangeTree.store,[rangeTree.first,rangeTree.last]);
+            }
             // get configuration and make real data
             updateChart(metadata, store, allData, rangeTree);
         };
@@ -2520,7 +2519,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             };
             var allLines = [];
             var allXLabels = [];
+            debugger;
             angular$1.forEach(devicesInfo, function(device, key) {
+                debugger;
                 angular$1.forEach(device.data, function(item) {
                     var flag = false;
                     angular$1.forEach(allXLabels, function(label) {
@@ -3564,6 +3565,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
                                     'series': series_range
                                 });
+                                // save
                             }
 
 
@@ -5270,9 +5272,9 @@ fgpWidgetChartTable.buildFactory = function buildFactory () {
  * Created by ericwang on 10/06/2016.
  */
 // angular module
-angular$1.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataAccessApi.buildFactory)
-    .filter('removeSlash', function () {
-        return function (input) {
+angular$1.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('dataService', dataAccessApi.buildFactory)
+    .filter('removeSlash', function() {
+        return function(input) {
             if (input.startsWith("/")) {
                 return input.substring(1, input.length);
             }
@@ -5280,26 +5282,26 @@ angular$1.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataAc
         }
     })
     .factory('$graphstorage', ['$window', function($window) {
-    return {
-        setTree: function(key, value) {
-            $window.localStorage[key] = JSON.stringify(value);
-        },
-        getTree: function(key) {
-            return JSON.parse($window.localStorage[key]) || false;
-        },
-        addTree: function (key,value) {
-            if($window.localStorage[key]){
-                var trees = JSON.parse($window.localStorage[key]);
-                trees.push(value);
-                this.setTree(key,trees);
-            }else{
-                this.setTree(key, [value]);
+        return {
+            setTree: function(key, value) {
+                $window.localStorage[key] = JSON.stringify(value);
+            },
+            getTree: function(key) {
+                return JSON.parse($window.localStorage[key]) || false;
+            },
+            addTree: function(key, value) {
+                if ($window.localStorage[key]) {
+                    var trees = JSON.parse($window.localStorage[key]);
+                    trees.push(value);
+                    this.setTree(key, trees);
+                } else {
+                    this.setTree(key, [value]);
+                }
+            },
+            clear: function() {
+                $window.localStorage.clear();
             }
-        },
-        clear: function(){
-            $window.localStorage.clear();
         }
-    }
     }])
     .directive('fgpContainer', fgpStage.buildFactory)
     .directive('widgetContainer', fgpWidgetContainer.buildFactory)
@@ -5316,27 +5318,49 @@ angular$1.module('fgp-kit', ['ngMap','ui.router']).service('dataService', dataAc
     .directive('widgetIcon', fgpIcon.buildFactory)
     .directive('widgetAppContainer', fgpWidgetAppContainer.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory)
-    .directive('emitLastRepeaterElement', [function () {
-        return function (scope) {
+    .directive('emitLastRepeaterElement', [function() {
+        return function(scope) {
             if (scope.$last) {
                 scope.$emit('LastRepeaterElement');
             }
         };
-    }]).filter('tableformatter', ['$filter', function ($filter) {
-    return function (input, obj, field, formatter) {
-        if (formatter) {
-            if (obj[field]) {
-                if ("date" == formatter) {
-                    return $filter('date')(new Date(obj[field]), 'd/M/yy h:mm a');
-                } else {
-                    return input;
-                }
-            }
-        } else {
-            return input;
+    }]).config(function(CacheFactoryProvider) {
+        angular$1.extend(CacheFactoryProvider.defaults, {
+            maxAge: 30 * 60 * 1000, // half an hour
+            deleteOnExpire: 'aggressive',
+        });
+    }).service('graphDataService', function(CacheFactory) {
+        var graphCache = null;
+        if (!CacheFactory.get('graphCache')) {
+            graphCache = CacheFactory('graphCache',{
+                maxAge: 30 * 60 * 1000, // half an hour
+                deleteOnExpire: 'aggressive'
+            });
         }
-    };
-}]);
+        return {
+            get: function(name) {
+                return graphCache.get('/graph/'+name);
+            },
+            put: function(name, data) {
+                return graphCache.put('/graph/'+name, data);
+            }
+        };
+    })
+    .filter('tableformatter', ['$filter', function($filter) {
+        return function(input, obj, field, formatter) {
+            if (formatter) {
+                if (obj[field]) {
+                    if ("date" == formatter) {
+                        return $filter('date')(new Date(obj[field]), 'd/M/yy h:mm a');
+                    } else {
+                        return input;
+                    }
+                }
+            } else {
+                return input;
+            }
+        };
+    }]);
 var index = 'fgp-kit';
 
 return index;
