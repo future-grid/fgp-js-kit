@@ -257,7 +257,7 @@ class dataAccessApi {
      * @param start
      * @param end
      */
-    devicesStoreData(host, application, deviceInfo, storeSchema, store, start, end, fields) {
+    devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields) {
 
         if(!deviceInfo || deviceInfo.length == 0){
             return false;
@@ -291,7 +291,7 @@ class dataAccessApi {
                 var result = {};
                 var data = response.data;
                 for(key in data){
-                    var deviceGraphData = $graphDataService.get(key + "/" + store) ? $graphDataService.get(key + "/" + store) :[];
+                    var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store+ "/" + id) :[];
                     var newComeResult = data[key].data;
                     newComeResult.forEach(function(item) {
                         var flag = false;
@@ -315,7 +315,7 @@ class dataAccessApi {
                         }
                         return 0;
                     });
-                    $graphDataService.put(key + "/" + store, deviceGraphData);
+                    $graphDataService.put(key + "/" + store + "/" + id, deviceGraphData);
                     result[key] = deviceGraphData;
                 }
                 deferred.resolve(result);
@@ -328,7 +328,7 @@ class dataAccessApi {
     }
 
 
-    deviceStoreData(host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
+    deviceStoreData(id, host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
         //
         var $graphDataService = this._$graphDataService;
         // new way to get the data without tree index.
@@ -346,7 +346,7 @@ class dataAccessApi {
         }).then(
             function(response) {
                 // only return 1 device data
-                var deviceGraphData = $graphDataService.get(deviceKey + "/" + store) ? $graphDataService.get(deviceKey + "/" + store) : [];
+                var deviceGraphData = $graphDataService.get(deviceKey + "/" + store+ "/" + id) ? $graphDataService.get(deviceKey + "/" + store+ "/" + id) : [];
                 var newComeResult = response.data[deviceKey].data;
                 newComeResult.forEach(function(item) {
                     var flag = false;
@@ -370,7 +370,7 @@ class dataAccessApi {
                     }
                     return 0;
                 });
-                $graphDataService.put(deviceKey + "/" + store, deviceGraphData);
+                $graphDataService.put(deviceKey + "/" + store+ "/" + id, deviceGraphData);
                 deferred.resolve(deviceGraphData);
             },
             function(response) {

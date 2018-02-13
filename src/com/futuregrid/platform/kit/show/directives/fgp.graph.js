@@ -63,6 +63,7 @@ class fgpWidgetGraph {
         scope.status = true;
         var timeOut = this.$timeout;
         scope.completionPercent = 0;
+        scope.graphId = attrs.id;
         this.$timeout(function() {
             var getData = function(numSeries, numRows, name) {
                 var result = {
@@ -1338,7 +1339,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                             // udpate chart
                                             var showData = data;
                                             showData = showData.filter(function(obj) {
@@ -1508,7 +1509,7 @@ class fgpWidgetGraph {
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                     var showData = [];
                                     angular.forEach(data, function(arr, key) {
                                         var deviceData = [].concat(arr);
@@ -1555,7 +1556,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                         // udpate chart
                                         var showData = data;
                                         showData = showData.filter(function(obj) {
@@ -1683,7 +1684,7 @@ class fgpWidgetGraph {
                 // put the data into range tree cache
                 if(rangeTree){
                     //
-                    graphDataService.put(deviceName+"/"+rangeTree.store,[rangeTree.first,rangeTree.last]);
+                    graphDataService.put(deviceName+"/"+rangeTree.store + "/"+ $scope.graphId,[rangeTree.first,rangeTree.last]);
                 }
                 // get configuration and make real data
                 updateChart(metadata, store, allData, rangeTree);
@@ -1730,8 +1731,7 @@ class fgpWidgetGraph {
                     if (rangeTree != null) {
                         var deviceObj = devicesInfo[device.name] = {};
                         // get all data
-                        var allData = [];
-                        fetchData(allData, rangeTree.tree);
+                        var allData = [rangeTree.first,rangeTree.last];
                         allData = allData.filter(function(obj) {
                             return obj != null;
                         });

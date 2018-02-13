@@ -445,7 +445,7 @@ dataAccessApi.prototype.calTree = function calTree (buckets, tree, start, end) {
  * @param start
  * @param end
  */
-dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, application, deviceInfo, storeSchema, store, start, end, fields) {
+dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, application, deviceInfo, storeSchema, store, start, end, fields) {
 
     if(!deviceInfo || deviceInfo.length == 0){
         return false;
@@ -479,7 +479,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
             var result = {};
             var data = response.data;
             for(key in data){
-                var deviceGraphData = $graphDataService.get(key + "/" + store) ? $graphDataService.get(key + "/" + store) :[];
+                var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store+ "/" + id) :[];
                 var newComeResult = data[key].data;
                 newComeResult.forEach(function(item) {
                     var flag = false;
@@ -503,7 +503,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
                     }
                     return 0;
                 });
-                $graphDataService.put(key + "/" + store, deviceGraphData);
+                $graphDataService.put(key + "/" + store + "/" + id, deviceGraphData);
                 result[key] = deviceGraphData;
             }
             deferred.resolve(result);
@@ -516,7 +516,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (host, appl
 };
 
 
-dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
+dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
     //
     var $graphDataService = this._$graphDataService;
     // new way to get the data without tree index.
@@ -534,7 +534,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, applic
     }).then(
         function(response) {
             // only return 1 device data
-            var deviceGraphData = $graphDataService.get(deviceKey + "/" + store) ? $graphDataService.get(deviceKey + "/" + store) : [];
+            var deviceGraphData = $graphDataService.get(deviceKey + "/" + store+ "/" + id) ? $graphDataService.get(deviceKey + "/" + store+ "/" + id) : [];
             var newComeResult = response.data[deviceKey].data;
             newComeResult.forEach(function(item) {
                 var flag = false;
@@ -558,7 +558,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (host, applic
                 }
                 return 0;
             });
-            $graphDataService.put(deviceKey + "/" + store, deviceGraphData);
+            $graphDataService.put(deviceKey + "/" + store+ "/" + id, deviceGraphData);
             deferred.resolve(deviceGraphData);
         },
         function(response) {
@@ -831,6 +831,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
     scope.status = true;
     var timeOut = this.$timeout;
     scope.completionPercent = 0;
+    scope.graphId = attrs.id;
     this.$timeout(function() {
         var getData = function(numSeries, numRows, name) {
             var result = {
@@ -2106,7 +2107,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                         // udpate chart
                                         var showData = data;
                                         showData = showData.filter(function(obj) {
@@ -2276,7 +2277,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             });
 
                             $scope.auto_fields = fields;
-                            dataService.devicesStoreData($rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                            dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                 var showData = [];
                                 angular$1.forEach(data, function(arr, key) {
                                     var deviceData = [].concat(arr);
@@ -2323,7 +2324,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.deviceStoreData($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
                                     // udpate chart
                                     var showData = data;
                                     showData = showData.filter(function(obj) {
@@ -2451,7 +2452,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             // put the data into range tree cache
             if(rangeTree){
                 //
-                graphDataService.put(deviceName+"/"+rangeTree.store,[rangeTree.first,rangeTree.last]);
+                graphDataService.put(deviceName+"/"+rangeTree.store + "/"+ $scope.graphId,[rangeTree.first,rangeTree.last]);
             }
             // get configuration and make real data
             updateChart(metadata, store, allData, rangeTree);
@@ -2498,8 +2499,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 if (rangeTree != null) {
                     var deviceObj = devicesInfo[device.name] = {};
                     // get all data
-                    var allData = [];
-                    fetchData(allData, rangeTree.tree);
+                    var allData = [rangeTree.first,rangeTree.last];
                     allData = allData.filter(function(obj) {
                         return obj != null;
                     });
