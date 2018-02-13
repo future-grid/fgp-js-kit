@@ -294,7 +294,14 @@ class dataAccessApi {
                     var deviceGraphData = $graphDataService.get(key + "/" + store) ? $graphDataService.get(key + "/" + store) :[];
                     var newComeResult = data[key].data;
                     newComeResult.forEach(function(item) {
-                        if (deviceGraphData.indexOf(item) == -1) {
+                        var flag = false;
+                        for(var i=0;i<deviceGraphData.length;i++){
+                            if(deviceGraphData[i].timestamp == item.timestamp){
+                                deviceGraphData[i] = item;
+                                flag = true;
+                            }
+                        }
+                        if(!flag){
                             // add
                             deviceGraphData.push(item);
                         }
@@ -342,7 +349,14 @@ class dataAccessApi {
                 var deviceGraphData = $graphDataService.get(deviceKey + "/" + store) ? $graphDataService.get(deviceKey + "/" + store) : [];
                 var newComeResult = response.data[deviceKey].data;
                 newComeResult.forEach(function(item) {
-                    if (deviceGraphData.indexOf(item) == -1) {
+                    var flag = false;
+                    for(var i=0;i<deviceGraphData.length;i++){
+                        if(deviceGraphData[i].timestamp == item.timestamp){
+                            deviceGraphData[i] = item;
+                            flag = true;
+                        }
+                    }
+                    if(!flag){
                         // add
                         deviceGraphData.push(item);
                     }
