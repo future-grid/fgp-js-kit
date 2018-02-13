@@ -259,7 +259,7 @@ class dataAccessApi {
      * @param end
      */
     devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields) {
-
+        var start_point = new Date().getTime();
         if(!deviceInfo || deviceInfo.length == 0){
             return false;
         }
@@ -325,6 +325,8 @@ class dataAccessApi {
                     $graphDataService.put(key + "/" + store + "/" + id, deviceGraphData);
                     result[key] = deviceGraphData;
                 }
+                var end_point = new Date().getTime();
+                console.info((end_point - start_point)/ 1000 + "s");
                 deferred.resolve(result);
             },
             function(response) {
