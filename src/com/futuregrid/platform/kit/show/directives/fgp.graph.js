@@ -2936,8 +2936,6 @@ class fgpWidgetGraph {
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
                             }
-
-
                             //bind
                             $scope.loadingShow = false;
                         }

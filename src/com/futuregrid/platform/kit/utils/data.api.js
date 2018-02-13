@@ -142,7 +142,8 @@ class dataAccessApi {
                 relationType: relationType,
                 relationDeviceType: relationDeviceType,
                 otherLevels: otherLevels,
-                fields: [].concat(fields)
+                fields: [].concat(fields),
+                isSame: true
             },
             cache: this.deviceStores
         }).then(
@@ -282,10 +283,16 @@ class dataAccessApi {
         if (end instanceof Date) {
             end = end.getTime();
         }
-        // send request to back-end
+        // send request to back-end // TODO: change it to post
         this._$http({
-            method: 'GET',
-            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=' + devices + '&fields='+JSON.stringify(fields)+'&start=' + start + '&end=' + end
+            method: 'POST',
+            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store,
+            data:{
+                "devices" : devices,
+                "fields": JSON.stringify(fields),
+                "start": start,
+                "end": end
+            }
         }).then(
             function(response) {
                 var result = {};
