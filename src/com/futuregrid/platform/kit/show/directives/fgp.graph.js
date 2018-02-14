@@ -1339,7 +1339,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, expectedInterval).then(function(data) {
                                             // udpate chart
                                             var showData = data;
                                             showData = showData.filter(function(obj) {
@@ -1471,7 +1471,6 @@ class fgpWidgetGraph {
                                 var currentStore = "";
 
                                 $scope.childrenDevices = [];
-
                                 // has problem....
                                 angular.forEach($scope.childTrees, function(device) {
                                     angular.forEach(device.trees, function(tree, index) {
@@ -1509,7 +1508,7 @@ class fgpWidgetGraph {
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, expectedInterval).then(function(data) {
                                     var showData = [];
                                     angular.forEach(data, function(arr, key) {
                                         var deviceData = [].concat(arr);
@@ -1556,7 +1555,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields).then(function(data) {
+                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, tree.frequency).then(function(data) {
                                         // udpate chart
                                         var showData = data;
                                         showData = showData.filter(function(obj) {

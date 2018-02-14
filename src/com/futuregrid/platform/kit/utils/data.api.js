@@ -258,9 +258,9 @@ class dataAccessApi {
      * @param start
      * @param end
      */
-    devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields) {
+    devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval) {
         var start_point = new Date().getTime();
-        if(!deviceInfo || deviceInfo.length == 0){
+        if (!deviceInfo || deviceInfo.length == 0) {
             return false;
         }
 
@@ -268,9 +268,9 @@ class dataAccessApi {
 
         deviceInfo.forEach(function(device, index) {
             if (index < deviceInfo.length - 1) {
-                devices += "\""+device.name +"\",";
+                devices += "\"" + device.name + "\",";
             } else {
-                devices += "\""+device.name +"\"]";
+                devices += "\"" + device.name + "\"]";
             }
         });
         //
@@ -287,8 +287,8 @@ class dataAccessApi {
         this._$http({
             method: 'POST',
             url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store,
-            data:{
-                "devices" : devices,
+            data: {
+                "devices": devices,
                 "fields": JSON.stringify(fields),
                 "start": start,
                 "end": end
@@ -297,18 +297,118 @@ class dataAccessApi {
             function(response) {
                 var result = {};
                 var data = response.data;
-                for(key in data){
-                    var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store+ "/" + id) :[];
+                for (key in data) {
+                    var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store + "/" + id) : [];
                     var newComeResult = data[key].data;
+                    // newComeResult.forEach(function(item) {
+                    //     var flag = false;
+                    //     for (var i = 0; i < deviceGraphData.length; i++) {
+                    //         if (deviceGraphData[i].timestamp == item.timestamp) {
+                    //             deviceGraphData[i] = item;
+                    //             flag = true;
+                    //         }
+                    //     }
+                    //     if (!flag) {
+                    //         // add
+                    //         deviceGraphData.push(item);
+                    //     }
+                    // });
+                    // // order by timestamp
+                    // deviceGraphData.sort(function(a, b) {
+                    //     if (a.timestamp > b.timestamp) {
+                    //         return 1;
+                    //     } else if (a.timestamp < b.timestamp) {
+                    //         return -1;
+                    //     }
+                    //     return 0;
+                    // });
+                    // $graphDataService.put(key + "/" + store + "/" + id, deviceGraphData);
+                    result[key] = newComeResult;
+                }
+                var end_point = new Date().getTime();
+                console.info((end_point - start_point) / 1000 + "s");
+                deferred.resolve(result);
+            },
+            function(response) {
+                deferred.reject(response.data);
+            }
+        );
+        return deferred.promise;
+    }
+
+
+    deviceStoreData(id, host, application, deviceKey, storeSchema, store, tree, start, end, fields, interval) {
+        //
+        var $graphDataService = this._$graphDataService;
+        // new way to get the data without tree index.
+        var deferred = this._$q.defer();
+        if (start instanceof Date) {
+            start = start.getTime();
+        }
+        if (end instanceof Date) {
+            end = end.getTime();
+        }
+        var needLoad = true;
+        // if ($graphDataService.get(deviceKey + "/" + store + "/" + id)) {
+        //     //check data
+        //     var data = $graphDataService.get(deviceKey + "/" + store + "/" + id);
+        //     if (data) {
+        //         //
+        //         var temp_start = null;
+        //         var temp_end = null;
+        //         data.forEach(function(_item){
+        //             if(_item.timestamp >= end && temp_end == null){
+        //                 temp_end = _item.timestamp;
+        //             }
+        //             if(_item.timestamp <= start){
+        //                 temp_start =  _item.timestamp;
+        //             }
+        //
+        //         });
+        //         var checkLoad = false;
+        //         while (temp_start < temp_end) {
+        //             var _flag = false;
+        //             data.forEach(function(item) {
+        //                 if (item.timestamp == temp_start) {
+        //                     _flag = true;
+        //                 }
+        //             });
+        //             if (!_flag) {
+        //                 // doesn`t exist
+        //                 checkLoad = true;
+        //                 break;
+        //             }
+        //             temp_start += interval;
+        //             console.info(temp_start);
+        //         }
+        //         if (!checkLoad) {
+        //             needLoad = false;
+        //         }
+        //     }
+        // // }
+
+        if (!needLoad) {
+            // return data
+            deferred.resolve($graphDataService.get(deviceKey + "/" + store + "/" + id));
+        } else {
+            // send request to back-end
+            this._$http({
+                method: 'GET',
+                url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&fields=' + JSON.stringify(fields) + '&start=' + start + '&end=' + end
+            }).then(
+                function(response) {
+                    // only return 1 device data
+                    var deviceGraphData = $graphDataService.get(deviceKey + "/" + store + "/" + id) ? $graphDataService.get(deviceKey + "/" + store + "/" + id) : [];
+                    var newComeResult = response.data[deviceKey].data;
                     newComeResult.forEach(function(item) {
                         var flag = false;
-                        for(var i=0;i<deviceGraphData.length;i++){
-                            if(deviceGraphData[i].timestamp == item.timestamp){
+                        for (var i = 0; i < deviceGraphData.length; i++) {
+                            if (deviceGraphData[i].timestamp == item.timestamp) {
                                 deviceGraphData[i] = item;
                                 flag = true;
                             }
                         }
-                        if(!flag){
+                        if (!flag) {
                             // add
                             deviceGraphData.push(item);
                         }
@@ -322,70 +422,14 @@ class dataAccessApi {
                         }
                         return 0;
                     });
-                    $graphDataService.put(key + "/" + store + "/" + id, deviceGraphData);
-                    result[key] = deviceGraphData;
+                    $graphDataService.put(deviceKey + "/" + store + "/" + id, deviceGraphData);
+                    deferred.resolve(deviceGraphData);
+                },
+                function(response) {
+                    deferred.reject(response.data);
                 }
-                var end_point = new Date().getTime();
-                console.info((end_point - start_point)/ 1000 + "s");
-                deferred.resolve(result);
-            },
-            function(response) {
-                deferred.reject(response.data);
-            }
-        );
-        return deferred.promise;
-    }
-
-
-    deviceStoreData(id, host, application, deviceKey, storeSchema, store, tree, start, end, fields) {
-        //
-        var $graphDataService = this._$graphDataService;
-        // new way to get the data without tree index.
-        var deferred = this._$q.defer();
-        if (start instanceof Date) {
-            start = start.getTime();
+            );
         }
-        if (end instanceof Date) {
-            end = end.getTime();
-        }
-        // send request to back-end
-        this._$http({
-            method: 'GET',
-            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&fields='+JSON.stringify(fields)+'&start=' + start + '&end=' + end
-        }).then(
-            function(response) {
-                // only return 1 device data
-                var deviceGraphData = $graphDataService.get(deviceKey + "/" + store+ "/" + id) ? $graphDataService.get(deviceKey + "/" + store+ "/" + id) : [];
-                var newComeResult = response.data[deviceKey].data;
-                newComeResult.forEach(function(item) {
-                    var flag = false;
-                    for(var i=0;i<deviceGraphData.length;i++){
-                        if(deviceGraphData[i].timestamp == item.timestamp){
-                            deviceGraphData[i] = item;
-                            flag = true;
-                        }
-                    }
-                    if(!flag){
-                        // add
-                        deviceGraphData.push(item);
-                    }
-                });
-                // order by timestamp
-                deviceGraphData.sort(function(a, b) {
-                    if (a.timestamp > b.timestamp) {
-                        return 1;
-                    } else if (a.timestamp < b.timestamp) {
-                        return -1;
-                    }
-                    return 0;
-                });
-                $graphDataService.put(deviceKey + "/" + store+ "/" + id, deviceGraphData);
-                deferred.resolve(deviceGraphData);
-            },
-            function(response) {
-                deferred.reject(response.data);
-            }
-        );
 
         return deferred.promise;
     }
