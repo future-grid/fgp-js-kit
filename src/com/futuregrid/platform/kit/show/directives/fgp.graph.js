@@ -1684,7 +1684,7 @@ class fgpWidgetGraph {
                 // put the data into range tree cache
                 if(rangeTree){
                     //
-                    graphDataService.put(deviceName+"/"+rangeTree.store + "/"+ $scope.graphId,[rangeTree.first,rangeTree.last]);
+                    graphDataService.put(deviceName+"/"+rangeTree.store + "/"+ $scope.graphId,[rangeTree.first,{timestamp: moment().endOf('day').toDate().getTime()}]);
                 }
                 // get configuration and make real data
                 updateChart(metadata, store, allData, rangeTree);
@@ -1731,7 +1731,7 @@ class fgpWidgetGraph {
                     if (rangeTree != null) {
                         var deviceObj = devicesInfo[device.name] = {};
                         // get all data
-                        var allData = [rangeTree.first,rangeTree.last];
+                        var allData = [rangeTree.first,{timestamp: moment().endOf('day').toDate().getTime()}];
                         allData = allData.filter(function(obj) {
                             return obj != null;
                         });
