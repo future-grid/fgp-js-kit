@@ -1334,7 +1334,7 @@ class fgpWidgetGraph {
                 });
                 $scope.$watch("chartDateTime", function(newValue, oldValue) {
                     if (newValue.begin != null && newValue.end != null) {
-                        var expect_points = Math.floor($element.parent().width() / 2);
+                        var expect_points = Math.floor($element.parent().width());
                         // find a interval
                         var expectedInterval = (newValue.end - newValue.begin) / expect_points;
                         if($scope.locked_interval){
@@ -1378,7 +1378,7 @@ class fgpWidgetGraph {
                             }
                         });
 
-                        // check the interval(raw data) no more than 1000 points
+                        // check the interval(data) no more than the number of expected points
                         if (expectedInterval == lastOne) {
                             //
                             if (((newValue.end - newValue.begin) / expectedInterval) > expect_points) {
@@ -1386,15 +1386,12 @@ class fgpWidgetGraph {
                                 $scope.rangeConfig.dateWindow = [new Date(newValue.end - (expect_points - 1) * expectedInterval), new Date(newValue.end)];
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
-
-                                $scope.alertMessage = "Limit the number of \"Zoom-Out\" points to " + expect_points * 2 + ".";
+                                $scope.alertMessage = "Limit the number of \"Zoom-Out\" points to " + expect_points + ".";
                                 $timeout(function() {
                                     $scope.alertMessage = null;
                                 }, 5000);
-
                                 return;
                             }
-
                         }
 
                         // update range-bar
