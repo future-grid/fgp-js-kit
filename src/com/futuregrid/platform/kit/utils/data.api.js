@@ -300,29 +300,7 @@ class dataAccessApi {
                 for (key in data) {
                     var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store + "/" + id) : [];
                     var newComeResult = data[key].data;
-                    // newComeResult.forEach(function(item) {
-                    //     var flag = false;
-                    //     for (var i = 0; i < deviceGraphData.length; i++) {
-                    //         if (deviceGraphData[i].timestamp == item.timestamp) {
-                    //             deviceGraphData[i] = item;
-                    //             flag = true;
-                    //         }
-                    //     }
-                    //     if (!flag) {
-                    //         // add
-                    //         deviceGraphData.push(item);
-                    //     }
-                    // });
-                    // // order by timestamp
-                    // deviceGraphData.sort(function(a, b) {
-                    //     if (a.timestamp > b.timestamp) {
-                    //         return 1;
-                    //     } else if (a.timestamp < b.timestamp) {
-                    //         return -1;
-                    //     }
-                    //     return 0;
-                    // });
-                    // $graphDataService.put(key + "/" + store + "/" + id, deviceGraphData);
+                    // TODO: make all the lines in same x-axis timeseries
                     result[key] = newComeResult;
                 }
                 var end_point = new Date().getTime();
