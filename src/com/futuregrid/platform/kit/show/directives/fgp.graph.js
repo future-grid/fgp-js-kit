@@ -1545,7 +1545,7 @@ class fgpWidgetGraph {
                         $scope.loadingShow = true;
                         if ($scope.currentView == 1) {
                             // scatter detail view
-                            if (expectedInterval == conf[0].interval) {
+                            if (expectedInterval == conf[0].interval && conf.length > 1) {
                                 $scope.currentChart.updateOptions({
                                     dateWindow: $scope.chartDateWindow
                                 });
@@ -1559,15 +1559,28 @@ class fgpWidgetGraph {
                                 // has problem....
                                 angular.forEach($scope.childTrees, function(device) {
                                     angular.forEach(device.trees, function(tree, index) {
-                                        if (expectedInterval == tree.frequency && index != 0) {
-                                            currentStore = tree.store;
-                                            deviceInfo.push({
-                                                name: device.name,
-                                                tree: tree.tree
-                                            });
-                                            device["show"] = true;
-                                            $scope.childrenDevices.push(device);
+                                        if(device.trees.length > 1){
+                                            if (expectedInterval == tree.frequency && index != 0) {
+                                                currentStore = tree.store;
+                                                deviceInfo.push({
+                                                    name: device.name,
+                                                    tree: tree.tree
+                                                });
+                                                device["show"] = true;
+                                                $scope.childrenDevices.push(device);
+                                            }
+                                        }else{
+                                            if (expectedInterval == tree.frequency) {
+                                                currentStore = tree.store;
+                                                deviceInfo.push({
+                                                    name: device.name,
+                                                    tree: tree.tree
+                                                });
+                                                device["show"] = true;
+                                                $scope.childrenDevices.push(device);
+                                            }
                                         }
+
                                     });
                                 });
 
