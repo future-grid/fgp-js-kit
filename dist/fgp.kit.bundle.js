@@ -1469,7 +1469,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                         if (!showY2axis) {
                             angular$1.copy(allLines, newLines);
                             angular$1.forEach(newLines, function(line) {
-                                line.push(NaN);
+                                line.push(null);
                             });
                             // update graph
                             scope.realTimeGraph.updateOptions({
@@ -1862,7 +1862,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var obj = [new Date(tempDate)];
                             // add NaN
                             for (var j = 0; j < $scope.currentChart.attributes_.labels_.length; j++) {
-                                obj.push(NaN);
+                                obj.push(null);
                             }
                             fixed.push(obj);
                         }
@@ -1930,7 +1930,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var obj = [new Date(tempDate)];
                             // add NaN
                             for (var j = 0; j < $scope.currentChart.attributes_.labels_.length; j++) {
-                                obj.push(NaN);
+                                obj.push(null);
                             }
                             fixed.push(obj);
                         }
@@ -2320,7 +2320,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             var newLines = [];
                                             angular$1.copy(allLines, newLines);
                                             angular$1.forEach(newLines, function(line) {
-                                                line.push(NaN);
+                                                line.push(null);
                                             });
                                             $scope.rangeConfig = {
                                                 'file': newLines,
@@ -2342,8 +2342,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                     $scope.loadingShow = true;
-
-
                     // check separated points config
                     if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
                         $scope.currentChart.updateOptions({
@@ -2783,12 +2781,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 yRange.min = yRange.min - (yRange.min) * 0.10;
                 yRange.max = yRange.max + (yRange.max) * 0.10;
             }
+            var connectSeparatedPoints = false;
+            if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+            }
+
             //update chart
             if ($scope.currentChart) {
                 $scope.rangeChildrenData = allLines;
 
                 if (showY2axis) {
                     $scope.childrenRangeConfig = {
+                        'connectSeparatedPoints': connectSeparatedPoints,
                         'labelsKMB': true,
                         'file': allLines,
                         legend: 'never',
@@ -2867,12 +2871,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     var newLines = [];
                     angular$1.copy(allLines, newLines);
                     angular$1.forEach(newLines, function(line) {
-                        line.push(NaN);
+                        line.push(null);
                     });
                     series["span_y2"] = {
                         'axis': 'y2'
                     };
                     $scope.childrenRangeConfig = {
+                        'connectSeparatedPoints': connectSeparatedPoints,
                         'drawGapEdgePoints': true,
                         'pointSize': 3,
                         'legend': 'never',
@@ -2996,7 +3001,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.currentIntervalName = store;
                             if (collection.rows[0].yaxis == 0) {
                                 series[collection.rows[0].label] = {
-                                    'axis': 'y1'
+                                    'axis': 'y1',
                                 };
                             } else {
                                 series[collection.rows[0].label] = {
@@ -3076,7 +3081,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     }
                     if (flag != true) {
                         // we should use "NaN"
-                        timeTicket.push(NaN);
+                        timeTicket.push(null);
                     }
                 });
             });
@@ -3095,11 +3100,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 $scope.loadingShow = false;
             } else {
                 if ($scope.currentChart) {
-
+                    var connectSeparatedPoints = false;
+                    if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                        connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                    }
                     if (showY2axis) {
-
                         $scope.currentChartOptions = {
-                            'drawGapEdgePoints': true,
+                            'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 3,
                             'legend': 'never',
                             'labelsKMB': true,
@@ -3124,7 +3131,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         };
 
                         $scope.currentChart.updateOptions({
-                            'drawGapEdgePoints': true,
+                            'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 3,
                             'legend': 'never',
                             'labelsKMB': true,
@@ -3197,13 +3204,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.showY2Btns = false;
                         angular$1.copy(chartData, newLines);
                         angular$1.forEach(newLines, function(line) {
-                            line.push(NaN);
+                            line.push(null);
                         });
                         series["span_y2"] = {
                             axis: 'y2'
                         };
                         $scope.currentChartOptions = {
-                            'drawGapEdgePoints': true,
+                            'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 3,
                             'legend': 'never',
                             'labelsKMB': true,
@@ -3234,7 +3241,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             // showRangeSelector: true
                         };
                         $scope.currentChart.updateOptions({
-                            'drawGapEdgePoints': true,
+                            'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 3,
                             'legend': 'never',
                             'labelsKMB': true,
@@ -3439,9 +3446,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.loadingShow = false;
                     } else {
                         if ($scope.currentChart) {
-
+                            var connectSeparatedPoints = false;
+                            if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                                connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                            }
                             if (showY2axis) {
                                 $scope.currentChartOptions = {
+                                    'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
@@ -3468,6 +3479,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 };
                                 $scope.currentChart.updateOptions({
+                                    'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
@@ -3501,7 +3513,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.showY2Btns = false;
                                 angular$1.copy(allLines, newLines);
                                 angular$1.forEach(newLines, function(line) {
-                                    line.push(NaN);
+                                    line.push(null);
                                 });
 
                                 series["span-Y2"] = {
@@ -3510,6 +3522,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                                 $scope.currentChartOptions = {
+                                    'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
@@ -3537,6 +3550,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 };
                                 $scope.currentChart.updateOptions({
+                                    'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 3,
                                     'legend': 'follow',
@@ -3715,7 +3729,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 var newLines = [];
                                 angular$1.copy(allLines, newLines);
                                 angular$1.forEach(newLines, function(line) {
-                                    line.push(NaN);
+                                    line.push(null);
                                 });
                                 $scope.rangeSelectorBar.updateOptions({
                                     'file': newLines,
@@ -3737,10 +3751,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                         // if graph has 2 yAxis or a yAxis
-
+                        var connectSeparatedPoints = false;
+                        if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                            connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                        }
 
                         if (showY2axis) {
                             $scope.rangeConfig = {
+                                'connectSeparatedPoints': connectSeparatedPoints,
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
                                 'legend': 'follow',
@@ -3777,9 +3795,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var newLines = [];
                             angular$1.copy(allLines, newLines);
                             angular$1.forEach(newLines, function(line) {
-                                line.push(NaN);
+                                line.push(null);
                             });
                             $scope.rangeConfig = {
+                                'connectSeparatedPoints': connectSeparatedPoints,
                                 'drawGapEdgePoints': true,
                                 'pointSize': 3,
                                 'legend': 'follow',
