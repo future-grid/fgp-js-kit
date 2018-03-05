@@ -2342,6 +2342,19 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                     $scope.loadingShow = true;
+
+
+                    // check separated points config
+                    if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                        $scope.currentChart.updateOptions({
+                            connectSeparatedPoints: true
+                        });
+                    }else{
+                        $scope.currentChart.updateOptions({
+                            connectSeparatedPoints: false
+                        });
+                    }
+
                     if ($scope.currentView == 1) {
                         // scatter detail view
                         if (expectedInterval == conf[0].interval && conf.length > 1) {
