@@ -7,7 +7,9 @@ class fgpWidgetGraph {
 
     constructor($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams) {
         this.restrict = 'E';
-        this.scope = {};
+        this.scope = {
+            interactions: "="
+        };
         this.$timeout = $timeout;
         this._dataService = dataService;
         this._$interval = $interval;
@@ -1152,7 +1154,12 @@ class fgpWidgetGraph {
 
             metadata = widgetData.data.metadata;
             $scope.basicInfo = metadata.data.basic;
-            $scope.currentView = -1; // -1 is device view and 1 is scatter view
+            $scope.currentView = 0; // -1 is device view and 1 is scatter view
+            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
+                $scope.currentView = 1;
+            } else {
+                $scope.currentView = -1;
+            }
 
             $scope.parent_container = widgetData.data.parent;
 
@@ -1337,7 +1344,7 @@ class fgpWidgetGraph {
                         var expect_points = Math.floor($element.parent().width());
                         // find a interval
                         var expectedInterval = (newValue.end - newValue.begin) / expect_points;
-                        if($scope.locked_interval){
+                        if ($scope.locked_interval) {
                             expectedInterval = $scope.locked_interval.interval;
                         }
                         var conf = $scope.intevals.device;
@@ -1544,11 +1551,11 @@ class fgpWidgetGraph {
 
                         $scope.loadingShow = true;
                         // check separated points config
-                        if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                        if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
                             $scope.currentChart.updateOptions({
                                 connectSeparatedPoints: true
                             });
-                        }else{
+                        } else {
                             $scope.currentChart.updateOptions({
                                 connectSeparatedPoints: false
                             });
@@ -1570,7 +1577,7 @@ class fgpWidgetGraph {
                                 // has problem....
                                 angular.forEach($scope.childTrees, function(device) {
                                     angular.forEach(device.trees, function(tree, index) {
-                                        if(device.trees.length > 1){
+                                        if (device.trees.length > 1) {
                                             if (expectedInterval == tree.frequency && index != 0) {
                                                 currentStore = tree.store;
                                                 deviceInfo.push({
@@ -1580,7 +1587,7 @@ class fgpWidgetGraph {
                                                 device["show"] = true;
                                                 $scope.childrenDevices.push(device);
                                             }
-                                        }else{
+                                        } else {
                                             if (expectedInterval == tree.frequency) {
                                                 currentStore = tree.store;
                                                 deviceInfo.push({
@@ -1983,8 +1990,8 @@ class fgpWidgetGraph {
                     yRange.max = yRange.max + (yRange.max) * 0.10;
                 }
                 var connectSeparatedPoints = false;
-                if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                    connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                    connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                 }
 
                 //update chart
@@ -2302,8 +2309,8 @@ class fgpWidgetGraph {
                 } else {
                     if ($scope.currentChart) {
                         var connectSeparatedPoints = false;
-                        if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                            connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                        if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                            connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                         }
                         if (showY2axis) {
                             $scope.currentChartOptions = {
@@ -2648,8 +2655,8 @@ class fgpWidgetGraph {
                         } else {
                             if ($scope.currentChart) {
                                 var connectSeparatedPoints = false;
-                                if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                                    connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                                if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                                    connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                                 }
                                 if (showY2axis) {
                                     $scope.currentChartOptions = {
@@ -2953,8 +2960,8 @@ class fgpWidgetGraph {
 
                             // if graph has 2 yAxis or a yAxis
                             var connectSeparatedPoints = false;
-                            if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                                connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                            if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                                connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                             }
 
                             if (showY2axis) {

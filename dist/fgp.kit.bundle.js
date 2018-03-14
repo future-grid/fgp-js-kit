@@ -25,7 +25,8 @@ var fgpStage = function fgpStage() {
         server: "=",
         configuration: '=',
         scatterColors: "=",
-        standalone: "="
+        standalone: "=",
+        interactions: "="
     };
     this.replace = true;
     this.restrict = 'A';
@@ -52,144 +53,138 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
 
     var graphBindingArray = [];
 
-    $scope.$on('bindChildChartEvent', function (evt, msg) {
-        graphBindingArray.push(msg);
-    });
 
-    $scope.$on('bindChildRepeatEvent', function (evt, msg) {
-        angular$1.forEach($scope.configuration, function (item) {
-            if (item.id == msg.id) {
-                var items = angular$1.element("body").find("#" + item.id).children();
-                angular$1.forEach(items, function (item_new) {
-                    $scope.showdata[item_new.id] = item;
-                    var currentElement = angular$1.element(item_new);
-                    if (currentElement.attr("dulp")) {
-                        var groupItems = angular$1.element("body").find("div[dulp='" + item.id + "']");
-                        angular$1.forEach(groupItems, function (dulpItem) {
-                            findChild4Repeat(item.id, angular$1.element(dulpItem), $scope.configuration, item_new.id);
-                        });
-                    }else{
-                        findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id);
-                    }
-                });
-            }
-        });
-    });
-
-    $scope.$on('listStyleEvent', function (evt, param) {
-        var config = $scope.showdata[param.id.replace("edit", "")];
-        param.callback(config.metadata.data.datasource.style);
-    });
-
-
-    $scope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
-        angular$1.forEach($scope.showdata, function (metadata, key) {
-            if (key == msg.id) {
-                msg.callback({data: metadata, from: 'show'});
-                return;
-            }
-        });
-    });
-
-
-    function findChild4Repeat(parentId, parentHtmlObj, arrayItems, newId) {
+    function findChild4Repeat(parentId, parentHtmlObj, arrayItems, newId,newScope) {
 
         for (var i = 0; i < arrayItems.length; i++) {
             if ('edit' + parentId === arrayItems[i].parent) {
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
 
-                $scope.showdata[id] = arrayItems[i];
+                newScope.showdata[id] = arrayItems[i];
                 if (parentHtmlObj.attr("repeat-id")) {
-                    $scope.repeat = parentHtmlObj.attr("repeat-id");
+                    newScope.repeat = parentHtmlObj.attr("repeat-id");
                 }
                 if (parentHtmlObj.find('#edit' + parentId).find("#" + id).length == 0) {
-                    parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
+                    parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)(newScope));
                 }
-                findChild4Repeat(arrayItems[i].id, currentItem, arrayItems);
+                findChild4Repeat(arrayItems[i].id, currentItem, arrayItems,newScope);
             }
             else if ('detail_status_' + parentId === arrayItems[i].parent) {
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
-                $scope.showdata[id] = arrayItems[i];
-                parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)($scope));
-                findChild4Repeat(arrayItems[i].id, currentItem, arrayItems);
+                newScope.showdata[id] = arrayItems[i];
+                parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)(newScope));
+                findChild4Repeat(arrayItems[i].id, currentItem, arrayItems,newScope);
             }
         }
     }
 
-    function findChild(parentId, parentHtmlObj, arrayItems) {
+    function findChild(parentId, parentHtmlObj, arrayItems,newScope) {
 
         for (var i = 0; i < arrayItems.length; i++) {
             if ('edit' + parentId === arrayItems[i].parent) {
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
-                $scope.showdata[id] = arrayItems[i];
-                parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)($scope));
-                findChild(arrayItems[i].id, currentItem, arrayItems);
+                newScope.showdata[id] = arrayItems[i];
+                parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)(newScope));
+                findChild(arrayItems[i].id, currentItem, arrayItems,newScope);
             } else if ('detail_status_' + parentId === arrayItems[i].parent) {
                 var currentItem = angular$1.element(arrayItems[i].html_render);
                 var id = arrayItems[i].id;
-                $scope.showdata[id] = arrayItems[i];
-                parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)($scope));
-                findChild(arrayItems[i].id, currentItem, arrayItems);
+                newScope.showdata[id] = arrayItems[i];
+                parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)(newScope));
+                findChild(arrayItems[i].id, currentItem, arrayItems,newScope);
             }
         }
     }
 
-    angular$1
-        .forEach($scope
+    var newScope = null;
+    $scope.$watch('deviceName', function (newVal, oldVal) {
+        if(newVal){
+            $element.empty();
+            if(newScope){
+                newScope.$destroy();
+            }
+            newScope = $rootScope.$new(true);
+            newScope["showdata"] = {};
 
-                .configuration
-            ,
-            function (item) {
+            newScope.$on('bindChildChartEvent', function (evt, msg) {
+                graphBindingArray.push(msg);
+            });
+
+            newScope["interactions"] = $scope.interactions;
+
+            newScope.$on('bindChildRepeatEvent', function (evt, msg) {
+                angular$1.forEach($scope.configuration, function (item) {
+                    if (item.id == msg.id) {
+                        var items = angular$1.element("body").find("#" + item.id).children();
+                        angular$1.forEach(items, function (item_new) {
+                            newScope.showdata[item_new.id] = item;
+                            var currentElement = angular$1.element(item_new);
+                            if (currentElement.attr("dulp")) {
+                                var groupItems = angular$1.element("body").find("div[dulp='" + item.id + "']");
+                                angular$1.forEach(groupItems, function (dulpItem) {
+                                    findChild4Repeat(item.id, angular$1.element(dulpItem), $scope.configuration, item_new.id,newScope);
+                                });
+                            }else{
+                                findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id,newScope);
+                            }
+                        });
+                    }
+                });
+            });
+
+            newScope.$on('listStyleEvent', function (evt, param) {
+                var config = newScope.showdata[param.id.replace("edit", "")];
+                param.callback(config.metadata.data.datasource.style);
+            });
+
+
+            newScope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
+                angular$1.forEach(newScope.showdata, function (metadata, key) {
+                    if (key == msg.id) {
+                        msg.callback({data: metadata, from: 'show'});
+                        return;
+                    }
+                });
+            });
+
+            // refersh
+            angular$1.forEach($scope.configuration, function (item) {
                 if ('workingArea' === item.parent) {
                     var currentItem = angular$1.element(item.html_render);
-                    $scope.showdata[item.id] = item;
-                    $element.append($compile(currentItem)($scope));
-                    findChild(item.id, currentItem, $scope.configuration);
+                    newScope.showdata[item.id] = item;
+                    $element.append($compile(currentItem)(newScope));
+                    findChild(item.id, currentItem, $scope.configuration,newScope);
                 }
+            });
+            /**
+             * get device information
+             */
+            if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
+                // first time
+                sendDeviceData(newScope);
             }
-        )
-    ;
+            // all item created;
+            $timeout(function () {
+                angular$1.forEach(graphBindingArray, function (graph) {
+                    newScope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
+                });
+            });
+        }
+    });
 
-    var
-        sendDeviceData = function () {
+
+    var sendDeviceData = function (newScope) {
             dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
                 // send device info to all widget
                 $timeout(function () {
-                    $scope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+                    newScope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
                 });
             });
-        };
-
-    /**
-     * get device information
-     */
-    if ($scope.deviceName && $scope.deviceName != "" && "undefined" != $scope.deviceName) {
-        // first time
-        sendDeviceData();
-        // after every 30 seconds
-        // $interval(function () {
-        // sendDeviceData();
-        // }, 30000);
-    }
-
-
-    $scope.$on('graphScatterViewChangeEvent', function(event, obj){
-        //tell all the children graphs the scatter view changed
-        $scope.$broadcast('parentScatterViewChangedEvent', {children: obj.children, view:obj.view});
-    });
-
-    // all item created;
-    $timeout(function () {
-        angular$1.forEach(graphBindingArray, function (graph) {
-            $scope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
-        });
-    });
+    };
 };
-
-
 fgpStage.buildFactory = function buildFactory () {
     fgpStage.instance = new fgpStage();
     return fgpStage.instance;
@@ -708,22 +703,24 @@ dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval', 'graphData
  */
 var fgpWidgetContainer = function fgpWidgetContainer() {
     this.restrict = 'E';
-    this.scope = {};
+    this.scope = {
+        interactions: "="
+    };
 };
 
 fgpWidgetContainer.prototype.template = function template (element, attrs) {
     var flag = attrs.hasOwnProperty("shown");
     var showTitle = attrs.hasOwnProperty("showtitle");
     var element_id = attrs.id;
-    var dom_show = '<div class="" id="' + element_id + '">' +
+    var dom_show = '<div class="" id="' + element_id + '" style="margin-top:10px;margin-bottom:10px;">' +
         '<div class="{{css.width}}" style="padding: 0px;">' +
         '<div class="panel" style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div class="panel-heading" style="background-color: {{css.title.color || \'#fff\'}}">{{css.title.text}}</div>' +
         '<div class="panel-body" id="edit' + element_id + '" style="padding:0px;min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
         '</div>' +
         '</div></div>';
-    var dom_show_notitle = '<div class="" id="' + element_id + '">' +
-        '<div class="{{css.width}}" style="margin-bottom:15px;">' +
+    var dom_show_notitle = '<div class="" id="' + element_id + '" style="height: 100%;">' +
+        '<div class="{{css.width}}" style="margin-top:10px;margin-bottom:10px;">' +
         '<div style="border-color:{{css.border.color || \'#fff\'}};">' +
         '<div id="edit' + element_id + '" style="min-height:{{css.minHeight || 100}}px;background-color: {{css.background.color||\'#fff\';}}"></div>' +
         '</div>' +
@@ -755,8 +752,6 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
             }
         }
     });
-
-
 
 
     var metadata = widgetData.data.metadata;
@@ -806,7 +801,9 @@ fgpWidgetContainer.$inject = [];
  */
 var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams) {
     this.restrict = 'E';
-    this.scope = {};
+    this.scope = {
+        interactions: "="
+    };
     this.$timeout = $timeout;
     this._dataService = dataService;
     this._$interval = $interval;
@@ -1951,7 +1948,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
         metadata = widgetData.data.metadata;
         $scope.basicInfo = metadata.data.basic;
-        $scope.currentView = -1; // -1 is device view and 1 is scatter view
+        $scope.currentView = 0; // -1 is device view and 1 is scatter view
+        if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
+            $scope.currentView = 1;
+        } else {
+            $scope.currentView = -1;
+        }
 
         $scope.parent_container = widgetData.data.parent;
 
@@ -2136,7 +2138,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     var expect_points = Math.floor($element.parent().width());
                     // find a interval
                     var expectedInterval = (newValue.end - newValue.begin) / expect_points;
-                    if($scope.locked_interval){
+                    if ($scope.locked_interval) {
                         expectedInterval = $scope.locked_interval.interval;
                     }
                     var conf = $scope.intevals.device;
@@ -2343,11 +2345,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                     $scope.loadingShow = true;
                     // check separated points config
-                    if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
+                    if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
                         $scope.currentChart.updateOptions({
                             connectSeparatedPoints: true
                         });
-                    }else{
+                    } else {
                         $scope.currentChart.updateOptions({
                             connectSeparatedPoints: false
                         });
@@ -2369,7 +2371,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             // has problem....
                             angular$1.forEach($scope.childTrees, function(device) {
                                 angular$1.forEach(device.trees, function(tree, index) {
-                                    if(device.trees.length > 1){
+                                    if (device.trees.length > 1) {
                                         if (expectedInterval == tree.frequency && index != 0) {
                                             currentStore = tree.store;
                                             deviceInfo.push({
@@ -2379,7 +2381,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             device["show"] = true;
                                             $scope.childrenDevices.push(device);
                                         }
-                                    }else{
+                                    } else {
                                         if (expectedInterval == tree.frequency) {
                                             currentStore = tree.store;
                                             deviceInfo.push({
@@ -2782,8 +2784,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 yRange.max = yRange.max + (yRange.max) * 0.10;
             }
             var connectSeparatedPoints = false;
-            if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+            if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
             }
 
             //update chart
@@ -3101,8 +3103,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             } else {
                 if ($scope.currentChart) {
                     var connectSeparatedPoints = false;
-                    if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                        connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                    if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                        connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                     }
                     if (showY2axis) {
                         $scope.currentChartOptions = {
@@ -3447,8 +3449,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     } else {
                         if ($scope.currentChart) {
                             var connectSeparatedPoints = false;
-                            if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                                connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                            if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                                connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                             }
                             if (showY2axis) {
                                 $scope.currentChartOptions = {
@@ -3752,8 +3754,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         // if graph has 2 yAxis or a yAxis
                         var connectSeparatedPoints = false;
-                        if($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected){
-                            connectSeparatedPoints = true;//'connectSeparatedPoints': connectSeparatedPoints,
+                        if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                            connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                         }
 
                         if (showY2axis) {
