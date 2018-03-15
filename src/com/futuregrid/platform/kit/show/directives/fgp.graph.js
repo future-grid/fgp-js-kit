@@ -52,7 +52,7 @@ class fgpWidgetGraph {
                 '</div>' +
                 '</div>';
 
-            var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;"  style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a ng-show="autoupdate" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: -5px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
+            var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\'"  style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a ng-show="autoupdate" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{chartDateWindow[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{chartDateWindow[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: -5px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
             return html;
         }
@@ -504,7 +504,6 @@ class fgpWidgetGraph {
                 },
                 'interactionModel': interactionModel
             };
-
             scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
             element.find("canvas").css("zIndex", 99);
 
@@ -1155,11 +1154,6 @@ class fgpWidgetGraph {
             metadata = widgetData.data.metadata;
             $scope.basicInfo = metadata.data.basic;
             $scope.currentView = 0; // -1 is device view and 1 is scatter view
-            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
-                $scope.currentView = 1;
-            } else {
-                $scope.currentView = -1;
-            }
 
             $scope.parent_container = widgetData.data.parent;
 
@@ -1333,7 +1327,13 @@ class fgpWidgetGraph {
                         $scope.auto_fields = fields;
                         //send a rest request
                         dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
-                            initChart(data, deviceData.device.name);
+                            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
+                                //call scatter view init.
+                                $scope.currentView = 1;
+                            } else {
+                                initChart(data, deviceData.device.name);
+                            }
+
                         }, function(error) {
                             console.error(error)
                         });
@@ -1387,6 +1387,11 @@ class fgpWidgetGraph {
 
                         // check the interval(data) no more than the number of expected points
                         if (expectedInterval == lastOne) {
+
+                            // check
+                            if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.limits) {
+                                expect_points = $scope['interactions'].graphs.limits;
+                            }
                             //
                             if (((newValue.end - newValue.begin) / expectedInterval) > expect_points) {
                                 // reset range bar
@@ -1814,7 +1819,7 @@ class fgpWidgetGraph {
                 $scope.childTrees = [];
                 $scope.childrenDevices = [];
 
-                angular.forEach(deviceDatas, function(deviceData) {
+                angular.forEach(deviceDatas, function(deviceData, _index) {
                     var device = deviceData.device;
                     device["show"] = true;
                     $scope.childrenDevices.push(device);
@@ -1866,6 +1871,10 @@ class fgpWidgetGraph {
 
                 });
 
+
+
+
+
                 updateChildrenChart(metadata, devicesInfo);
             };
 
@@ -1884,7 +1893,7 @@ class fgpWidgetGraph {
                 };
                 var allLines = [];
                 var allXLabels = [];
-                angular.forEach(devicesInfo, function(device, key) {
+                angular.forEach(devicesInfo, function(device, key, _index) {
                     angular.forEach(device.data, function(item) {
                         var flag = false;
                         angular.forEach(allXLabels, function(label) {
@@ -1895,8 +1904,6 @@ class fgpWidgetGraph {
                         if (!flag) {
                             allXLabels.push(new Date(item.timestamp));
                         }
-
-
                     });
                 });
                 // order
@@ -1908,7 +1915,6 @@ class fgpWidgetGraph {
                 angular.forEach(allXLabels, function(label) {
                     allLines.push([label]);
                 });
-
 
                 var yRange = {
                     min: null,
@@ -2161,13 +2167,71 @@ class fgpWidgetGraph {
                     }
                     //
                     $scope.currentChart.updateOptions($scope.childrenRangeConfig);
-                    //  keep the same time window and refersh
-                    $scope.chartDateTime = {
-                        begin: $scope.chartDateTime.begin,
-                        end: $scope.chartDateTime.end
-                    };
-                    $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                    $scope.loadingShow = false;
+
+                    // set the first one to range bar
+                    // update range bar with the first channel data
+                    if ($scope.basicInfo && $scope.basicInfo.range_show && $scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
+
+                        Dygraph.synchronize([$scope.rangeSelectorBar, $scope.currentChart], {
+                            zoom: true,
+                            selection: false,
+                            range: false
+                        });
+                        if (showY2axis) {
+                            $scope.rangeConfig = {
+                                'file': newLines,
+                                'series': series,
+                                'labels': ['x'].concat(labels)
+                            };
+                        } else {
+                            $scope.rangeConfig = {
+                                'file': newLines,
+                                'series': series,
+                                'labels': ['x'].concat(labels).concat(['span_y2'])
+                            };
+                        }
+                        $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                        // reset the datetime for current chart
+
+                        if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
+                            // keep the current range bar refresh once.
+                            $scope.chartDateTime = {
+                                begin: $scope.chartDateTime.begin,
+                                end: $scope.chartDateTime.end
+                            };
+                            $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                        } else {
+
+                            $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
+                            if (begin_path && end_path && !init_flag) {
+                                // $scope.chartDateTime = {
+                                //     "begin": new Date(new Number(begin_path)),
+                                //     "end": new Date(new Number(end_path))
+                                // };
+                                $scope.chartDateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                                $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)), new Date(new Number(end_path))];
+                                init_flag = true;
+                            } else {
+                                if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
+                                    $scope.rangeConfig.dateWindow = [new Date(newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval), newLines[newLines.length - 1][0]];
+                                } else {
+                                    $scope.chartDateWindow = [newLines[0][0], newLines[newLines.length - 1][0]];
+                                    $scope.rangeConfig.dateWindow = [newLines[0][0], newLines[newLines.length - 1][0]];
+                                }
+                            }
+                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                            $scope.currentChartOptions = $scope.rangeConfig;
+                        }
+                    } else {
+                        //  keep the same time window and refersh
+                        $scope.chartDateTime = {
+                            begin: $scope.chartDateTime.begin,
+                            end: $scope.chartDateTime.end
+                        };
+                        $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                        $scope.loadingShow = false;
+                    }
+
                 }
 
 
