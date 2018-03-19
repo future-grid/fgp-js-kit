@@ -1947,7 +1947,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
         metadata = widgetData.data.metadata;
         $scope.basicInfo = metadata.data.basic;
-        $scope.currentView = 0; // -1 is device view and 1 is scatter view
+        $scope.currentView = -1; // -1 is device view and 1 is scatter view
 
         $scope.parent_container = widgetData.data.parent;
 
@@ -2125,6 +2125,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             //call scatter view init.
                             $scope.currentView = 1;
                         } else {
+                            $scope.currentView = -1;
                             initChart(data, deviceData.device.name);
                         }
 
