@@ -1524,6 +1524,8 @@ class fgpWidgetGraph {
                                                     if (basicInfo && basicInfo.range_show) {
                                                         $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                                     }
+                                                }else{
+                                                    $scope.rangeSelectorBar.updateOptions({'file':allLines});
                                                 }
 
                                             } else {
