@@ -1709,11 +1709,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     $scope.locked_interval = null;
     // lock interval
     $scope.lock = function(interval) {
-        $scope.dateTimeIntervals = [];
         if ($scope.locked_interval) {
             if ($scope.locked_interval == interval) {
                 $scope.locked_interval = null; // unlocked
-                $scope.dateTimeIntervals = [].concat($scope.defaultTimeIntervals);
+                if(!$scope.dateTimeIntervals){
+                    $scope.dateTimeIntervals = [].concat($scope.defaultTimeIntervals);
+                }
                 // change default choosed interval
                 $scope.currentIntervalName = $scope.dateTimeIntervals[0].name;
                 $scope.currentIntervalChoosed = $scope.dateTimeIntervals[0];
@@ -1742,18 +1743,25 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             // change color
 
             // change dropdown list
-            $scope.defaultTimeIntervals.forEach(function(item) {
-                //
-                if (item["scales"] && item["scales"].length > 0) {
-                    item["scales"].forEach(function(_item) {
-                        if (_item == interval.interval) {
-                            //
-                            $scope.dateTimeIntervals.push(item);
-                        }
-                    });
-                }
+            // check the user default config first
+            if($scope.dateTimeIntervals){
 
-            });
+            }else{
+                $scope.defaultTimeIntervals.forEach(function(item) {
+                    //
+                    if (item["scales"] && item["scales"].length > 0) {
+                        item["scales"].forEach(function(_item) {
+                            if (_item == interval.interval) {
+                                //
+                                $scope.dateTimeIntervals.push(item);
+                            }
+                        });
+                    }
+
+                });
+            }
+
+
             $scope.currentIntervalName = $scope.dateTimeIntervals[0].name;
             $scope.currentIntervalChoosed = $scope.dateTimeIntervals[0];
         }
