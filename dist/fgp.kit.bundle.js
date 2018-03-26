@@ -2844,7 +2844,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     $scope.legendColor = colors[index];
                                     // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                     $scope.legendText_device = seriesName;
-                                    $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                    if(moment.tz.guess()){
+                                        $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
+                                    }else{
+                                        $scope.legendText_datetime = moment(item.xval).format('DD/MM/YYYY HH:mm:ss');
+                                    }
                                     $scope.legendText_column = sn;
                                     $scope.legendText_value = item.yval;
                                     angular$1.forEach(pts, function(point) {
@@ -2929,7 +2933,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     $scope.legendColor = colors[index];
                                     // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                     $scope.legendText_device = seriesName;
-                                    $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                    if(moment.tz.guess()){
+                                        $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
+                                    }else{
+                                        $scope.legendText_datetime = moment(item.xval).format('DD/MM/YYYY HH:mm:ss');
+                                    }
                                     $scope.legendText_column = sn;
                                     $scope.legendText_value = item.yval;
                                     angular$1.forEach(pts, function(point) {
@@ -3244,7 +3252,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         $scope.legendColor = colors[index];
                                         // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                         $scope.legendText_device = seriesName;
-                                        $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                        if(moment.tz.guess()){
+                                            $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
+                                        }else{
+                                            $scope.legendText_datetime = moment(item.xval).format('DD/MM/YYYY HH:mm:ss');
+                                        }
                                         $scope.legendText_column = sn;
                                         $scope.legendText_value = item.yval;
                                         angular$1.forEach(pts, function(point) {
@@ -3364,7 +3376,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         $scope.legendColor = colors[index];
                                         // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                         $scope.legendText_device = seriesName;
-                                        $scope.legendText_datetime = moment(item.xval).format('l HH:mm:ss');
+                                        if(moment.tz.guess()){
+                                            $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
+                                        }else{
+                                            $scope.legendText_datetime = moment(item.xval).format('DD/MM/YYYY HH:mm:ss');
+                                        }
                                         $scope.legendText_column = sn;
                                         $scope.legendText_value = item.yval;
                                         angular$1.forEach(pts, function(point) {
@@ -3379,7 +3395,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                 $scope.$apply(function() {
                                     $scope.legendTop = point_show.y;
-                                    console.info(maxWidth, legendbox.width());
                                     if(maxWidth < (point_show.x + 200)){
                                         $scope.legendLeft = point_show.x - 200;
                                     }else{
