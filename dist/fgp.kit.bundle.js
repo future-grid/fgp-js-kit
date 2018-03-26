@@ -2827,7 +2827,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'series': series,
                         'colors': colors,
                         highlightCallback: function(e, x, pts, row, seriesName) {
-                            var maxWidth = e.offsetX;
+                            var maxWidth = e.target.offsetWidth;
                             var sn = "";
                             angular$1.forEach(series, function(value, name, item) {
                                 if (value.axis === "y1") {

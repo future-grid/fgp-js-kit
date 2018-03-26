@@ -2033,7 +2033,7 @@ class fgpWidgetGraph {
                             'series': series,
                             'colors': colors,
                             highlightCallback: function(e, x, pts, row, seriesName) {
-                                var maxWidth = e.offsetX;
+                                var maxWidth = e.target.offsetWidth;
                                 var sn = "";
                                 angular.forEach(series, function(value, name, item) {
                                     if (value.axis === "y1") {
