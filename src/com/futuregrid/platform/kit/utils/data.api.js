@@ -158,6 +158,37 @@ class dataAccessApi {
     }
 
 
+    /**
+     *
+     * @param application
+     * @param deviceKey
+     * @param storeSchema
+     * @returns {Promise}
+     */
+    childrenExtensionInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels, fields) {
+        var deferred = this._$q.defer();
+        this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
+            params: {
+                relationType: relationType,
+                relationDeviceType: relationDeviceType,
+                otherLevels: otherLevels,
+                fields: [].concat(fields),
+                isSame: true
+            },
+            cache: this.deviceStores
+        }).then(
+            function(response) {
+                deferred.resolve(response.data);
+            },
+            function(response) {
+                deferred.reject(response.data);
+            }
+        );
+        return deferred.promise;
+    }
+
+
+
     fillChildrenTree(buckets, tree, showData) {
 
         if (tree.children[0] != null) {
