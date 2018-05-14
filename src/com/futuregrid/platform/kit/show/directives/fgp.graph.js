@@ -1193,7 +1193,7 @@ class fgpWidgetGraph {
                             view: nObj
                         });
                         $scope.button_handlers = {}; // clean handlers
-                        angular.element("#buttons_area").empty();
+                        $element.find("#buttons_area").empty();
                         if (nObj == -1) {
                             $scope.autoupdate = true;
                             var rangeLevel = null;
@@ -1321,7 +1321,7 @@ class fgpWidgetGraph {
                                                         // create click event handler for this button and put it into $scope
                                                         buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                                         // compile the html and add it into toolbar
-                                                        angular.element("#buttons_area").append($compile(buttons_html)($scope));
+                                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                                     });
                                                 }
                                                 // 2. data filter
@@ -1352,7 +1352,7 @@ class fgpWidgetGraph {
                                                         // create click event handler for this button and put it into $scope
                                                         buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                                         // compile the html and add it into toolbar
-                                                        angular.element("#buttons_area").append($compile(buttons_html)($scope));
+                                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                                     });
                                                 }
                                                 // 2. series highlighting

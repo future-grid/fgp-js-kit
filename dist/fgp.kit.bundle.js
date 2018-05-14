@@ -2018,7 +2018,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         view: nObj
                     });
                     $scope.button_handlers = {}; // clean handlers
-                    angular$1.element("#buttons_area").empty();
+                    $element.find("#buttons_area").empty();
                     if (nObj == -1) {
                         $scope.autoupdate = true;
                         var rangeLevel = null;
@@ -2146,7 +2146,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     // create click event handler for this button and put it into $scope
                                                     buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                                     // compile the html and add it into toolbar
-                                                    angular$1.element("#buttons_area").append($compile(buttons_html)($scope));
+                                                    $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                                 });
                                             }
                                             // 2. data filter
@@ -2177,7 +2177,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     // create click event handler for this button and put it into $scope
                                                     buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                                     // compile the html and add it into toolbar
-                                                    angular$1.element("#buttons_area").append($compile(buttons_html)($scope));
+                                                    $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                                 });
                                             }
                                             // 2. series highlighting
