@@ -2196,7 +2196,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                         var field = button.field;
                                                         var _func = button._func;
                                                         // devices
-                                                        var timerInterval = 0;
+                                                        var timerInterval = 1000;
                                                         angular$1.forEach($scope.childrenDevices, function(device, $index) {
                                                             if (_func(device[field])) {
                                                                 $timeout(function(){

@@ -1338,7 +1338,6 @@ class fgpWidgetGraph {
                                                         var _func = '_' + (Math.random().toString(36).slice(2, 13));
                                                         $scope.button_handlers[_func] = function() {
                                                             // set button status
-
                                                             // the custom func returns color.
                                                             var field = button.field;
                                                             var _func = button._func;
@@ -1359,46 +1358,36 @@ class fgpWidgetGraph {
                                                         $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                                     });
                                                 }
-                                                // 2. series highlighting
-                                                if ($scope.interactions.graphs.buttons.scatter.highlighting) {
-                                                    if ($scope.interactions.graphs.buttons.scatter.highlighting instanceof Array) {
-                                                        $scope.$watchCollection('interactions.graphs.buttons.scatter.highlighting', function(newValue, oldValue) {
-                                                            if (newValue && newValue != null) {
-                                                                // array
-                                                                var series = newValue;
-                                                                if (typeof(series) === 'string' || series instanceof String) {
-                                                                    $timeout(function() {
-                                                                        $scope.currentChart.setSelection(false, series);
-                                                                    });
-                                                                } else if (typeof(series) === 'array' || series instanceof Array) {
-                                                                    angular.forEach(series, function(line) {
-                                                                        $timeout(function() {
-                                                                            $scope.currentChart.setSelection(false, line);
-                                                                        });
-                                                                    });
+                                                // highlight   $scope.currentChart.setSelection(false, line);
+                                                if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter && $scope.interactions.graphs.buttons.scatter.highlighting) {
+                                                    var buttons = $scope.interactions.graphs.buttons.scatter.highlighting;
+                                                    angular.forEach(buttons, function(button) {
+                                                        var buttons_html = '';
+                                                        // create an event handler
+                                                        var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                                                        $scope.button_handlers[_func] = function() {
+                                                            // set button status
+                                                            // the custom func returns color.
+                                                            var field = button.field;
+                                                            var _func = button._func;
+                                                            // devices
+                                                            var timerInterval = 0;
+                                                            angular.forEach($scope.childrenDevices, function(device, $index) {
+                                                                if (_func(device[field])) {
+                                                                    $timeout(function(){
+                                                                        $scope.currentChart.setSelection(false, device[field]);
+                                                                    }, timerInterval);
+                                                                    timerInterval += 1000;
                                                                 }
-                                                            }
-                                                        });
-                                                    } else {
-                                                        $scope.$watch('interactions.graphs.buttons.scatter.highlighting', function(newValue, oldValue) {
-                                                            if (newValue && newValue != null) {
-                                                                // array
-                                                                var series = newValue;
-                                                                if (typeof(series) === 'string' || series instanceof String) {
-                                                                    $timeout(function() {
-                                                                        $scope.currentChart.setSelection(false, series);
-                                                                    });
-                                                                } else if (typeof(series) === 'array' || series instanceof Array) {
-                                                                    angular.forEach(series, function(line) {
-                                                                        $timeout(function() {
-                                                                            $scope.currentChart.setSelection(false, line);
-                                                                        });
-                                                                    });
-                                                                }
-                                                            }
-                                                        });
-                                                    }
+                                                            });
+                                                        }
+                                                        // create click event handler for this button and put it into $scope
+                                                        buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                                        // compile the html and add it into toolbar
+                                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                                                    });
                                                 }
+
                                             }
                                             // n. other.....
                                         } else {
@@ -1833,6 +1822,8 @@ class fgpWidgetGraph {
 
                             $scope.fixGraphWithGap();
                         }
+                        // 2. series highlighting
+
                         $scope.status = false;
                     }
                 });
@@ -2771,8 +2762,6 @@ class fgpWidgetGraph {
                         $scope.loadingShow = false;
                     }
                 }
-
-
             };
 
 
