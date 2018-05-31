@@ -1369,6 +1369,7 @@ class fgpWidgetGraph {
                                                             // the custom func returns color.
                                                             var field = button.field;
                                                             var _func = button._func;
+                                                            var hideAllOthers = button.hideOther;
                                                             // devices
                                                             var timerInterval = 0;
                                                             angular.forEach($scope.childrenDevices, function(device, $index) {
@@ -1378,8 +1379,10 @@ class fgpWidgetGraph {
                                                                     }, timerInterval);
                                                                     timerInterval += 1000;
                                                                 }else{
-                                                                    device.show = false;
-                                                                    $scope.currentChart.setVisibility($index, false);
+                                                                    if(hideAllOthers && hideAllOthers == true){
+                                                                        device.show = false;
+                                                                        $scope.currentChart.setVisibility($index, false);
+                                                                    }
                                                                 }
                                                             });
                                                         }
