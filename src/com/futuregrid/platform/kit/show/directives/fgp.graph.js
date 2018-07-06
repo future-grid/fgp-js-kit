@@ -5,7 +5,7 @@ import angular from "angular";
 import Dygraph from "dygraphs";
 class fgpWidgetGraph {
 
-    constructor($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile) {
+    constructor($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile,$q) {
         this.restrict = 'E';
         this.scope = {
             interactions: "="
@@ -13,6 +13,7 @@ class fgpWidgetGraph {
         this.$timeout = $timeout;
         this._dataService = dataService;
         this._$interval = $interval;
+        this._$q = $q;
     }
 
     template(element, attrs) {
@@ -840,7 +841,7 @@ class fgpWidgetGraph {
     }
 
     //controller: ['$scope', '$element', '$window', '$interval', '$timeout', '$filter', '$location', function ($scope, $element, $window, $interval, $timeout, $filter, $location) {
-    controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams, graphDataService, $compile) {
+    controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams, graphDataService, $compile, $q) {
         var element_id = $element.attr("id");
         $scope.elementId = element_id;
 
@@ -1282,119 +1283,29 @@ class fgpWidgetGraph {
                                     dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function(data) {
                                         if (data != null && data.length > 0) {
                                             initChildrenChart(data);
-                                            // interactions for scatter view
-                                            if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
-                                                // 1. color
-                                                if ($scope.interactions.graphs.buttons.scatter.color) {
-                                                    // change color by "field"
-                                                    var buttons = $scope.interactions.graphs.buttons.scatter.color;
-
-                                                    angular.forEach(buttons, function(button) {
-                                                        var buttons_html = '';
-                                                        // create an event handler
-                                                        var _func = '_' + (Math.random().toString(36).slice(2, 13));
-                                                        $scope.button_handlers[_func] = function() {
-                                                            var colors = [];
-                                                            // set button status
-                                                            if (button["active"]) {
-                                                                // make them random colors
-                                                                angular.forEach($scope.childrenDevices, function(device, $index) {
-                                                                    if ($scope.defaultColors[$index]) {
-                                                                        colors.push($scope.defaultColors[$index]);
-                                                                    } else {
-                                                                        colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
-                                                                    }
-                                                                });
-                                                                button["active"] = false;
-                                                            } else {
-                                                                // the custom func returns color.
-                                                                var field = button.field;
-                                                                var _func = button._func;
-                                                                // devices
-                                                                angular.forEach($scope.childrenDevices, function(device, $index) {
-                                                                    colors.push(_func(device[field]));
-                                                                });
-                                                                button["active"] = true;
+                                            interactionHandler();
+                                        }else if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children){
+                                            // no relationship in fgp platform just take it from interactions Configuration  extension_type
+                                            if($scope.interactions.graphs.device.children.data){
+                                                var devices_key = $scope.interactions.graphs.device.children.data().then(
+                                                    function(data){
+                                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName,data,metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                            function(data){
+                                                                initChildrenChart(data);
+                                                                interactionHandler();
+                                                            },
+                                                            function(error){
+                                                                console.error(error);
                                                             }
-                                                            // update graph colors
-                                                            $scope.currentChart.updateOptions({
-                                                                "colors": colors
-                                                            });
-                                                        }
-                                                        // create click event handler for this button and put it into $scope
-                                                        buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
-                                                        // compile the html and add it into toolbar
-                                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
-                                                    });
-                                                }
-                                                // 2. data filter
-                                                if ($scope.interactions.graphs.buttons.scatter.dataFilter) {
-                                                    var buttons = $scope.interactions.graphs.buttons.scatter.dataFilter;
-
-                                                    angular.forEach(buttons, function(button) {
-                                                        var buttons_html = '';
-                                                        // create an event handler
-                                                        var _func = '_' + (Math.random().toString(36).slice(2, 13));
-                                                        $scope.button_handlers[_func] = function() {
-                                                            // set button status
-                                                            // the custom func returns color.
-                                                            var field = button.field;
-                                                            var _func = button._func;
-                                                            // devices
-                                                            angular.forEach($scope.childrenDevices, function(device, $index) {
-                                                                if (_func(device[field])) {
-                                                                    device.show = true;
-                                                                    $scope.currentChart.setVisibility($index, true);
-                                                                } else {
-                                                                    device.show = false;
-                                                                    $scope.currentChart.setVisibility($index, false);
-                                                                }
-                                                            });
-                                                        }
-                                                        // create click event handler for this button and put it into $scope
-                                                        buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
-                                                        // compile the html and add it into toolbar
-                                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
-                                                    });
-                                                }
-                                                // highlight   $scope.currentChart.setSelection(false, line);
-                                                if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter && $scope.interactions.graphs.buttons.scatter.highlighting) {
-                                                    var buttons = $scope.interactions.graphs.buttons.scatter.highlighting;
-                                                    angular.forEach(buttons, function(button) {
-                                                        var buttons_html = '';
-                                                        // create an event handler
-                                                        var _func = '_' + (Math.random().toString(36).slice(2, 13));
-                                                        $scope.button_handlers[_func] = function() {
-                                                            // set button status
-                                                            // the custom func returns color.
-                                                            var field = button.field;
-                                                            var _func = button._func;
-                                                            var hideAllOthers = button.hideOther;
-                                                            // devices
-                                                            var timerInterval = 0;
-                                                            angular.forEach($scope.childrenDevices, function(device, $index) {
-                                                                if (_func(device[field])) {
-                                                                    $timeout(function(){
-                                                                        $scope.currentChart.setSelection(false, device[field]);
-                                                                    }, timerInterval);
-                                                                    timerInterval += 1000;
-                                                                }else{
-                                                                    if(hideAllOthers && hideAllOthers == true){
-                                                                        device.show = false;
-                                                                        $scope.currentChart.setVisibility($index, false);
-                                                                    }
-                                                                }
-                                                            });
-                                                        }
-                                                        // create click event handler for this button and put it into $scope
-                                                        buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
-                                                        // compile the html and add it into toolbar
-                                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
-                                                    });
-                                                }
-
+                                                        );
+                                                    },
+                                                    function(error){
+                                                        return;
+                                                    }
+                                                );
+                                            }else{
+                                                return;
                                             }
-                                            // n. other.....
                                         } else {
                                             return;
                                         }
@@ -1409,6 +1320,125 @@ class fgpWidgetGraph {
                     $scope.fixInterval = false;
 
                 });
+
+                var interactionHandler = function(){
+                    // interactions for scatter view
+                    if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
+                        // 1. color
+                        if ($scope.interactions.graphs.buttons.scatter.color) {
+                            // change color by "field"
+                            var buttons = $scope.interactions.graphs.buttons.scatter.color;
+
+                            angular.forEach(buttons, function(button) {
+                                var buttons_html = '';
+                                // create an event handler
+                                var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                                $scope.button_handlers[_func] = function() {
+                                    var colors = [];
+                                    // set button status
+                                    if (button["active"]) {
+                                        // make them random colors
+                                        angular.forEach($scope.childrenDevices, function(device, $index) {
+                                            if ($scope.defaultColors[$index]) {
+                                                colors.push($scope.defaultColors[$index]);
+                                            } else {
+                                                colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                                            }
+                                        });
+                                        button["active"] = false;
+                                    } else {
+                                        // the custom func returns color.
+                                        var field = button.field;
+                                        var _func = button._func;
+                                        // devices
+                                        angular.forEach($scope.childrenDevices, function(device, $index) {
+                                            colors.push(_func(device[field]));
+                                        });
+                                        button["active"] = true;
+                                    }
+                                    // update graph colors
+                                    $scope.currentChart.updateOptions({
+                                        "colors": colors
+                                    });
+                                }
+                                // create click event handler for this button and put it into $scope
+                                buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                // compile the html and add it into toolbar
+                                $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                            });
+                        }
+                        // 2. data filter
+                        if ($scope.interactions.graphs.buttons.scatter.dataFilter) {
+                            var buttons = $scope.interactions.graphs.buttons.scatter.dataFilter;
+
+                            angular.forEach(buttons, function(button) {
+                                var buttons_html = '';
+                                // create an event handler
+                                var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                                $scope.button_handlers[_func] = function() {
+                                    // set button status
+                                    // the custom func returns color.
+                                    var field = button.field;
+                                    var _func = button._func;
+                                    // devices
+                                    angular.forEach($scope.childrenDevices, function(device, $index) {
+                                        if (_func(device[field])) {
+                                            device.show = true;
+                                            $scope.currentChart.setVisibility($index, true);
+                                        } else {
+                                            device.show = false;
+                                            $scope.currentChart.setVisibility($index, false);
+                                        }
+                                    });
+                                }
+                                // create click event handler for this button and put it into $scope
+                                buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                // compile the html and add it into toolbar
+                                $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                            });
+                        }
+                        // highlight   $scope.currentChart.setSelection(false, line);
+                        if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter && $scope.interactions.graphs.buttons.scatter.highlighting) {
+                            var buttons = $scope.interactions.graphs.buttons.scatter.highlighting;
+                            angular.forEach(buttons, function(button) {
+                                var buttons_html = '';
+                                // create an event handler
+                                var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                                $scope.button_handlers[_func] = function() {
+                                    // set button status
+                                    // the custom func returns color.
+                                    var field = button.field;
+                                    var _func = button._func;
+                                    var hideAllOthers = button.hideOther;
+                                    // devices
+                                    var timerInterval = 0;
+                                    angular.forEach($scope.childrenDevices, function(device, $index) {
+                                        if (_func(device[field])) {
+                                            $timeout(function(){
+                                                $scope.currentChart.setSelection(false, device[field]);
+                                            }, timerInterval);
+                                            timerInterval += 1000;
+                                        }else{
+                                            if(hideAllOthers && hideAllOthers == true){
+                                                device.show = false;
+                                                $scope.currentChart.setVisibility($index, false);
+                                            }
+                                        }
+                                    });
+                                }
+                                // create click event handler for this button and put it into $scope
+                                buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                // compile the html and add it into toolbar
+                                $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                            });
+                        }
+
+                    }
+                    // n. other.....
+                }
+
+
+
                 // first time of showing chart
                 $scope.$watch('currentChart', function(newValue) {
                     if (newValue) {
@@ -3575,15 +3605,15 @@ class fgpWidgetGraph {
 
 
     static
-    buildFactory($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile) {
-        fgpWidgetGraph.instance = new fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile);
+    buildFactory($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile, $q) {
+        fgpWidgetGraph.instance = new fgpWidgetGraph($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile, $q);
         return fgpWidgetGraph.instance;
     }
 
 }
 
 fgpWidgetGraph
-    .$inject = ['$timeout', 'dataService', '$rootScope', '$interval', '$filter', '$location', '$stateParams', '$compile'];
+    .$inject = ['$timeout', 'dataService', '$rootScope', '$interval', '$filter', '$location', '$stateParams', '$compile', '$q'];
 
 export {
     fgpWidgetGraph

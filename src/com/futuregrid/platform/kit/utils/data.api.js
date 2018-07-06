@@ -187,6 +187,41 @@ class dataAccessApi {
         return deferred.promise;
     }
 
+    /**
+     *
+     * @param application
+     * @param deviceKey
+     * @param storeSchema
+     * @returns {Promise}
+     */
+    devicesExtensionInitInfo(host, application, devicesKey, storeSchema, extensionType, rangeLevel, otherLevels, fields) {
+        var result = {};
+        var promises = [];
+        var __http = this._$http;
+        angular.forEach(devicesKey, function(deviceKey) {
+            if (deviceKey != null) {
+                var promise = __http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
+                    params: {
+                        otherLevels: otherLevels,
+                        fields: [].concat(fields),
+                        isSame: true
+                    },
+                    cache: this.deviceStores
+                }).then(
+                    function(response) {
+                        return response.data;
+                    },
+                    function(response) {
+                        console.error(response.data);
+                    }
+                );
+                promises.push(promise);
+            }
+        });
+        // call $q.all on the other side
+        return promises;
+    }
+
 
 
     fillChildrenTree(buckets, tree, showData) {
