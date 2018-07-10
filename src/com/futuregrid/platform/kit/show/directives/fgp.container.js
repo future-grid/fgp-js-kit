@@ -8,7 +8,8 @@ class fgpWidgetContainer {
     constructor() {
         this.restrict = 'E';
         this.scope = {
-            interactions: "="
+            interactions: "=",
+            drill: "="
         };
     }
 

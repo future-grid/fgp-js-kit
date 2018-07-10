@@ -13,7 +13,8 @@ class fgpStage {
             configuration: '=',
             scatterColors: "=",
             standalone: "=",
-            interactions: "="
+            interactions: "=",
+            drill: "="
         };
         this.replace = true;
         this.restrict = 'A';
@@ -101,6 +102,7 @@ class fgpStage {
                 });
 
                 newScope["interactions"] = $scope.interactions;
+                newScope["drill"] = $scope.drill;
 
                 newScope.$on('bindChildRepeatEvent', function (evt, msg) {
                     angular.forEach($scope.configuration, function (item) {
