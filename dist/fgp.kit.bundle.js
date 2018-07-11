@@ -892,7 +892,7 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
             '</div></div>';
 
 
-        var dom_legend = '<li>{{legendText_device}}</li><li>{{legendText_device_name}}</li><li>{{legendText_datetime}}</li><li><label style="color: {{legendColor}}">{{legendText_column}}</label>:{{legendText_value}}</li>';
+        var dom_legend = '<li>{{legendText_device_name}}</li><li>{{legendText_datetime}}</li><li><label style="color: {{legendColor}}">{{legendText_column}}</label>:{{legendText_value}}</li>';
 
         var dom_empty_data = '<div ng-show="emptyDataShow" id="emptydata_' + attrs.id + '" style="width: 100%;height:100%;position: absolute;background: rgba(255, 255, 255, 0.1);" data-chartloading><div class="spinner" style="width: 100%;">' +
             '<h1>Empty Data!</h1>' +
