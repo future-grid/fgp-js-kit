@@ -29,7 +29,7 @@ class fgpWidgetGraph {
                 '</div></div>';
 
 
-            var dom_legend = '<li>{{legendText_device}}</li><li>{{legendText_datetime}}</li><li><label style="color: {{legendColor}}">{{legendText_column}}</label>:{{legendText_value}}</li>';
+            var dom_legend = '<li>{{legendText_device}}</li><li>{{legendText_device_name}}</li><li>{{legendText_datetime}}</li><li><label style="color: {{legendColor}}">{{legendText_column}}</label>:{{legendText_value}}</li>';
 
             var dom_empty_data = '<div ng-show="emptyDataShow" id="emptydata_' + attrs.id + '" style="width: 100%;height:100%;position: absolute;background: rgba(255, 255, 255, 0.1);" data-chartloading><div class="spinner" style="width: 100%;">' +
                 '<h1>Empty Data!</h1>' +
@@ -2121,7 +2121,7 @@ class fgpWidgetGraph {
                                 showY2axis = true;
                                 $scope.showY2Btns = true;
                             }
-                            labels.push(key);
+                            labels.push(key);// put the name here and
                             // make a line
                             var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                             // add value
@@ -2606,6 +2606,8 @@ class fgpWidgetGraph {
                                         x: 0,
                                         y: 0
                                     };
+                                    // get device name columns
+                                    var relationConfig = metadata.data.groups[2];
                                     angular.forEach(pts, function(item, index) {
                                         if (item.name === seriesName) {
                                             $scope.legendText = seriesName;
@@ -2619,6 +2621,22 @@ class fgpWidgetGraph {
                                             $scope.legendColor = $scope.currentChart.user_attrs_.colors[colorIndex];
                                             // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                             $scope.legendText_device = seriesName;
+                                            $scope.legendText_device_name = "";
+                                            // if the nameSd exist
+                                            if($scope.childTrees && $scope.childTrees.length > 0){
+                                                angular.forEach($scope.childTrees, function(item){
+                                                    //
+                                                    if(item.name == seriesName){
+                                                        if(item[relationConfig.nameColumn]){
+                                                            $scope.legendText_device_name = item[relationConfig.nameColumn];
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                            if($scope.legendText_device_name == ""){
+                                                //
+                                                $scope.legendText_device_name = seriesName;
+                                            }
                                             if (moment.tz.guess()) {
                                                 $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
                                             } else {
