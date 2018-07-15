@@ -40,7 +40,7 @@ class fgpWidgetGraph {
             var dom_datetime_interval = '<div ng-show="rangeSelectorBar" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">{{currentIntervalChoosed.name}}<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;"><li ng-repeat="interval in dateTimeIntervals"><a href="javascript:;" ng-click="changeInterval(interval)">{{interval.name}}</a></li></ul> </div>';
 
 
-            var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;height:auto;max-height:300px;overflow-x:hidden;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device.name}}</li></ul> </div>';
+            var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;height:auto;max-height:300px;overflow-x:hidden;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device[childrenDeviceNameColumn]}}</li></ul> </div>';
 
 
             var dom_real_time_grap = '<div class="modal fade " id="real_time_graph_' + attrs.id + '" role="dialog">' +
@@ -1249,6 +1249,12 @@ class fgpWidgetGraph {
                             } else {
                                 var rangeLevel = null;
                                 var otherLevels = [];
+                                var relationConfig = metadata.data.groups[2];
+                                if(relationConfig.nameColumn){
+                                    $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
+                                }else{
+                                    $scope.childrenDeviceNameColumn = "name";
+                                }
                                 angular.forEach(metadata.data.groups[2].collections, function(level) {
                                     if (level.rows.length > 0) {
                                         if (rangeLevel != null) {
@@ -2637,6 +2643,7 @@ class fgpWidgetGraph {
                                                 //
                                                 $scope.legendText_device_name = seriesName;
                                             }
+
                                             if (moment.tz.guess()) {
                                                 $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
                                             } else {

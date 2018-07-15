@@ -42,62 +42,75 @@ class dataAccessApi {
             url += 'devices?key=' + deviceKey
         }
 
-        $.ajaxSettings.async = false;
-        $.ajax({
-            type: 'GET',
-            url: url,
-            contentType: "application/json",
-            success: function(data) {
-                var url = host + "/rest/api/";
-                if (applicationName) {
-                    url += "app/" + applicationName + "/devices/extension-types?device_type=";
-                } else {
-                    url += "devices/extension-types?device_type=";
-                }
-                $.ajaxSettings.async = false;
-                $.ajax({
-                    type: 'GET',
-                    url: url + data.type,
-                    contentType: "application/json",
-                    success: function(types) {
-                        angular.forEach(types, function(type) {
-                            Object.defineProperty(data, type.name, {
-                                get: function() {
-                                    var result = null;
-                                    var url = host + "/rest/api/";
-                                    if (applicationName) {
-                                        url += "app/" + applicationName + "/devices/extensions?device_name=";
-                                    } else {
-                                        url += "devices/extensions?device_name=";
-                                    }
-                                    $.ajaxSettings.async = false;
-                                    $.ajax({
-                                        type: 'GET',
-                                        url: url + this.name + '&extension_type=' + type.name,
-                                        contentType: "application/json",
-                                        success: function(field) {
-                                            result = field;
-                                        },
-                                        error: function(e) {
-                                            deferred.reject(e);
-                                        }
-                                    });
-                                    return result;
-                                }
-                            });
-                        });
-                    },
-                    error: function(e) {
-                        console.log(e.message);
-                    }
-                });
+        var httpServices = this._$http;
+        var qServices = this._$q;
 
-                deferred.resolve(data);
-            },
-            error: function(e) {
-                deferred.reject(e);
+        httpServices({
+            method: 'GET',
+            url: url,
+            headers: {
+                'Content-Type': 'application/json'
             }
+        }).success(function(data) {
+            var url = host + "/rest/api/";
+            if (applicationName) {
+                url += "app/" + applicationName + "/devices/extension-types?device_type=";
+            } else {
+                url += "devices/extension-types?device_type=";
+            }
+            //get all extension types
+            httpServices({
+                method: 'GET',
+                url: url + data.type,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).success(function(types) {
+
+                if (!types || types.length == 0) {
+                    deferred.resolve(data);
+                } else {
+                    var extensionRequests = [];
+                    var url = host + "/rest/api/";
+                    if (applicationName) {
+                        url += "app/" + applicationName + "/devices/extensions?device_name=";
+                    } else {
+                        url += "devices/extensions?device_name=";
+                    }
+                    angular.forEach(types, function(type) {
+                        // extension types
+                        extensionRequests.push(
+                            httpServices({
+                                method: 'GET',
+                                url: url + deviceName + '&extension_type=' + type.name,
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            }).catch(function(info) {
+                                console.warn(info);
+                            })
+                        );
+                    });
+
+                    qServices.all(extensionRequests).then(function(result) {
+                        result.forEach(function(extensionItem) {
+                            if (extensionItem && extensionItem.data) {
+                                data[extensionItem.data.type.name] = extensionItem.data;
+                            }
+                        });
+                        deferred.resolve(data);
+                    }, function(errors) {
+                        deferred.reject(error);
+                    });
+                }
+            }).error(function(error) {
+                deferred.reject(error);
+            });
+
+        }).error(function(error) {
+            deferred.reject(error);
         });
+
         return deferred.promise;
     }
 
@@ -393,44 +406,6 @@ class dataAccessApi {
             end = end.getTime();
         }
         var needLoad = true;
-        // if ($graphDataService.get(deviceKey + "/" + store + "/" + id)) {
-        //     //check data
-        //     var data = $graphDataService.get(deviceKey + "/" + store + "/" + id);
-        //     if (data) {
-        //         //
-        //         var temp_start = null;
-        //         var temp_end = null;
-        //         data.forEach(function(_item){
-        //             if(_item.timestamp >= end && temp_end == null){
-        //                 temp_end = _item.timestamp;
-        //             }
-        //             if(_item.timestamp <= start){
-        //                 temp_start =  _item.timestamp;
-        //             }
-        //
-        //         });
-        //         var checkLoad = false;
-        //         while (temp_start < temp_end) {
-        //             var _flag = false;
-        //             data.forEach(function(item) {
-        //                 if (item.timestamp == temp_start) {
-        //                     _flag = true;
-        //                 }
-        //             });
-        //             if (!_flag) {
-        //                 // doesn`t exist
-        //                 checkLoad = true;
-        //                 break;
-        //             }
-        //             temp_start += interval;
-        //             console.info(temp_start);
-        //         }
-        //         if (!checkLoad) {
-        //             needLoad = false;
-        //         }
-        //     }
-        // // }
-
         if (!needLoad) {
             // return data
             deferred.resolve($graphDataService.get(deviceKey + "/" + store + "/" + id));

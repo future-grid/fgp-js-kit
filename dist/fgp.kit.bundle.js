@@ -9,10 +9,9 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
     typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
     (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS));
-}(this, (function (angular$1,$,Dygraph,ngmap,chart_js) {
+}(this, (function (angular$1,jquery,Dygraph,ngmap,chart_js) {
 
 angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
-$ = 'default' in $ ? $['default'] : $;
 Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
 
 /**
@@ -227,62 +226,75 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
         url += 'devices?key=' + deviceKey;
     }
 
-    $.ajaxSettings.async = false;
-    $.ajax({
-        type: 'GET',
-        url: url,
-        contentType: "application/json",
-        success: function(data) {
-            var url = host + "/rest/api/";
-            if (applicationName) {
-                url += "app/" + applicationName + "/devices/extension-types?device_type=";
-            } else {
-                url += "devices/extension-types?device_type=";
-            }
-            $.ajaxSettings.async = false;
-            $.ajax({
-                type: 'GET',
-                url: url + data.type,
-                contentType: "application/json",
-                success: function(types) {
-                    angular$1.forEach(types, function(type) {
-                        Object.defineProperty(data, type.name, {
-                            get: function() {
-                                var result = null;
-                                var url = host + "/rest/api/";
-                                if (applicationName) {
-                                    url += "app/" + applicationName + "/devices/extensions?device_name=";
-                                } else {
-                                    url += "devices/extensions?device_name=";
-                                }
-                                $.ajaxSettings.async = false;
-                                $.ajax({
-                                    type: 'GET',
-                                    url: url + this.name + '&extension_type=' + type.name,
-                                    contentType: "application/json",
-                                    success: function(field) {
-                                        result = field;
-                                    },
-                                    error: function(e) {
-                                        deferred.reject(e);
-                                    }
-                                });
-                                return result;
-                            }
-                        });
-                    });
-                },
-                error: function(e) {
-                    console.log(e.message);
-                }
-            });
+    var httpServices = this._$http;
+    var qServices = this._$q;
 
-            deferred.resolve(data);
-        },
-        error: function(e) {
-            deferred.reject(e);
+    httpServices({
+        method: 'GET',
+        url: url,
+        headers: {
+            'Content-Type': 'application/json'
         }
+    }).success(function(data) {
+        var url = host + "/rest/api/";
+        if (applicationName) {
+            url += "app/" + applicationName + "/devices/extension-types?device_type=";
+        } else {
+            url += "devices/extension-types?device_type=";
+        }
+        //get all extension types
+        httpServices({
+            method: 'GET',
+            url: url + data.type,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).success(function(types) {
+
+            if (!types || types.length == 0) {
+                deferred.resolve(data);
+            } else {
+                var extensionRequests = [];
+                var url = host + "/rest/api/";
+                if (applicationName) {
+                    url += "app/" + applicationName + "/devices/extensions?device_name=";
+                } else {
+                    url += "devices/extensions?device_name=";
+                }
+                angular$1.forEach(types, function(type) {
+                    // extension types
+                    extensionRequests.push(
+                        httpServices({
+                            method: 'GET',
+                            url: url + deviceName + '&extension_type=' + type.name,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        }).catch(function(info) {
+                            console.warn(info);
+                        })
+                    );
+                });
+
+                qServices.all(extensionRequests).then(function(result) {
+                    result.forEach(function(extensionItem) {
+                        if (extensionItem && extensionItem.data) {
+                            data[extensionItem.data.type.name] = extensionItem.data;
+                        }
+                    });
+                    deferred.resolve(data);
+                }, function(errors) {
+                    deferred.reject(error);
+                });
+            }
+        }).error(function(error) {
+            deferred.reject(error);
+        });
+
+    }).error(function(error) {
+        deferred.reject(error);
     });
+
     return deferred.promise;
 };
 
@@ -578,44 +590,6 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
         end = end.getTime();
     }
     var needLoad = true;
-    // if ($graphDataService.get(deviceKey + "/" + store + "/" + id)) {
-    // //check data
-    // var data = $graphDataService.get(deviceKey + "/" + store + "/" + id);
-    // if (data) {
-    //     //
-    //     var temp_start = null;
-    //     var temp_end = null;
-    //     data.forEach(function(_item){
-    //         if(_item.timestamp >= end && temp_end == null){
-    //             temp_end = _item.timestamp;
-    //         }
-    //         if(_item.timestamp <= start){
-    //             temp_start =  _item.timestamp;
-    //         }
-    //
-    //     });
-    //     var checkLoad = false;
-    //     while (temp_start < temp_end) {
-    //         var _flag = false;
-    //         data.forEach(function(item) {
-    //             if (item.timestamp == temp_start) {
-    //                 _flag = true;
-    //             }
-    //         });
-    //         if (!_flag) {
-    //             // doesn`t exist
-    //             checkLoad = true;
-    //             break;
-    //         }
-    //         temp_start += interval;
-    //         console.info(temp_start);
-    //     }
-    //     if (!checkLoad) {
-    //         needLoad = false;
-    //     }
-    // }
-    // // }
-
     if (!needLoad) {
         // return data
         deferred.resolve($graphDataService.get(deviceKey + "/" + store + "/" + id));
@@ -903,7 +877,7 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
         var dom_datetime_interval = '<div ng-show="rangeSelectorBar" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">{{currentIntervalChoosed.name}}<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;"><li ng-repeat="interval in dateTimeIntervals"><a href="javascript:;" ng-click="changeInterval(interval)">{{interval.name}}</a></li></ul> </div>';
 
 
-        var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;height:auto;max-height:300px;overflow-x:hidden;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device.name}}</li></ul> </div>';
+        var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;height:auto;max-height:300px;overflow-x:hidden;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device[childrenDeviceNameColumn]}}</li></ul> </div>';
 
 
         var dom_real_time_grap = '<div class="modal fade " id="real_time_graph_' + attrs.id + '" role="dialog">' +
@@ -2112,6 +2086,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             var rangeLevel = null;
                             var otherLevels = [];
+                            var relationConfig = metadata.data.groups[2];
+                            if(relationConfig.nameColumn){
+                                $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
+                            }else{
+                                $scope.childrenDeviceNameColumn = "name";
+                            }
                             angular$1.forEach(metadata.data.groups[2].collections, function(level) {
                                 if (level.rows.length > 0) {
                                     if (rangeLevel != null) {
@@ -3500,6 +3480,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             //
                                             $scope.legendText_device_name = seriesName;
                                         }
+
                                         if (moment.tz.guess()) {
                                             $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
                                         } else {
