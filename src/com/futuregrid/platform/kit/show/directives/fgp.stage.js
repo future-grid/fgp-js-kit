@@ -14,7 +14,9 @@ class fgpStage {
             scatterColors: "=",
             standalone: "=",
             interactions: "=",
-            drill: "="
+            drill: "=",
+            highlights: "=",
+            eventsHandler: "="
         };
         this.replace = true;
         this.restrict = 'A';
@@ -42,7 +44,7 @@ class fgpStage {
         var graphBindingArray = [];
 
 
-        function findChild4Repeat(parentId, parentHtmlObj, arrayItems, newId,newScope) {
+        function findChild4Repeat(parentId, parentHtmlObj, arrayItems, newId, newScope) {
 
             for (var i = 0; i < arrayItems.length; i++) {
                 if ('edit' + parentId === arrayItems[i].parent) {
@@ -56,19 +58,18 @@ class fgpStage {
                     if (parentHtmlObj.find('#edit' + parentId).find("#" + id).length == 0) {
                         parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)(newScope));
                     }
-                    findChild4Repeat(arrayItems[i].id, currentItem, arrayItems,newScope);
-                }
-                else if ('detail_status_' + parentId === arrayItems[i].parent) {
+                    findChild4Repeat(arrayItems[i].id, currentItem, arrayItems, newScope);
+                } else if ('detail_status_' + parentId === arrayItems[i].parent) {
                     var currentItem = angular.element(arrayItems[i].html_render);
                     var id = arrayItems[i].id;
                     newScope.showdata[id] = arrayItems[i];
                     parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)(newScope));
-                    findChild4Repeat(arrayItems[i].id, currentItem, arrayItems,newScope);
+                    findChild4Repeat(arrayItems[i].id, currentItem, arrayItems, newScope);
                 }
             }
         }
 
-        function findChild(parentId, parentHtmlObj, arrayItems,newScope) {
+        function findChild(parentId, parentHtmlObj, arrayItems, newScope) {
 
             for (var i = 0; i < arrayItems.length; i++) {
                 if ('edit' + parentId === arrayItems[i].parent) {
@@ -76,76 +77,81 @@ class fgpStage {
                     var id = arrayItems[i].id;
                     newScope.showdata[id] = arrayItems[i];
                     parentHtmlObj.find('#edit' + parentId).append($compile(currentItem)(newScope));
-                    findChild(arrayItems[i].id, currentItem, arrayItems,newScope);
+                    findChild(arrayItems[i].id, currentItem, arrayItems, newScope);
                 } else if ('detail_status_' + parentId === arrayItems[i].parent) {
                     var currentItem = angular.element(arrayItems[i].html_render);
                     var id = arrayItems[i].id;
                     newScope.showdata[id] = arrayItems[i];
                     parentHtmlObj.find('#detail_status_' + parentId).append($compile(currentItem)(newScope));
-                    findChild(arrayItems[i].id, currentItem, arrayItems,newScope);
+                    findChild(arrayItems[i].id, currentItem, arrayItems, newScope);
                 }
             }
         }
 
         var newScope = null;
-        $scope.$watch('deviceName', function (newVal, oldVal) {
-            if(newVal){
+        $scope.$watch('deviceName', function(newVal, oldVal) {
+            if (newVal) {
                 $element.empty();
-                if(newScope){
+                if (newScope) {
                     newScope.$destroy();
                 }
                 newScope = $rootScope.$new(true);
                 newScope["showdata"] = {};
 
-                newScope.$on('bindChildChartEvent', function (evt, msg) {
+                newScope.$on('bindChildChartEvent', function(evt, msg) {
                     graphBindingArray.push(msg);
                 });
 
                 newScope["interactions"] = $scope.interactions;
                 newScope["drill"] = $scope.drill;
+                newScope["highlights"] = $scope.highlights;
+                newScope["eventsHandler"] = $scope.eventsHandler;
 
-                newScope.$on('bindChildRepeatEvent', function (evt, msg) {
-                    angular.forEach($scope.configuration, function (item) {
+                newScope.$on('bindChildRepeatEvent', function(evt, msg) {
+                    angular.forEach($scope.configuration, function(item) {
                         if (item.id == msg.id) {
                             var items = angular.element("body").find("#" + item.id).children();
-                            angular.forEach(items, function (item_new) {
+                            angular.forEach(items, function(item_new) {
                                 newScope.showdata[item_new.id] = item;
                                 var currentElement = angular.element(item_new);
                                 if (currentElement.attr("dulp")) {
                                     var groupItems = angular.element("body").find("div[dulp='" + item.id + "']");
-                                    angular.forEach(groupItems, function (dulpItem) {
-                                        findChild4Repeat(item.id, angular.element(dulpItem), $scope.configuration, item_new.id,newScope);
+                                    angular.forEach(groupItems, function(dulpItem) {
+                                        findChild4Repeat(item.id, angular.element(dulpItem), $scope.configuration, item_new.id, newScope);
                                     });
-                                }else{
-                                    findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id,newScope);
+                                } else {
+                                    findChild4Repeat(item.id, currentElement, $scope.configuration, item_new.id, newScope);
                                 }
                             });
                         }
                     });
                 });
 
-                newScope.$on('listStyleEvent', function (evt, param) {
+                newScope.$on('listStyleEvent', function(evt, param) {
                     var config = newScope.showdata[param.id.replace("edit", "")];
                     param.callback(config.metadata.data.datasource.style);
                 });
 
 
-                newScope.$on('fetchWidgetMetadataEvent', function (evt, msg) {
-                    angular.forEach(newScope.showdata, function (metadata, key) {
+                newScope.$on('fetchWidgetMetadataEvent', function(evt, msg) {
+                    angular.forEach(newScope.showdata, function(metadata, key) {
                         if (key == msg.id) {
-                            msg.callback({data: metadata, from: 'show'});
+                            msg.callback({
+                                data: metadata,
+                                from: 'show'
+                            });
                             return;
                         }
                     });
                 });
 
                 // refersh
-                angular.forEach($scope.configuration, function (item) {
+                angular.forEach($scope.configuration, function(item) {
                     if ('workingArea' === item.parent) {
                         var currentItem = angular.element(item.html_render);
                         newScope.showdata[item.id] = item;
                         $element.append($compile(currentItem)(newScope));
-                        findChild(item.id, currentItem, $scope.configuration,newScope);
+                        findChild(item.id, currentItem, $scope.configuration, newScope);
                     }
                 });
                 /**
@@ -156,22 +162,28 @@ class fgpStage {
                     sendDeviceData(newScope);
                 }
                 // all item created;
-                $timeout(function () {
-                    angular.forEach(graphBindingArray, function (graph) {
-                        newScope.$broadcast('bindFatherGraphEvent', {parent: graph.graphs, children: graph.children});
+                $timeout(function() {
+                    angular.forEach(graphBindingArray, function(graph) {
+                        newScope.$broadcast('bindFatherGraphEvent', {
+                            parent: graph.graphs,
+                            children: graph.children
+                        });
                     });
                 });
             }
         });
 
 
-        var sendDeviceData = function (newScope) {
-                dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function (data) {
-                    // send device info to all widget
-                    $timeout(function () {
-                        newScope.$broadcast('deviceInfoEvent', {device: data, from: 'application'});
+        var sendDeviceData = function(newScope) {
+            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function(data) {
+                // send device info to all widget
+                $timeout(function() {
+                    newScope.$broadcast('deviceInfoEvent', {
+                        device: data,
+                        from: 'application'
                     });
                 });
+            });
         };
     }
     static buildFactory() {
@@ -180,4 +192,7 @@ class fgpStage {
     }
 }
 
-export {fgpStage as default}
+export {
+    fgpStage as
+    default
+}

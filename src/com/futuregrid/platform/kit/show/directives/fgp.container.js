@@ -9,7 +9,9 @@ class fgpWidgetContainer {
         this.restrict = 'E';
         this.scope = {
             interactions: "=",
-            drill: "="
+            drill: "=",
+            highlights: "=",
+            eventsHandler:"="
         };
     }
 

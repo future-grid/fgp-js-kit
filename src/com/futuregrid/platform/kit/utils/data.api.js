@@ -10,9 +10,10 @@ class dataAccessApi {
      * @param $http
      * @param $q
      */
-    constructor($http, $q, $cacheFactory, $interval, graphDataService) {
+    constructor($http, $q, $cacheFactory, $interval, graphDataService, $location) {
         this._$http = $http;
         this._$q = $q;
+        this._$location = $location;
         // get cache
         this.indexCache = $cacheFactory('indexCache');
         this.deviceStores = $cacheFactory('deviceStores');
@@ -29,6 +30,14 @@ class dataAccessApi {
      * @returns {*}
      */
     deviceInfo(host, deviceName, deviceKey, applicationName) {
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
+
         var deferred = this._$q.defer();
         var url = host + "/rest/api/";
 
@@ -122,6 +131,14 @@ class dataAccessApi {
      * @returns {Promise}
      */
     deviceInitInfo(host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
+
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
             params: {
@@ -149,6 +166,13 @@ class dataAccessApi {
      * @returns {Promise}
      */
     childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels, fields) {
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
             params: {
@@ -179,6 +203,13 @@ class dataAccessApi {
      * @returns {Promise}
      */
     childrenExtensionInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels, fields) {
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
         var deferred = this._$q.defer();
         this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
             params: {
@@ -208,6 +239,13 @@ class dataAccessApi {
      * @returns {Promise}
      */
     devicesExtensionInitInfo(host, application, devicesKey, storeSchema, extensionType, rangeLevel, otherLevels, fields) {
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
         var result = {};
         var promises = [];
         var __http = this._$http;
@@ -338,6 +376,14 @@ class dataAccessApi {
      * @param end
      */
     devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval) {
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
+
         var start_point = new Date().getTime();
         if (!deviceInfo || deviceInfo.length == 0) {
             return false;
@@ -395,7 +441,15 @@ class dataAccessApi {
 
 
     deviceStoreData(id, host, application, deviceKey, storeSchema, store, tree, start, end, fields, interval) {
-        //
+
+        var ip = this._$location.host();
+        var port = this._$location.port();
+        var protocol = this._$location.protocol();
+        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
+            // change it to real sever host + port
+            host = protocol +"://"+ip+":"+port;
+        }
+
         var $graphDataService = this._$graphDataService;
         // new way to get the data without tree index.
         var deferred = this._$q.defer();
@@ -547,14 +601,14 @@ class dataAccessApi {
     }
 
 
-    static buildFactory($http, $q, $cacheFactory, $interval, graphDataService) {
-        dataAccessApi.instance = new dataAccessApi($http, $q, $cacheFactory, $interval, graphDataService);
+    static buildFactory($http, $q, $cacheFactory, $interval, graphDataService, $location) {
+        dataAccessApi.instance = new dataAccessApi($http, $q, $cacheFactory, $interval, graphDataService, $location);
         return dataAccessApi.instance;
     }
 
 }
 
-dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval', 'graphDataService'];
+dataAccessApi.$inject = ['$http', '$q', '$cacheFactory', '$interval', 'graphDataService', '$location'];
 
 export {
     dataAccessApi as
