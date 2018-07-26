@@ -1362,12 +1362,21 @@ class fgpWidgetGraph {
                                     var colors = [];
                                     // set button status
                                     if (button["active"]) {
-                                        // make them random colors
+                                        // make them oragin colors
                                         angular.forEach($scope.childrenDevices, function(device, $index) {
-                                            if ($scope.defaultColors[$index]) {
-                                                colors.push($scope.defaultColors[$index]);
-                                            } else {
-                                                colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                                            if($scope.childrenColors){
+                                                $scope.childrenColors.forEach(function(_item) {
+                                                    if (_item.name == device.name) {
+                                                        colors.push(_item.color);
+                                                    }
+                                                });
+                                            }else{
+                                                // need to change
+                                                if ($scope.defaultColors[$index]) {
+                                                    colors.push($scope.defaultColors[$index]);
+                                                } else {
+                                                    colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                                                }
                                             }
                                         });
                                         button["active"] = false;
@@ -1993,13 +2002,28 @@ class fgpWidgetGraph {
                 updateChart(metadata, store, allData, rangeTree);
             };
 
+            $scope.childrenColors = [];
+
             var initChildrenChart = function(deviceDatas) {
                 var devicesInfo = {};
                 $scope.intevals.device = [];
                 //range data with all device
                 $scope.childTrees = [];
                 $scope.childrenDevices = [];
-
+                // we should give colors to all devices (no matter has data or not)
+                deviceDatas.forEach(function(_device, _index) {
+                    if ($scope.defaultColors[_index]) {
+                        $scope.childrenColors.push({
+                            name: _device.device.name,
+                            color: $scope.defaultColors[_index]
+                        });
+                    } else {
+                        $scope.childrenColors.push({
+                            name: _device.device.name,
+                            color: '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
+                        });
+                    }
+                });
                 angular.forEach(deviceDatas, function(deviceData, _index) {
                     var device = {};
                     device["show"] = true;
@@ -2096,13 +2120,12 @@ class fgpWidgetGraph {
                 var showY2axis = false;
                 var counter = 0;
                 angular.forEach(devicesInfo, function(device, key) {
-                    if ($scope.defaultColors[counter]) {
-                        colors.push($scope.defaultColors[counter]);
-                    } else {
-                        colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
-                    }
+                    // if ($scope.defaultColors[counter]) {
+                    //     colors.push($scope.defaultColors[counter]);
+                    // } else {
+                    //     colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                    // }
                     counter++;
-
                     angular.forEach(collections, function(collection) {
                         if (collection.name == device.range.store) {
                             $scope.currentIntervalName = device.range.store;
@@ -2176,7 +2199,15 @@ class fgpWidgetGraph {
                 //update chart
                 if ($scope.currentChart) {
                     $scope.rangeChildrenData = allLines;
-
+                    // reset colors by labels
+                    colors = [];
+                    labels.forEach(function(key) {
+                        $scope.childrenColors.forEach(function(_item) {
+                            if (_item.name == key) {
+                                colors.push(_item.color);
+                            }
+                        });
+                    });
                     if (showY2axis) {
                         $scope.childrenRangeConfig = {
                             'connectSeparatedPoints': connectSeparatedPoints,
@@ -2188,8 +2219,6 @@ class fgpWidgetGraph {
                             highlightCircleSize: 2,
 
                             strokeBorderWidth: 1,
-                            // data formate
-                            labels: ['x'].concat(sampleData.labels),
                             highlightSeriesOpts: {
                                 strokeWidth: 3,
                                 strokeBorderWidth: 1,
@@ -2299,7 +2328,6 @@ class fgpWidgetGraph {
                             };
                             $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
                         } else {
-
                             $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
                                 // $scope.chartDateTime = {
@@ -2357,13 +2385,7 @@ class fgpWidgetGraph {
                 var counter = 0;
                 var showY2axis = null;
                 angular.forEach(allData, function(device) {
-                    if ($scope.defaultColors[counter]) {
-                        colors.push($scope.defaultColors[counter]);
-                    } else {
-                        colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
-                    }
                     counter++;
-
                     if (device.data.length > 0) {
                         labels.push(device.device);
                         angular.forEach(collections, function(collection) {
@@ -2474,6 +2496,17 @@ class fgpWidgetGraph {
                         if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
                             connectSeparatedPoints = true; //'connectSeparatedPoints': connectSeparatedPoints,
                         }
+
+                        //rest colors by labels
+                        colors = [];
+                        labels.forEach(function(key) {
+                            $scope.childrenColors.forEach(function(_item) {
+                                if (_item.name == key) {
+                                    colors.push(_item.color);
+                                }
+                            });
+                        });
+
                         if (showY2axis) {
                             $scope.currentChartOptions = {
                                 'connectSeparatedPoints': connectSeparatedPoints,
@@ -2617,6 +2650,13 @@ class fgpWidgetGraph {
                                                     colorIndex = _index;
                                                 }
                                             });
+
+                                            $scope.childrenColors.forEach(function(_item) {
+                                                if (_item.name == seriesName) {
+                                                    $scope.legendColor = _item.color;
+                                                }
+                                            });
+
                                             $scope.legendColor = $scope.currentChart.user_attrs_.colors[colorIndex];
                                             // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                             $scope.legendText_device = seriesName;
