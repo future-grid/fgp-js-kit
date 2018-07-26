@@ -3561,8 +3561,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 $scope.legendColor = _item.color;
                                             }
                                         });
-
-                                        $scope.legendColor = $scope.currentChart.user_attrs_.colors[colorIndex];
                                         // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
                                         $scope.legendText_device = seriesName;
                                         $scope.legendText_device_name = "";
