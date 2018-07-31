@@ -183,6 +183,11 @@ class fgpWidgetGraph {
                             }
                         }
                         var zoomRange = g.xAxisZoomRange;
+
+                        if(!zoomRange){
+                            return false;
+                        }
+
                         if (g.xAxisZoomRange[0] instanceof Date) {
                             zoomRange[0] = g.xAxisZoomRange[0].getTime();
                         }
@@ -384,7 +389,9 @@ class fgpWidgetGraph {
                 } else {
                     // middle zoom
                     // console.info("h")
-                    zoom(g, percentage, xPct, yPct, 'h', null);
+                    if(scope.basicInfo && scope.basicInfo.range_show){
+                        zoom(g, percentage, xPct, yPct, 'h', null);
+                    }
                 }
                 Dygraph.cancelEvent(e);
                 timeOut(function() {
