@@ -231,7 +231,7 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
 
     var deferred = this._$q.defer();
@@ -259,35 +259,41 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
     }).success(function(data) {
         var url = host + "/rest/api/";
         if (applicationName) {
-            url += "app/" + applicationName + "/devices/extension-types?device_type=";
+            url += "app/" + applicationName + "/devices/extension-types";
         } else {
-            url += "devices/extension-types?device_type=";
+            url += "devices/extension-types";
         }
         //get all extension types
         httpServices({
             method: 'GET',
-            url: url + data.type,
+            url: url,
+            params: {
+                'device_type': data.type
+            },
             headers: {
                 'Content-Type': 'application/json'
             }
         }).success(function(types) {
-
             if (!types || types.length == 0) {
                 deferred.resolve(data);
             } else {
                 var extensionRequests = [];
                 var url = host + "/rest/api/";
                 if (applicationName) {
-                    url += "app/" + applicationName + "/devices/extensions?device_name=";
+                    url += "app/" + applicationName + "/devices/extensions";
                 } else {
-                    url += "devices/extensions?device_name=";
+                    url += "devices/extensions";
                 }
                 angular$1.forEach(types, function(type) {
                     // extension types
                     extensionRequests.push(
                         httpServices({
                             method: 'GET',
-                            url: url + deviceName + '&extension_type=' + type.name,
+                            params: {
+                                'device_name': deviceName,
+                                'extension_type': type.name
+                            },
+                            url: url,
                             headers: {
                                 'Content-Type': 'application/json'
                             }
@@ -332,7 +338,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
 
     var deferred = this._$q.defer();
@@ -367,7 +373,7 @@ dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
     var deferred = this._$q.defer();
     this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
@@ -404,7 +410,7 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
     var deferred = this._$q.defer();
     this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
@@ -440,7 +446,7 @@ dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInit
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
     var result = {};
     var promises = [];
@@ -577,7 +583,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
 
     var start_point = new Date().getTime();
@@ -643,7 +649,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
     var protocol = this._$location.protocol();
     if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
         // change it to real sever host + port
-        host = protocol +"://"+ip+":"+port;
+        host = protocol + "://" + ip + ":" + port;
     }
 
     var $graphDataService = this._$graphDataService;
