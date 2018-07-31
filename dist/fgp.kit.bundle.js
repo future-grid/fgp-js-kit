@@ -2269,13 +2269,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 if (button["active"]) {
                                     // make them oragin colors
                                     angular$1.forEach($scope.childrenDevices, function(device, $index) {
-                                        if($scope.childrenColors){
+                                        if ($scope.childrenColors) {
                                             $scope.childrenColors.forEach(function(_item) {
                                                 if (_item.name == device.name) {
                                                     colors.push(_item.color);
                                                 }
                                             });
-                                        }else{
+                                        } else {
                                             // need to change
                                             if ($scope.defaultColors[$index]) {
                                                 colors.push($scope.defaultColors[$index]);
@@ -2695,45 +2695,83 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
                         });
-
-                        $scope.auto_fields = fields;
-                        dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, expectedInterval).then(function(data) {
-                            var showData = [];
-                            angular$1.forEach(data, function(arr, key) {
-                                var deviceData = [].concat(arr);
-                                showData.push({
-                                    device: key,
-                                    data: deviceData
+                        var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval) {
+                            $scope.auto_fields = fields;
+                            dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, expectedInterval).then(function(data) {
+                                var showData = [];
+                                angular$1.forEach(data, function(arr, key) {
+                                    var deviceData = [].concat(arr);
+                                    showData.push({
+                                        device: key,
+                                        data: deviceData
+                                    });
                                 });
-                                if (deviceData.length == 0) {
-                                    var deleteIndex = -1;
-                                    // no data
-                                    angular$1.forEach($scope.childrenDevices, function(item, index) {
-                                        if (item.name == key) {
-                                            deleteIndex = index;
+                                // order childrenDevices by showData
+                                var devicesMatchData = [];
+                                angular$1.forEach(showData, function(item, _index) {
+                                    angular$1.forEach($scope.childrenDevices, function(device) {
+                                        // just show devices with data
+                                        if (item.device == device.name && item.data.length > 0) {
+                                            devicesMatchData.splice(_index, 0, device);
                                         }
                                     });
-                                    if (deleteIndex != -1) {
-                                        $scope.childrenDevices.splice(deleteIndex, 1);
+                                });
+                                //reset childrenDevies
+                                $scope.childrenDevices = devicesMatchData;
+                                //get configuration
+                                updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
+                            }, function(data) {
+                                console.info(data);
+                            });
+                        };
+                        if (deviceInfo.length == 0) {
+                            var rangeLevel = null;
+                            var otherLevels = [];
+                            var relationConfig = metadata.data.groups[2];
+                            if (relationConfig.nameColumn) {
+                                $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
+                            } else {
+                                $scope.childrenDeviceNameColumn = "name";
+                            }
+                            angular$1.forEach(metadata.data.groups[2].collections, function(level) {
+                                if (level.rows.length > 0) {
+                                    if (rangeLevel != null) {
+                                        otherLevels.push(rangeLevel);
                                     }
+                                    rangeLevel = level.name;
                                 }
                             });
-                            // order childrenDevices by showData
-                            var devicesMatchData = [];
-                            angular$1.forEach(showData, function(item) {
-                                angular$1.forEach($scope.childrenDevices, function(device) {
-                                    if (item.device == device.name) {
-                                        devicesMatchData.push(device);
+
+                            // try to find
+                            if ($scope.interactions.graphs.device.children.data) {
+                                var devices_key = $scope.interactions.graphs.device.children.data().then(
+                                    function(data) {
+                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                            function(data) {
+                                                if (data) {
+                                                    data.forEach(function (_device) {
+                                                        deviceInfo.push(_device.device);
+                                                    });
+                                                }
+                                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval);
+                                            },
+                                            function(error) {
+                                                console.error(error);
+                                            }
+                                        );
+                                    },
+                                    function(error) {
+                                        return;
                                     }
-                                });
-                            });
-                            //reset childrenDevies
-                            $scope.childrenDevices = devicesMatchData;
-                            //get configuration
-                            updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
-                        }, function(data) {
-                            console.info(data);
-                        });
+                                );
+                            } else {
+                                return;
+                            }
+                        } else {
+                            _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval);
+                        }
+
+
                         $scope.fixGraphWithGap();
                     } else {
                         // cal tree
@@ -2933,7 +2971,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 var device = {};
                 device["show"] = true;
                 angular$1.merge(device, deviceData.device, deviceData.extension);
-                $scope.childrenDevices.push(device);
+                // $scope.childrenDevices.push(device);
                 var trees = deviceData.trees;
                 device["trees"] = trees;
                 $scope.childTrees.push(device);
