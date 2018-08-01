@@ -1021,9 +1021,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     var axis = g.axes_[0];
                     var axis_data = context.axes[0];
                     var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
-
                     var boundedValue = context.boundedValues ? context.boundedValues[0] : null;
-
                     // In log scale, maxValue and minValue are the logs of those values.
                     var maxValue = axis_data.initialTopValue + unitsDragged;
                     if (boundedValue) {
@@ -1171,19 +1169,29 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             var yAxes = g.axes_;
             var newYAxes = [];
             for (var i = 0; i < g.numAxes(); i++) {
-                newYAxes[i] = adjustAxis(yAxes[i].valueRange, zoomInPercentage, yBias);
+                if(yAxes[i].valueWindow){
+                    newYAxes[i] = adjustAxis(yAxes[i].valueWindow, zoomInPercentage, yBias);
+                }else{
+                    newYAxes[i] = adjustAxis(yAxes[i].valueRange, zoomInPercentage, yBias);
+                }
             }
             if ('v' == direction) {
                 if ('l' == side) {
                     yAxes[0]['valueRange'] = newYAxes[0];
                     yAxes[0]['valueWindow'] = newYAxes[0];
+                    if(scope.currentInitScaleLevelLeftConf){
+                        scope.currentInitScaleLevelLeftConf.range = newYAxes[0];
+                    }
                 } else if ('r' == side && g.numAxes() == 2) {
                     yAxes[1]['valueRange'] = newYAxes[1];
                     yAxes[1]['valueWindow'] = newYAxes[1];
+                    if(scope.currentInitScaleLevelRightConf){
+                        scope.currentInitScaleLevelRightConf.range = newYAxes[1];
+                    }
                 }
+
                 g.drawGraph_(false);
             } else {
-
                 var ranges = [];
                 angular$1.forEach(g.xAxisRange(), function(range) {
                     if (range instanceof Date) {
@@ -1423,52 +1431,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         };
         scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
         element.find("canvas").css("zIndex", 99);
-        //
-        // //create another Canvas
-        // var _canvas_selection = document.createElement("canvas");
-        // // add it into dygraph
-        // scope.currentChart.graphDiv.appendChild(_canvas_selection);
-        // // resize
-        // var _width = scope.currentChart.width_;
-        // var _height = scope.currentChart.height_;
-        // _canvas_selection.width = _width;
-        // _canvas_selection.height = _height;
-        // _canvas_selection.style.width = _width + "px";// for IE
-        // _canvas_selection.style.height = _height + "px";  // for IE
-        //
-        //
-        // var drawKeyPermission = false;
-        // var drawMousePermission = false;
-        // _canvas_selection.addEventListener( "keydown", function(e){
-        // if(e.keyCode == 87){ //  W
-        //     drawKeyPermission = true;
-        // }
-        // }, false);
-        // _canvas_selection.addEventListener( "keyUp", function(e){
-        // drawMousePermission = false;
-        // }, false);
-        //
-        // _canvas_selection.addEventListener( "mousedown", function(){
-        // drawMousePermission = true;
-        // }, false);
-        //
-        //
-        //
-        //
-        //
-        // // add event
-        // // add functions for this canvas
-        // var selection_ctx = _canvas_selection.getContext("2d"); // used for drewing rect
-        // // clear first
-        // ctx.clearRect(0, 0, _width, _height);
-        // ctx.strokeStyle = "rgba(0, 0, 0,0.3)"; // black
-
-
-
-
-
-
-
         var timer_auto = null;
         var process_bar_timer = null;
         element.find("#real_time_graph_" + attrs.id).on("hidden.bs.modal", function() {
@@ -3383,6 +3345,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 min: null,
                 max: null
             };
+
+
+            var initScale = null;
+            if (relationConfig.initScale) {
+                initScale = relationConfig.initScale; // {left:{level:"",range:[num1,num2]},right:{}}
+            }
+
+
             var counter = 0;
             var showY2axis = null;
             angular$1.forEach(allData, function(device) {
@@ -3741,6 +3711,37 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             // showRangeSelector: true
                         });
                     }
+                    // reset l & r axes window
+                    var axesRight = $scope.currentChart.axes_[1];
+                    var axesLeft = $scope.currentChart.axes_[0];
+                    if (initScale && initScale.left && initScale.left.length > 0) {
+                        //init scale found
+                        initScale.left.forEach(function(_levelConfig) {
+                            // find current
+                            if (store == _levelConfig.level) {
+                                // found it
+                                // set
+                                axesLeft.valueWindow = _levelConfig.range;
+                                $scope.currentInitScaleLevelLeftConf = _levelConfig;
+                                $scope.currentChart.drawGraph_(false);
+                            }
+                        });
+                    }
+
+                    if (initScale && initScale.right && initScale.right.length > 0) {
+                        //init scale found
+                        initScale.right.forEach(function(_levelConfig) {
+                            // find current
+                            if (store == _levelConfig.level) {
+                                // found it
+                                // set
+                                axesRight.valueWindow = _levelConfig.range;
+                                $scope.currentInitScaleLevelRightConf = _levelConfig;
+                                $scope.currentChart.drawGraph_(false);
+                            }
+                        });
+                    }
+
                     $scope.loadingShow = false;
                 }
             }
@@ -4019,6 +4020,38 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'colors': colors
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 });
+
+                                // reset l & r axes window
+                                var axesRight = $scope.currentChart.axes_[0];
+                                var axesLeft = $scope.currentChart.axes_[1];
+                                if (initScale && initScale.left && initScale.left.length > 0) {
+                                    //init scale found
+                                    initScale.left.forEach(function(_levelConfig) {
+                                        // find current
+                                        if (store == _levelConfig.level) {
+                                            // found it
+                                            // set
+                                            axesLeft.valueWindow = _levelConfig.range;
+                                            $scope.currentInitScaleLevelLeftConf = _levelConfig;
+                                            $scope.currentChart.drawGraph_(false);
+                                        }
+                                    });
+                                }
+
+                                if (initScale && initScale.right && initScale.right.length > 0) {
+                                    //init scale found
+                                    initScale.right.forEach(function(_levelConfig) {
+                                        // find current
+                                        if (store == _levelConfig.level) {
+                                            // found it
+                                            // set
+                                            axesRight.valueWindow = _levelConfig.range;
+                                            $scope.currentInitScaleLevelRightConf = _levelConfig;
+                                            $scope.currentChart.drawGraph_(false);
+                                        }
+                                    });
+                                }
+
                             }
                             $scope.loadingShow = false;
                         }
@@ -4049,6 +4082,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 left: deviceConfig.leftYAxis,
                 right: deviceConfig.rightYAxis
             };
+            var initScale = null;
+            if (deviceConfig.initScale) {
+                initScale = deviceConfig.initScale; // {left:{level:"",range:[num1,num2]},right:{}}
+            }
             var allLines = [];
             //0 for y  1 for y2
             var yRanges = [{
@@ -4333,6 +4370,38 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
                             $scope.currentChart.updateOptions($scope.rangeConfig);
+                            // reset l & r axes window
+                            var axesRight = $scope.currentChart.axes_[1];
+                            var axesLeft = $scope.currentChart.axes_[0];
+                            if (initScale && initScale.left && initScale.left.length > 0) {
+                                //init scale found
+                                initScale.left.forEach(function(_levelConfig) {
+                                    // find current
+                                    if (store == _levelConfig.level) {
+                                        // found it
+                                        // set
+                                        axesLeft.valueWindow = _levelConfig.range;
+                                        $scope.currentInitScaleLevelLeftConf = _levelConfig;
+                                        $scope.currentChart.drawGraph_(false);
+                                    }
+                                });
+                            }
+
+                            if (initScale && initScale.right && initScale.right.length > 0) {
+                                //init scale found
+                                initScale.right.forEach(function(_levelConfig) {
+                                    // find current
+                                    if (store == _levelConfig.level) {
+                                        // found it
+                                        // set
+                                        axesRight.valueWindow = _levelConfig.range;
+                                        $scope.currentInitScaleLevelRightConf = _levelConfig;
+                                        $scope.currentChart.drawGraph_(false);
+                                    }
+                                });
+                            }
+
+
                             $scope.currentChartOptions = $scope.rangeConfig;
                         }
                         //bind
@@ -4419,7 +4488,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnPanVULeft = function() {
             var g = $scope.currentChart;
             var yAxes = g.axes_;
-            var range = yAxes[0].valueRange;
+            var range =[];
+            if(yAxes[0].valueWindow){
+                range = yAxes[0].valueWindow;
+            }else{
+                range = yAxes[0].valueRange;
+            }
             yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
             yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
@@ -4429,7 +4503,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnPanVDLeft = function() {
             var g = $scope.currentChart;
             var yAxes = g.axes_;
-            var range = yAxes[0].valueRange;
+            var range =[];
+            if(yAxes[0].valueWindow){
+                range = yAxes[0].valueWindow;
+            }else{
+                range = yAxes[0].valueRange;
+            }
             yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
             yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
@@ -4439,7 +4518,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnPanVURight = function() {
             var g = $scope.currentChart;
             var yAxes = g.axes_;
-            var range = yAxes[1].valueRange;
+            var range =[];
+            if(yAxes[1].valueWindow){
+                range = yAxes[1].valueWindow;
+            }else{
+                range = yAxes[1].valueRange;
+            }
             yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
             yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
@@ -4448,7 +4532,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnPanVDRight = function() {
             var g = $scope.currentChart;
             var yAxes = g.axes_;
-            var range = yAxes[1].valueRange;
+            var range =[];
+            if(yAxes[1].valueWindow){
+                range = yAxes[1].valueWindow;
+            }else{
+                range = yAxes[1].valueRange;
+            }
             yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
             yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
             g.drawGraph_(false);
