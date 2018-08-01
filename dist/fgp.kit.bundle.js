@@ -1565,6 +1565,8 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                         angular$1.forEach(collection.rows, function(row) {
                             labels.push(row.label);
                             colors.push(row.color);
+
+
                             if (row.yaxis == 0) {
                                 series[row.label] = {
                                     'axis': 'y1'
@@ -1576,39 +1578,49 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                                 showY2axis = true;
                             }
                             var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
+                            var filterF = null; // this is a function
+                            if (row.filter) {
+                                filterF = row.filter;
+                            }
                             // add value
                             var counter = 0;
                             angular$1.forEach(allLines, function(realLine) {
                                 try {
                                     var value = f(graph_data.data[counter]);
-                                    realLine.push(value);
-                                    if (row.yaxis == 0) {
-                                        if (yRanges[0].min == null) {
-                                            yRanges[0].min = value;
-                                        }
-                                        if (yRanges[0].max == null) {
-                                            yRanges[0].max = value;
-                                        }
-                                        if (yRanges[0].min > value) {
-                                            yRanges[0].min = value;
-                                        }
-                                        if (yRanges[0].max < value) {
-                                            yRanges[0].max = value;
+                                    if ((filterF && filterF(falue)) || !filterF) {
+                                        realLine.push(value);
+                                        if (row.yaxis == 0) {
+                                            if (yRanges[0].min == null) {
+                                                yRanges[0].min = value;
+                                            }
+                                            if (yRanges[0].max == null) {
+                                                yRanges[0].max = value;
+                                            }
+                                            if (yRanges[0].min > value) {
+                                                yRanges[0].min = value;
+                                            }
+                                            if (yRanges[0].max < value) {
+                                                yRanges[0].max = value;
+                                            }
+                                        } else {
+                                            if (yRanges[1].min == null) {
+                                                yRanges[1].min = value;
+                                            }
+                                            if (yRanges[1].max == null) {
+                                                yRanges[1].max = value;
+                                            }
+                                            if (yRanges[1].min > value) {
+                                                yRanges[1].min = value;
+                                            }
+                                            if (yRanges[1].max < value) {
+                                                yRanges[1].max = value;
+                                            }
                                         }
                                     } else {
-                                        if (yRanges[1].min == null) {
-                                            yRanges[1].min = value;
-                                        }
-                                        if (yRanges[1].max == null) {
-                                            yRanges[1].max = value;
-                                        }
-                                        if (yRanges[1].min > value) {
-                                            yRanges[1].min = value;
-                                        }
-                                        if (yRanges[1].max < value) {
-                                            yRanges[1].max = value;
-                                        }
+                                        realLine.push(null);
                                     }
+
+
                                 } catch (ex) {
                                     realLine.push(null);
                                 }
@@ -2346,10 +2358,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     }
                                 });
                                 // update visibility once
-                                $timeout(function(){
+                                $timeout(function() {
                                     var oldVisibility = $scope.currentChart.getOption('visibility');
                                     // reset by new Visibility
-                                    v.forEach(function(item, _index){
+                                    v.forEach(function(item, _index) {
                                         oldVisibility[_index] = item;
                                     });
                                     $scope.currentChart.updateOptions({
@@ -2397,10 +2409,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
                                 //
                                 // update visibility once
-                                $timeout(function(){
+                                $timeout(function() {
                                     var oldVisibility = $scope.currentChart.getOption('visibility');
                                     // reset by new Visibility
-                                    v.forEach(function(item, _index){
+                                    v.forEach(function(item, _index) {
                                         oldVisibility[_index] = item;
                                     });
                                     $scope.currentChart.updateOptions({
@@ -3106,17 +3118,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var showY2axis = false;
             var counter = 0;
             angular$1.forEach(devicesInfo, function(device, key) {
-                // if ($scope.defaultColors[counter]) {
-                // colors.push($scope.defaultColors[counter]);
-                // } else {
-                // colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
-                // }
                 counter++;
                 angular$1.forEach(collections, function(collection) {
                     if (collection.name == device.range.store) {
                         $scope.currentIntervalName = device.range.store;
                         var originalData = device.data;
-
                         // always same for each device
                         if (collection.rows[0].yaxis == 0) {
                             series[collection.rows[0].label] = {
@@ -3130,6 +3136,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.showY2Btns = true;
                         }
                         labels.push(key); // put the name here and
+                        var filterF = null;
+                        if (collection.rows[0].filter) {
+                            filterF = collection.rows[0].filter;
+                        }
+
                         // make a line
                         var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                         // add value
@@ -3140,21 +3151,25 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 if (realLine[0].getTime() == odata.timestamp) {
                                     try {
                                         var value = f(odata);
-                                        realLine.push(value);
-                                        if (yRange.min == null) {
-                                            yRange.min = value;
-                                        }
+                                        if ((filterF && filterF(value)) || !filterF) {
+                                            realLine.push(value);
+                                            if (yRange.min == null) {
+                                                yRange.min = value;
+                                            }
 
-                                        if (yRange.max == null) {
-                                            yRange.max = value;
-                                        }
+                                            if (yRange.max == null) {
+                                                yRange.max = value;
+                                            }
 
-                                        if (yRange.min > value) {
-                                            yRange.min = value;
-                                        }
+                                            if (yRange.min > value) {
+                                                yRange.min = value;
+                                            }
 
-                                        if (yRange.max < value) {
-                                            yRange.max = value;
+                                            if (yRange.max < value) {
+                                                yRange.max = value;
+                                            }
+                                        } else {
+                                            realLine.push(null);
                                         }
                                     } catch (ex) {
                                         realLine.push(null);
@@ -3389,6 +3404,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.showY2Btns = true;
                             }
                             var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
+                            var filterF = null;
+                            if (collection.rows[0].filter) {
+                                filterF = collection.rows[0].filter;
+                            }
                             var tempData = [];
                             var tempTime = [];
                             // make data
@@ -3396,27 +3415,33 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 var dateTime = new Date(data.timestamp);
                                 try {
                                     var value = f(data);
-                                    tempData.push({
-                                        timestamp: dateTime,
-                                        value: value
-                                    });
+                                    if ((filterF && filterF(value)) || !filterF) {
+                                        tempData.push({
+                                            timestamp: dateTime,
+                                            value: value
+                                        });
 
-                                    if (yRange.min == null) {
-                                        yRange.min = value;
+                                        if (yRange.min == null) {
+                                            yRange.min = value;
+                                        }
+
+                                        if (yRange.max == null) {
+                                            yRange.max = value;
+                                        }
+
+                                        if (yRange.min > value) {
+                                            yRange.min = value;
+                                        }
+
+                                        if (yRange.max < value) {
+                                            yRange.max = value;
+                                        }
+                                    } else {
+                                        tempData.push({
+                                            timestamp: dateTime,
+                                            value: null
+                                        });
                                     }
-
-                                    if (yRange.max == null) {
-                                        yRange.max = value;
-                                    }
-
-                                    if (yRange.min > value) {
-                                        yRange.min = value;
-                                    }
-
-                                    if (yRange.max < value) {
-                                        yRange.max = value;
-                                    }
-
                                 } catch (e) {
                                     tempData.push({
                                         timestamp: dateTime,
@@ -3773,44 +3798,54 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.showY2Btns = true;
                         }
                         var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
+
+                        var filterF = null;
+                        if (row.filter) {
+                            filterF = row.filter;
+                        }
+
                         // add value
                         var counter = 0;
                         angular$1.forEach(allLines, function(realLine) {
                             try {
                                 var value = f(allData[counter]);
-                                realLine.push(value);
-                                if (row.yaxis == 0) {
-                                    if (yRanges[0].min == null) {
-                                        yRanges[0].min = value;
-                                    }
+                                if ((filterF && filterF(value)) || !filterF) {
+                                    realLine.push(value);
+                                    if (row.yaxis == 0) {
+                                        if (yRanges[0].min == null) {
+                                            yRanges[0].min = value;
+                                        }
 
-                                    if (yRanges[0].max == null) {
-                                        yRanges[0].max = value;
-                                    }
+                                        if (yRanges[0].max == null) {
+                                            yRanges[0].max = value;
+                                        }
 
-                                    if (yRanges[0].min > value) {
-                                        yRanges[0].min = value;
-                                    }
+                                        if (yRanges[0].min > value) {
+                                            yRanges[0].min = value;
+                                        }
 
-                                    if (yRanges[0].max < value) {
-                                        yRanges[0].max = value;
+                                        if (yRanges[0].max < value) {
+                                            yRanges[0].max = value;
+                                        }
+                                    } else {
+                                        if (yRanges[1].min == null) {
+                                            yRanges[1].min = value;
+                                        }
+
+                                        if (yRanges[1].max == null) {
+                                            yRanges[1].max = value;
+                                        }
+
+                                        if (yRanges[1].min > value) {
+                                            yRanges[1].min = value;
+                                        }
+
+                                        if (yRanges[1].max < value) {
+                                            yRanges[1].max = value;
+                                        }
                                     }
                                 } else {
-                                    if (yRanges[1].min == null) {
-                                        yRanges[1].min = value;
-                                    }
-
-                                    if (yRanges[1].max == null) {
-                                        yRanges[1].max = value;
-                                    }
-
-                                    if (yRanges[1].min > value) {
-                                        yRanges[1].min = value;
-                                    }
-
-                                    if (yRanges[1].max < value) {
-                                        yRanges[1].max = value;
-                                    }
+                                    realLine.push(value);
                                 }
                             } catch (ex) {
                                 realLine.push(null);
@@ -4049,46 +4084,53 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
                         var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
+                        var filterF = null;
+                        if (row.filter) {
+                            filterF = row.filter;
+                        }
                         // add value
                         var counter = 0;
                         angular$1.forEach(allLines, function(realLine) {
                             try {
                                 var value = f(allData[counter]);
-                                realLine.push(value);
-                                if (row.yaxis == 0) {
-                                    if (yRanges[0].min == null) {
-                                        yRanges[0].min = value;
-                                    }
+                                if ((filterF && filterF(value)) || !filterF) {
+                                    realLine.push(value);
+                                    if (row.yaxis == 0) {
+                                        if (yRanges[0].min == null) {
+                                            yRanges[0].min = value;
+                                        }
 
-                                    if (yRanges[0].max == null) {
-                                        yRanges[0].max = value;
-                                    }
+                                        if (yRanges[0].max == null) {
+                                            yRanges[0].max = value;
+                                        }
 
-                                    if (yRanges[0].min > value) {
-                                        yRanges[0].min = value;
-                                    }
+                                        if (yRanges[0].min > value) {
+                                            yRanges[0].min = value;
+                                        }
 
-                                    if (yRanges[0].max < value) {
-                                        yRanges[0].max = value;
+                                        if (yRanges[0].max < value) {
+                                            yRanges[0].max = value;
+                                        }
+                                    } else {
+                                        if (yRanges[1].min == null) {
+                                            yRanges[1].min = value;
+                                        }
+
+                                        if (yRanges[1].max == null) {
+                                            yRanges[1].max = value;
+                                        }
+
+                                        if (yRanges[1].min > value) {
+                                            yRanges[1].min = value;
+                                        }
+
+                                        if (yRanges[1].max < value) {
+                                            yRanges[1].max = value;
+                                        }
                                     }
                                 } else {
-                                    if (yRanges[1].min == null) {
-                                        yRanges[1].min = value;
-                                    }
-
-                                    if (yRanges[1].max == null) {
-                                        yRanges[1].max = value;
-                                    }
-
-                                    if (yRanges[1].min > value) {
-                                        yRanges[1].min = value;
-                                    }
-
-                                    if (yRanges[1].max < value) {
-                                        yRanges[1].max = value;
-                                    }
+                                    realLine.push(null);
                                 }
-
                             } catch (ex) {
                                 realLine.push(null);
                             }
