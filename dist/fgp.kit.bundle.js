@@ -4026,39 +4026,39 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'colors': colors
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 });
-
-                                // reset l & r axes window
-                                var axesRight = $scope.currentChart.axes_[0];
-                                var axesLeft = $scope.currentChart.axes_[1];
-                                if (initScale && initScale.left && initScale.left.length > 0) {
-                                    //init scale found
-                                    initScale.left.forEach(function(_levelConfig) {
-                                        // find current
-                                        if (store == _levelConfig.level) {
-                                            // found it
-                                            // set
-                                            axesLeft.valueWindow = _levelConfig.range;
-                                            $scope.currentInitScaleLevelLeftConf = _levelConfig;
-                                            $scope.currentChart.drawGraph_(false);
-                                        }
-                                    });
-                                }
-
-                                if (initScale && initScale.right && initScale.right.length > 0) {
-                                    //init scale found
-                                    initScale.right.forEach(function(_levelConfig) {
-                                        // find current
-                                        if (store == _levelConfig.level) {
-                                            // found it
-                                            // set
-                                            axesRight.valueWindow = _levelConfig.range;
-                                            $scope.currentInitScaleLevelRightConf = _levelConfig;
-                                            $scope.currentChart.drawGraph_(false);
-                                        }
-                                    });
-                                }
-
                             }
+
+                            // reset l & r axes window
+                            var axesRight = $scope.currentChart.axes_[0];
+                            var axesLeft = $scope.currentChart.axes_[1];
+                            if (initScale && initScale.left && initScale.left.length > 0) {
+                                //init scale found
+                                initScale.left.forEach(function(_levelConfig) {
+                                    // find current
+                                    if (store == _levelConfig.level) {
+                                        // found it
+                                        // set
+                                        axesLeft.valueWindow = _levelConfig.range;
+                                        $scope.currentInitScaleLevelLeftConf = _levelConfig;
+                                        $scope.currentChart.drawGraph_(false);
+                                    }
+                                });
+                            }
+
+                            if (initScale && initScale.right && initScale.right.length > 0) {
+                                //init scale found
+                                initScale.right.forEach(function(_levelConfig) {
+                                    // find current
+                                    if (store == _levelConfig.level) {
+                                        // found it
+                                        // set
+                                        axesRight.valueWindow = _levelConfig.range;
+                                        $scope.currentInitScaleLevelRightConf = _levelConfig;
+                                        $scope.currentChart.drawGraph_(false);
+                                    }
+                                });
+                            }
+
                             $scope.loadingShow = false;
                         }
                     }
