@@ -3766,6 +3766,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 left: deviceConfig.leftYAxis,
                 right: deviceConfig.rightYAxis
             };
+
+            var initScale = null;
+            if (deviceConfig.initScale) {
+                initScale = deviceConfig.initScale; // {left:{level:"",range:[num1,num2]},right:{}}
+            }
+
             var allLines = [];
             //0 for y  1 for y2
             var yRanges = [{
