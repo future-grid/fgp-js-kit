@@ -1095,7 +1095,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     }
                     var zoomRange = g.xAxisZoomRange;
 
-                    if(!zoomRange){
+                    if (!zoomRange) {
                         return false;
                     }
 
@@ -1300,7 +1300,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             } else {
                 // middle zoom
                 // console.info("h")
-                if(scope.basicInfo && scope.basicInfo.range_show){
+                if (scope.basicInfo && scope.basicInfo.range_show) {
                     zoom(g, percentage, xPct, yPct, 'h', null);
                 }
             }
@@ -2332,16 +2332,31 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 // the custom func returns color.
                                 var field = button.field;
                                 var _func = button._func;
+                                var v = [];
                                 // devices
                                 angular$1.forEach($scope.childrenDevices, function(device, $index) {
                                     if (_func(device[field])) {
                                         device.show = true;
-                                        $scope.currentChart.setVisibility($index, true);
+                                        // $scope.currentChart.setVisibility($index, true);
+                                        v[$index] = true;
                                     } else {
                                         device.show = false;
-                                        $scope.currentChart.setVisibility($index, false);
+                                        // $scope.currentChart.setVisibility($index, false);
+                                        v[$index] = false;
                                     }
                                 });
+                                // update visibility once
+                                $timeout(function(){
+                                    var oldVisibility = $scope.currentChart.getOption('visibility');
+                                    // reset by new Visibility
+                                    v.forEach(function(item, _index){
+                                        oldVisibility[_index] = item;
+                                    });
+                                    $scope.currentChart.updateOptions({
+                                        'visibility': oldVisibility
+                                    });
+                                });
+
                             };
                             // create click event handler for this button and put it into $scope
                             buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
@@ -2364,18 +2379,33 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 var hideAllOthers = button.hideOther;
                                 // devices
                                 var timerInterval = 0;
+                                var v = [];
                                 angular$1.forEach($scope.childrenDevices, function(device, $index) {
                                     if (_func(device[field])) {
                                         $timeout(function() {
                                             $scope.currentChart.setSelection(false, device[field]);
                                         }, timerInterval);
                                         timerInterval += 1000;
+                                        v[$index] = true;
                                     } else {
                                         if (hideAllOthers && hideAllOthers == true) {
                                             device.show = false;
-                                            $scope.currentChart.setVisibility($index, false);
+                                            // $scope.currentChart.setVisibility($index, false);
+                                            v[$index] = false;
                                         }
                                     }
+                                });
+                                //
+                                // update visibility once
+                                $timeout(function(){
+                                    var oldVisibility = $scope.currentChart.getOption('visibility');
+                                    // reset by new Visibility
+                                    v.forEach(function(item, _index){
+                                        oldVisibility[_index] = item;
+                                    });
+                                    $scope.currentChart.updateOptions({
+                                        'visibility': oldVisibility
+                                    });
                                 });
                             };
                             // create click event handler for this button and put it into $scope
