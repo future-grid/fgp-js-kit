@@ -11,7 +11,8 @@ var cleanCSS = require('gulp-clean-css');
 const pkg = require('./package.json');
 
 var paths = {
-    javascriptRoot: "src/**/*.js",
+    pluginsRoot:["src/**/*.js","!src/**/show/**/*.js","!src/**/utils/**/*.js","!src/index.js"],
+    javascriptRoot: ["src/**/*.js","!src/**/plugins/**/*.js"],
     stylesheetRoot: "src/**/*.less",
     distRoot: "dist",
     distUI: "/Users/haiyangwang/Development/workspace/united-energy/united-energy/ue-ui/bower_components/fgp-js-kit/dist/"
@@ -27,10 +28,24 @@ gulp.task('clean', function () {
     return del(['dist']);
 });
 
+gulp.task('plugins', ['clean'], ()=>{
+    return gulp.src(paths.pluginsRoot)
+    .pipe(uglify({
+        mangle: false,
+        compress: false,
+        output: {beautify: true}
+    }))
+    .pipe(buble({presets: ['es2015']}))
+    .pipe(concat('fgp.plugins.bundle.js'))
+    .pipe(gulp.dest(paths.distRoot))
+    .pipe(gulp.dest(paths.distUI))
+});
+
+
 /**
  * build javascript
  */
-gulp.task('js', ['clean'], () => {
+gulp.task('js', ['plugins'], () => {
     return gulp.src(paths.javascriptRoot)
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(rollup({
