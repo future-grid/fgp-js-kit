@@ -42,9 +42,9 @@ class fgpWidgetGraph {
             var dom_datetime_interval = '<div ng-show="rangeSelectorBar" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">{{currentIntervalChoosed.name}}<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;"><li ng-repeat="interval in dateTimeIntervals"><a href="javascript:;" ng-click="changeInterval(interval)">{{interval.name}}</a></li></ul> </div>';
 
             //selectControl
-            var dom_rect = '<div>'+
+            var dom_rect = '<div>' +
 
-            '</div>';
+                '</div>';
 
 
             var dom_series_list = '<div ng-show="currentView === 1" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Devices<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;height:auto;max-height:300px;overflow-x:hidden;"><li ng-repeat="device in childrenDevices"><input type="checkbox" ng-click="showOrHideDevice(device)" ng-checked="device.show"/>{{device[childrenDeviceNameColumn]}}</li></ul> </div>';
@@ -263,9 +263,9 @@ class fgpWidgetGraph {
                 var yAxes = g.axes_;
                 var newYAxes = [];
                 for (var i = 0; i < g.numAxes(); i++) {
-                    if(yAxes[i].valueWindow){
+                    if (yAxes[i].valueWindow) {
                         newYAxes[i] = adjustAxis(yAxes[i].valueWindow, zoomInPercentage, yBias);
-                    }else{
+                    } else {
                         newYAxes[i] = adjustAxis(yAxes[i].valueRange, zoomInPercentage, yBias);
                     }
                 }
@@ -273,13 +273,13 @@ class fgpWidgetGraph {
                     if ('l' == side) {
                         yAxes[0]['valueRange'] = newYAxes[0];
                         yAxes[0]['valueWindow'] = newYAxes[0];
-                        if(scope.currentInitScaleLevelLeftConf){
+                        if (scope.currentInitScaleLevelLeftConf) {
                             scope.currentInitScaleLevelLeftConf.range = newYAxes[0];
                         }
                     } else if ('r' == side && g.numAxes() == 2) {
                         yAxes[1]['valueRange'] = newYAxes[1];
                         yAxes[1]['valueWindow'] = newYAxes[1];
-                        if(scope.currentInitScaleLevelRightConf){
+                        if (scope.currentInitScaleLevelRightConf) {
                             scope.currentInitScaleLevelRightConf.range = newYAxes[1];
                         }
                     }
@@ -523,16 +523,17 @@ class fgpWidgetGraph {
                 },
                 'interactionModel': interactionModel
             };
-            if(Dygraph.Plugins.RectSelection){
+            if (Dygraph.Plugins.RectSelection) {
                 scope.selectControl = new Dygraph.Plugins.RectSelection({
-                    highlight: function(series){
-                        console.info("highlight:"+series); // would be children devices in scatter view
+                    highlight: function(series) {
+                        console.info("highlight:" + series); // would be children devices in scatter view
                         var tempArray = [];
-
-
-                        if (scope.highlights && scope.highlights.onExternal && scope.currentView == -1) {
-                            series.forEach(function(_item){
-                                tempArray.push({'name':_item.substring(0,15), 'id':_item.substring(0,15)});
+                        if (scope.highlights && scope.highlights.onExternal && scope.currentView == 1) {
+                            series.forEach(function(_item) {
+                                tempArray.push({
+                                    'name': _item.substring(0, 16),
+                                    'id': _item.substring(0, 16)
+                                });
                             });
                             scope.highlights.onExternal = [];
                             scope.highlights.onExternal = tempArray;
@@ -540,14 +541,14 @@ class fgpWidgetGraph {
                     }
                 });
                 configuration["plugins"] = [scope.selectControl];
-                var selectControlStatus = false;
-                scope.switchSelectFeature = function(){
-                    if(selectControlStatus){
+                scope.selectControlStatus = false;
+                scope.switchSelectFeature = function() {
+                    if (scope.selectControlStatus) {
                         scope.selectControl.disable();
-                        selectControlStatus = false;
-                    }else{
+                        scope.selectControlStatus = false;
+                    } else {
                         scope.selectControl.enable();
-                        selectControlStatus = true;
+                        scope.selectControlStatus = true;
                     }
                 };
             }
@@ -1164,49 +1165,40 @@ class fgpWidgetGraph {
 
             $scope.selectedDevices = [];
             $scope.singleClickEventHandler = function() {
-                // Add the highlight into a list and someone will use it....
-                // check before add
-                var _index = $scope.selectedDevices.indexOf($scope.currentHighLightChildDevice);
-                if (_index != -1) {
-                    // remove it
-                    $scope.selectedDevices.splice(_index, 1);
-                } else {
-                    $scope.selectedDevices.push($scope.currentHighLightChildDevice);
-                }
-
-                // update the external array
-                if ($scope.highlights && $scope.highlights.onExternal) {
-                    var currentChildName = "";
-                    var childrens = $scope.childrenDevices;
-                    $scope.childrenDevices.forEach(function(item) {
-                        if (item.name == $scope.currentHighLightChildDevice) {
-                            // give the name in customer's system(not fgp)
-                            currentChildName = (item[$scope.childrenDeviceNameColumn]);
-                        }
+                if (!$scope.selectControlStatus) {
+                    $scope.highlights.onExternal = [];
+                    // add only one point
+                    $scope.highlights.onExternal.push({
+                        name: $scope.currentHighLightChildDevice.substring(0, 16),
+                        id: $scope.currentHighLightChildDevice.substring(0, 16)
                     });
-                    var _indexExternal = $scope.highlights.onExternal.map(function(o) {
-                        return o.name
-                    }).indexOf(currentChildName);
-                    if (_indexExternal != -1) {
-                        $scope.highlights.onExternal.splice(_indexExternal, 1)
-                    } else {
-                        $scope.highlights.onExternal.push({
-                            name: currentChildName,
-                            id: $scope.currentHighLightChildDevice
-                        });
-                    }
                 }
             };
             //
             if ($scope.highlights && $scope.highlights.onGraph) {
+                var highlightTimers = [];
                 $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
                     if ($scope.currentView == 1 && newValue && newValue.length > 0) {
+                        highlightTimers.forEach(function(_timer){
+                            $timeout.cancel(_timer);
+                        });
                         var timerInterval = 0;
                         angular.forEach(newValue, function(deviceName, $index) {
-                            $timeout(function() {
-                                $scope.currentChart.setSelection(false, deviceName);
-                            }, timerInterval);
-                            timerInterval += 1000;
+                            //
+                            var exist = false;
+                            $scope.childrenDevices.forEach((_child)=>{
+                                if(_child.name == deviceName){
+                                    exist = true;
+                                }
+                            });
+                            if(exist){
+                                highlightTimers.push(
+                                    $timeout(function() {
+                                        $scope.currentChart.setSelection(false, deviceName);
+                                    }, timerInterval)
+                                );
+                                timerInterval += 3000;
+                            }
                         });
                     }
                 });
@@ -3616,10 +3608,10 @@ class fgpWidgetGraph {
             $scope.btnPanVULeft = function() {
                 var g = $scope.currentChart;
                 var yAxes = g.axes_;
-                var range =[];
-                if(yAxes[0].valueWindow){
+                var range = [];
+                if (yAxes[0].valueWindow) {
                     range = yAxes[0].valueWindow;
-                }else{
+                } else {
                     range = yAxes[0].valueRange;
                 }
                 yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
@@ -3631,10 +3623,10 @@ class fgpWidgetGraph {
             $scope.btnPanVDLeft = function() {
                 var g = $scope.currentChart;
                 var yAxes = g.axes_;
-                var range =[];
-                if(yAxes[0].valueWindow){
+                var range = [];
+                if (yAxes[0].valueWindow) {
                     range = yAxes[0].valueWindow;
-                }else{
+                } else {
                     range = yAxes[0].valueRange;
                 }
                 yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
@@ -3646,10 +3638,10 @@ class fgpWidgetGraph {
             $scope.btnPanVURight = function() {
                 var g = $scope.currentChart;
                 var yAxes = g.axes_;
-                var range =[];
-                if(yAxes[1].valueWindow){
+                var range = [];
+                if (yAxes[1].valueWindow) {
                     range = yAxes[1].valueWindow;
-                }else{
+                } else {
                     range = yAxes[1].valueRange;
                 }
                 yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
@@ -3660,10 +3652,10 @@ class fgpWidgetGraph {
             $scope.btnPanVDRight = function() {
                 var g = $scope.currentChart;
                 var yAxes = g.axes_;
-                var range =[];
-                if(yAxes[1].valueWindow){
+                var range = [];
+                if (yAxes[1].valueWindow) {
                     range = yAxes[1].valueWindow;
-                }else{
+                } else {
                     range = yAxes[1].valueRange;
                 }
                 yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
