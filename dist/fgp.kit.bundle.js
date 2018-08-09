@@ -2087,30 +2087,57 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         };
         //
         if ($scope.highlights && $scope.highlights.onGraph) {
-            var highlightTimers = [];
+            var highlight_timer_ = null;
             $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
-                if ($scope.currentView == 1 && newValue && newValue.length > 0) {
-                    highlightTimers.forEach(function(_timer){
-                        $timeout.cancel(_timer);
-                    });
-                    var timerInterval = 0;
-                    angular$1.forEach(newValue, function(deviceName, $index) {
-                        //
-                        var exist = false;
-                        $scope.childrenDevices.forEach(function (_child){
-                            if(_child.name == deviceName){
-                                exist = true;
+                if(newValue){
+                    if(highlight_timer_){
+                        $timeout.cancel(highlight_timer_);
+                    }
+                    highlight_timer_ = $timeout(function(){
+                        if ($scope.currentView == 1 && newValue && newValue.length > 0) {
+                            var highlightDeviceIndex = [];
+                            // uncheck
+                            $scope.childrenDevices.forEach(function (_child, _index){
+                                    _child.show = false;
+                            });
+                            angular$1.forEach(newValue, function(deviceName) {
+                                $scope.childrenDevices.forEach(function (_child, _index){
+                                    if(_child.name == deviceName){
+                                        highlightDeviceIndex.push(_index);
+                                        _child.show = true;
+                                    }
+                                });
+                            });
+                            // update graph
+                            var oldVisibility = $scope.currentChart.getOption('visibility');
+                            // reset by new Visibility
+                            oldVisibility.forEach(function(item, _index) {
+                                if(highlightDeviceIndex.indexOf(_index) !=-1){
+                                    oldVisibility[_index] = true;
+                                }else{
+                                    oldVisibility[_index] = false;
+                                }
+                            });
+                            $scope.currentChart.updateOptions({
+                                'visibility': oldVisibility
+                            });
+                        }else if ($scope.currentView == 1 && newValue && newValue.length == 0){
+                            if($scope.childrenDevices){
+                                $scope.childrenDevices.forEach(function (_child, _index){
+                                        _child.show = true;
+                                });
+                                //show all
+                                var oldVisibility = $scope.currentChart.getOption('visibility');
+                                // reset by new Visibility
+                                oldVisibility.forEach(function(item, _index) {
+                                    oldVisibility[_index] = true;
+                                });
+                                $scope.currentChart.updateOptions({
+                                    'visibility': oldVisibility
+                                });
                             }
-                        });
-                        if(exist){
-                            highlightTimers.push(
-                                $timeout(function() {
-                                    $scope.currentChart.setSelection(false, deviceName);
-                                }, timerInterval)
-                            );
-                            timerInterval += 3000;
                         }
-                    });
+                    },1000);
                 }
             });
         }
