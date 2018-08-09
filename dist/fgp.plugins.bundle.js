@@ -72,11 +72,14 @@ Dygraph.Plugins.RectSelection = function() {
             var _graphData = graph.file_;
             var _series = graph.getLabels();
             var choosedSeries = [];
+            var visibility = graph.getOption("visibility");
             _graphData.forEach(function(point) {
                 if (point[0] instanceof Date && point[0] >= minDate && point[0] <= maxDate) {
                     for (var i = 1; i < point.length - 1; i++) {
                         if (point[i] >= minY && point[i] <= maxY && choosedSeries.indexOf(_series[i]) == -1) {
-                            choosedSeries.push(_series[i]);
+                            if (visibility[i - 1]) {
+                                choosedSeries.push(_series[i]);
+                            }
                         }
                     }
                 }
