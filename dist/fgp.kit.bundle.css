@@ -83,8 +83,8 @@
 }
 @-webkit-keyframes sk-stretchdelay {
   0%,
-  40%,
-  100% {
+  100%,
+  40% {
     -webkit-transform: scaleY(0.05);
   }
   20% {
@@ -93,8 +93,8 @@
 }
 @keyframes sk-stretchdelay {
   0%,
-  40%,
-  100% {
+  100%,
+  40% {
     transform: scaleY(0.05);
     -webkit-transform: scaleY(0.05);
   }
@@ -145,7 +145,7 @@
   border-radius: 4px;
   color: #ffffff;
   font-size: 12px;
-  padding: 1px 10px 1px 10px;
+  padding: 1px 10px;
   text-decoration: none;
 }
 .relationBtn:hover {
@@ -191,6 +191,42 @@ a:hover.tooltips span {
   left: 50%;
   margin-left: -76px;
   z-index: 99999;
+}
+.tree,
+.tree > ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  hight: auto;
+}
+.tree > ul > li {
+  list-style-type: none;
+  border-left: 2px solid #000;
+  margin-left: 1em;
+  min-height: 35px;
+}
+.tree > ul > li > div {
+  padding-left: 1em;
+}
+.tree > ul > li > div div {
+  padding: 0;
+  padding-right: 2px;
+  padding-bottom: 1px;
+}
+.tree > ul > li > div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  bottom: 50%;
+  width: 0.95em;
+  border: 2px solid #000;
+  border-top: 0 none transparent;
+  border-right: 0 none transparent;
+}
+.tree > ul > li:last-child {
+  border-left: 2px solid transparent;
 }
 
 /*# sourceMappingURL=fgp.kit.bundle.css.map */

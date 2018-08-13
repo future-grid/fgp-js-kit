@@ -2077,12 +2077,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.selectedDevices = [];
         $scope.singleClickEventHandler = function() {
             if (!$scope.selectControlStatus) {
-                $scope.highlights.onExternal = [];
-                // add only one point
-                $scope.highlights.onExternal.push({
-                    name: $scope.currentHighLightChildDevice.substring(0, 16),
-                    id: $scope.currentHighLightChildDevice.substring(0, 16)
-                });
+                if($scope.highlights && $scope.highlights.onExternal){
+                    $scope.highlights.onExternal = [];
+                    // add only one point
+                    $scope.highlights.onExternal.push({
+                        name: $scope.currentHighLightChildDevice.substring(0, 16),
+                        id: $scope.currentHighLightChildDevice.substring(0, 16)
+                    });
+                }
             }
         };
         //
