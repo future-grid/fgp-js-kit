@@ -3772,7 +3772,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         //init scale found
                         initScale.left.forEach(function(_levelConfig) {
                             // find current
-                            if (store == _levelConfig.level) {
+                            if (store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) {
                                 // found it
                                 // set
                                 axesLeft.valueWindow = _levelConfig.range;
@@ -4089,7 +4089,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 //init scale found
                                 initScale.left.forEach(function(_levelConfig) {
                                     // find current
-                                    if (store == _levelConfig.level) {
+                                    if (store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) {
                                         // found it
                                         // set
                                         axesLeft.valueWindow = _levelConfig.range;
@@ -4437,7 +4437,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 //init scale found
                                 initScale.left.forEach(function(_levelConfig) {
                                     // find current
-                                    if (store == _levelConfig.level) {
+                                    if (store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) {
                                         // found it
                                         // set
                                         axesLeft.valueWindow = _levelConfig.range;
