@@ -1022,7 +1022,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             if (context.is2DPan) {
                 var pixelsDragged = context.dragEndY - context.dragStartY;
                 // Adjust each axis appropriately.
-                if (side == "r") {
+                if (side == "l") {
                     var axis = g.axes_[0];
                     var axis_data = context.axes[0];
                     var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
@@ -1051,7 +1051,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                         axis.valueWindow = [minValue, maxValue];
                         axis.valueRange = [minValue, maxValue];
                     }
-                } else if (side == 'l') {
+                } else if (side == 'r') {
                     var axis = g.axes_[1];
                     var axis_data = context.axes[1];
                     var unitsDragged = pixelsDragged * axis_data.unitsPerPixel;
@@ -1335,9 +1335,9 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var mousemoveHandler = function(e, g, context) {
             if (context.isPanning) {
                 if (e.offsetX <= (g.plotter_.area.x)) {
-                    movePan(e, g, context, 'r');
-                } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
                     movePan(e, g, context, 'l');
+                } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
+                    movePan(e, g, context, 'r');
                 } else {
                     movePan(e, g, context, 'h');
                 }
@@ -1429,7 +1429,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             },
             drawCallback: function(g, isInit) {
                 if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                    scope.refersh(g, isInit);
+                    // scope.refersh(g, isInit);
                 }
             },
             'interactionModel': interactionModel
@@ -1746,7 +1746,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                         scope.currentChart.updateOptions({
                             drawCallback: function(g, isInit) {
                                 // console.info("refersh running!" + " is  Init?"+ isInit);
-                                scope.refersh(g, isInit);
+                                // scope.refersh(g, isInit);
                             }
                         });
                     }
