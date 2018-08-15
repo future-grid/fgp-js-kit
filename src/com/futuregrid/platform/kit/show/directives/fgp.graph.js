@@ -401,8 +401,8 @@ class fgpWidgetGraph {
                     zoom(g, percentage, xPct, yPct, 'v', 'r');
                 } else {
                     // middle zoom
-                    // console.info("h")
                     if (scope.basicInfo && scope.basicInfo.range_show) {
+                        //
                         zoom(g, percentage, xPct, yPct, 'h', null);
                     }
                 }
@@ -518,7 +518,7 @@ class fgpWidgetGraph {
                 },
                 drawCallback: function(g, isInit) {
                     if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
-                        // scope.refersh(g, isInit);
+                        scope.refersh(g, isInit);
                     }
                 },
                 'interactionModel': interactionModel
@@ -835,7 +835,7 @@ class fgpWidgetGraph {
                             scope.currentChart.updateOptions({
                                 drawCallback: function(g, isInit) {
                                     // console.info("refersh running!" + " is  Init?"+ isInit);
-                                    // scope.refersh(g, isInit);
+                                    scope.refersh(g, isInit);
                                 }
                             });
                         }
@@ -1166,7 +1166,7 @@ class fgpWidgetGraph {
             $scope.selectedDevices = [];
             $scope.singleClickEventHandler = function() {
                 if (!$scope.selectControlStatus) {
-                    if($scope.highlights && $scope.highlights.onExternal){
+                    if ($scope.highlights && $scope.highlights.onExternal) {
                         $scope.highlights.onExternal = [];
                         // add only one point
                         $scope.highlights.onExternal.push({
@@ -1180,20 +1180,20 @@ class fgpWidgetGraph {
             if ($scope.highlights && $scope.highlights.onGraph) {
                 var highlight_timer_ = null;
                 $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
-                    if(newValue){
-                        if(highlight_timer_){
+                    if (newValue) {
+                        if (highlight_timer_) {
                             $timeout.cancel(highlight_timer_);
                         }
-                        highlight_timer_ = $timeout(function(){
+                        highlight_timer_ = $timeout(function() {
                             if ($scope.currentView == 1 && newValue && newValue.length > 0) {
                                 var highlightDeviceIndex = [];
                                 // uncheck
-                                $scope.childrenDevices.forEach((_child, _index)=>{
-                                        _child.show = false;
+                                $scope.childrenDevices.forEach((_child, _index) => {
+                                    _child.show = false;
                                 });
                                 angular.forEach(newValue, function(deviceName) {
-                                    $scope.childrenDevices.forEach((_child, _index)=>{
-                                        if(_child.name == deviceName){
+                                    $scope.childrenDevices.forEach((_child, _index) => {
+                                        if (_child.name == deviceName) {
                                             highlightDeviceIndex.push(_index);
                                             _child.show = true;
                                         }
@@ -1203,19 +1203,19 @@ class fgpWidgetGraph {
                                 var oldVisibility = $scope.currentChart.getOption('visibility');
                                 // reset by new Visibility
                                 oldVisibility.forEach(function(item, _index) {
-                                    if(highlightDeviceIndex.indexOf(_index) !=-1){
+                                    if (highlightDeviceIndex.indexOf(_index) != -1) {
                                         oldVisibility[_index] = true;
-                                    }else{
+                                    } else {
                                         oldVisibility[_index] = false;
                                     }
                                 });
                                 $scope.currentChart.updateOptions({
                                     'visibility': oldVisibility
                                 });
-                            }else if ($scope.currentView == 1 && newValue && newValue.length == 0){
-                                if($scope.childrenDevices){
-                                    $scope.childrenDevices.forEach((_child, _index)=>{
-                                            _child.show = true;
+                            } else if ($scope.currentView == 1 && newValue && newValue.length == 0) {
+                                if ($scope.childrenDevices) {
+                                    $scope.childrenDevices.forEach((_child, _index) => {
+                                        _child.show = true;
                                     });
                                     //show all
                                     var oldVisibility = $scope.currentChart.getOption('visibility');
@@ -1228,7 +1228,7 @@ class fgpWidgetGraph {
                                     });
                                 }
                             }
-                        },1000);
+                        }, 1000);
                     }
                 });
             }
@@ -1585,7 +1585,9 @@ class fgpWidgetGraph {
                         });
                     }
                 });
+
                 $scope.$watch("chartDateTime", function(newValue, oldValue) {
+                    console.info("~");
                     if (newValue.begin != null && newValue.end != null) {
                         var expect_points = Math.floor($element.parent().width());
                         // find a interval
@@ -3918,22 +3920,41 @@ class fgpWidgetGraph {
                 }, 600);
             };
 
+            $scope.currentGxAxisRange = [];
 
-            var timer = null;
-            $scope.refersh = function(g, init) {
-                if (timer) {
-                    $timeout.cancel(timer);
+
+
+
+            var callFunc = function() {
+                var currentTimestamp = Math.floor(Date.now());
+                if ((currentTimestamp - lastUpdateTimestamp) > 600) {
+                    // update datewindow
+                    $scope.chartDateTime = {
+                        begin: $scope.currentGxAxisRange[0],
+                        end: $scope.currentGxAxisRange[1]
+                    };
+                    $scope.chartDateWindow = $scope.currentGxAxisRange;
+                    lastUpdateTimestamp = -1;
                 }
-                timer = $timeout(function() {
-                    if (init || g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
+            }
+
+
+            $scope.refershTimer;
+            $scope.refersh = function(g, init) {
+                if (init || g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
+                    if ($scope.refershTimer) {
+                        $timeout.cancel($scope.refershTimer);
+                    }
+                    $scope.refershTimer = $timeout(function() {
+                        $scope.refershTimer = null;
                         $scope.chartDateTime = {
                             begin: g.xAxisRange()[0],
                             end: g.xAxisRange()[1]
                         };
-                        $scope.chartDateWindow = g.xAxisRange();
-                    }
-                }, 600);
+                    }, 500);
+                }
             };
+
         }
 
     }
