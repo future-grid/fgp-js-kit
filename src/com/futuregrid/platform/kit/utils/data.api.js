@@ -151,7 +151,7 @@ class dataAccessApi {
                 'otherLevels': otherLevels,
                 'fields': [].concat(fields)
             },
-            cache: this.deviceStores
+            // cache: this.deviceStores
         }).then(
             function(response) {
                 deferred.resolve(response.data);
@@ -188,7 +188,7 @@ class dataAccessApi {
                 fields: [].concat(fields),
                 isSame: true
             },
-            cache: this.deviceStores
+            // cache: this.deviceStores
         }).then(
             function(response) {
                 deferred.resolve(response.data);
@@ -225,7 +225,7 @@ class dataAccessApi {
                 fields: [].concat(fields),
                 isSame: true
             },
-            cache: this.deviceStores
+            // cache: this.deviceStores
         }).then(
             function(response) {
                 deferred.resolve(response.data);
@@ -263,7 +263,7 @@ class dataAccessApi {
                         fields: [].concat(fields),
                         isSame: true
                     },
-                    cache: this.deviceStores
+                    // cache: this.deviceStores
                 }).then(
                     function(response) {
                         return response.data;
