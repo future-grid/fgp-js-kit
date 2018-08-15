@@ -1250,6 +1250,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 timeOut.cancel(timer);
             }
             timer = timeOut(function() {
+                timer=null;
                 canScroll = true;
             }, 1000);
         };
@@ -1264,6 +1265,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 timeOut.cancel(timer);
             }
             timer = timeOut(function() {
+                timer=null;
                 canScroll = true;
             }, 1000);
         };
@@ -1423,9 +1425,9 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 }
             },
             pointClickCallback: function(e, p) {
-                if (scope.currentView != -1) {
-                    scope.showOne(p.name);
-                }
+                // if (scope.currentView != -1) {
+                // scope.showOne(p.name);
+                // }
             },
             drawCallback: function(g, isInit) {
                 if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
@@ -2498,9 +2500,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             });
 
             $scope.$watch("chartDateTime", function(newValue, oldValue) {
-                console.info("~");
                 if (newValue.begin != null && newValue.end != null) {
                     var expect_points = Math.floor($element.parent().width());
+                    if(expect_points == 0){
+                        expect_points = 1000;
+                    }
                     // find a interval
                     var expectedInterval = (newValue.end - newValue.begin) / expect_points;
                     if ($scope.locked_interval) {
