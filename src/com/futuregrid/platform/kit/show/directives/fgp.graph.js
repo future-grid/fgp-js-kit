@@ -339,6 +339,7 @@ class fgpWidgetGraph {
                     timeOut.cancel(timer);
                 }
                 timer = timeOut(function() {
+                    timer=null;
                     canScroll = true;
                 }, 1000);
             };
@@ -353,6 +354,7 @@ class fgpWidgetGraph {
                     timeOut.cancel(timer);
                 }
                 timer = timeOut(function() {
+                    timer=null;
                     canScroll = true;
                 }, 1000);
             };
@@ -512,9 +514,9 @@ class fgpWidgetGraph {
                     }
                 },
                 pointClickCallback: function(e, p) {
-                    if (scope.currentView != -1) {
-                        scope.showOne(p.name);
-                    }
+                    // if (scope.currentView != -1) {
+                    //     scope.showOne(p.name);
+                    // }
                 },
                 drawCallback: function(g, isInit) {
                     if (scope.refersh) { // make sure "scope.refersh" doesn't call when the graph create first time.
@@ -1587,9 +1589,11 @@ class fgpWidgetGraph {
                 });
 
                 $scope.$watch("chartDateTime", function(newValue, oldValue) {
-                    console.info("~");
                     if (newValue.begin != null && newValue.end != null) {
                         var expect_points = Math.floor($element.parent().width());
+                        if(expect_points == 0){
+                            expect_points = 1000;
+                        }
                         // find a interval
                         var expectedInterval = (newValue.end - newValue.begin) / expect_points;
                         if ($scope.locked_interval) {
