@@ -1015,11 +1015,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         var sampleData = getData(1, 10, 'Device');
 
         function movePan(event, g, context, side) {
-            if(scope.memoryVisibility && scope.memoryVisibility.length == 0){
-                // store current visiability
-                // scope.changeVisibility(g);
-            }
-
             context.dragEndX = Dygraph.dragGetX_(event, context);
             context.dragEndY = Dygraph.dragGetY_(event, context);
             // y-axis scaling is automatic unless this is a full 2D pan.
@@ -1162,6 +1157,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 
 
         function zoom(g, zoomInPercentage, xBias, yBias, direction, side) {
+
             if (scope.basicInfo && !scope.basicInfo.zoom) {
                 return;
             }
@@ -1224,17 +1220,57 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 } else if (newZoomRange[0] >= newZoomRange[1]) {
                     return;
                 } else if (newZoomRange[0] <= zoomRange[0] && newZoomRange[1] < zoomRange[1]) {
-                    g.updateOptions({
-                        dateWindow: [zoomRange[0], newZoomRange[1]]
-                    },false);
+                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                        scope.memoryVisibility = g.getOption("visibility");
+                        var vis = g.getOption("visibility");
+                        var _tempVi = [];
+                        vis.forEach(function(v,_index){
+                            _tempVi[_index] = false;
+                        });
+                        g.updateOptions({
+                            dateWindow: newZoomRange,
+                            visibility:_tempVi
+                        },false);
+                    }else{
+                        g.updateOptions({
+                            dateWindow: newZoomRange
+                        },false);
+                    }
+
                 } else if (newZoomRange[0] > zoomRange[0] && newZoomRange[1] >= zoomRange[1]) {
-                    g.updateOptions({
-                        dateWindow: [newZoomRange[0], zoomRange[1]]
-                    },false);
+                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                        scope.memoryVisibility = g.getOption("visibility");
+                        var vis = g.getOption("visibility");
+                        var _tempVi = [];
+                        vis.forEach(function(v,_index){
+                            _tempVi[_index] = false;
+                        });
+                        g.updateOptions({
+                            dateWindow: newZoomRange,
+                            visibility:_tempVi
+                        },false);
+                    }else{
+                        g.updateOptions({
+                            dateWindow: newZoomRange
+                        },false);
+                    }
                 } else {
-                    g.updateOptions({
-                        dateWindow: newZoomRange
-                    },false);
+                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                        scope.memoryVisibility = g.getOption("visibility");
+                        var vis = g.getOption("visibility");
+                        var _tempVi = [];
+                        vis.forEach(function(v,_index){
+                            _tempVi[_index] = false;
+                        });
+                        g.updateOptions({
+                            dateWindow: newZoomRange,
+                            visibility:_tempVi
+                        },false);
+                    }else{
+                        g.updateOptions({
+                            dateWindow: newZoomRange
+                        },false);
+                    }
                 }
             }
         }
@@ -1344,6 +1380,14 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
                     movePan(e, g, context, 'r');
                 } else {
+                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                        scope.memoryVisibility = g.getOption("visibility");
+                        var _tempVi = [];
+                        g.getOption("visibility").forEach(function(_v, _index){
+                            _tempVi[_index] = false;
+                        });
+                        g.updateOptions({"visibility":_tempVi});
+                    }
                     movePan(e, g, context, 'h');
                 }
                 timeOut(function() {
@@ -1768,9 +1812,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function(event) {
                 if (status) {
-                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0){
-                        // scope.changeVisibility(scope.currentChart);
-                    }
                     timeOut(function() {
                         scope.chartDateWindow = scope.currentChart.xAxisRange();
                     });
@@ -1778,6 +1819,14 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousedown', function(event) {
                 status = true;
+                if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                    scope.memoryVisibility = scope.currentChart.getOption("visibility");
+                    var _tempVi = [];
+                    scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                        _tempVi[_index] = false;
+                    });
+                    scope.currentChart.updateOptions({"visibility":_tempVi});
+                }
             });
             //bind chart
             if (basicInfo && basicInfo.childrenChart.length > 0) {
@@ -1818,6 +1867,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     $scope.auto_schema = "";
     $scope.auto_store = "";
     $scope.auto_fields = [];
+    $scope.hp = false;
 
     $scope.memoryVisibility = [];
 
@@ -1870,34 +1920,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     $scope.dateTimeIntervals = [].concat($scope.defaultTimeIntervals);
     $scope.locked_interval = null;
 
-
-    $scope.changeVisibility = function(graph){
-            // store current visiability
-            $scope.memoryVisibility = graph.getOption('visibility');
-            // temp visibility
-            var _visibility = [];
-            $scope.memoryVisibility.forEach(function (vi){
-                _visibility.push(false);
-            });
-            // set visibility to false
-            // graph.updateOptions({
-            // 'visibility': _visibility
-            // },true);
-    };
-
     $scope.chartDateWindow = [];
-    //
-    // $scope.$watchCollection('currentChart.dateWindow_', function(newVal, oldVal){
-    // //
-    // if(newVal && $scope.memoryVisibility && $scope.memoryVisibility.length == 0){
-    //     // $scope.changeVisibility($scope.currentChart);
-    //     console.info("!");
-    // }else{
-    //     console.info("~");
-    // }
-    // console.info(newVal);
-    // });
-
     // lock interval
     $scope.lock = function(interval) {
         if ($scope.locked_interval) {
@@ -2221,6 +2244,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $element.find("#buttons_area").empty();
                     if (nObj == -1) {
                         $scope.autoupdate = true;
+                        $scope.hp = false;
                         var rangeLevel = null;
                         var otherLevels = [];
                         angular$1.forEach(metadata.data.groups[1].collections, function(level) {
@@ -2261,6 +2285,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
                     } else {
                         $scope.autoupdate = false;
+                        // check interactions configuration $scope.hp
+                        if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true){
+                            $scope.hp = true;
+                        }
                         //get relation config
                         if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
                             return;
@@ -2800,10 +2828,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             });
                         });
-                        //
-                        // $scope.childrenDevices.sort(function(a, b) {
-                        // return a.name > b.name ? 1 : -1;
-                        // });
+
 
                         var fields = [];
                         var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
@@ -3642,13 +3667,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             if($scope.currentVisibility_[_index]){
                                 _tempVisibility[_index] = $scope.currentVisibility_[_index];
                             }else{
-                                _tempVisibility[_index] = v;
+                                if($scope.memoryVisibility[_index]){
+                                    _tempVisibility[_index] = $scope.memoryVisibility[_index];
+                                }else{
+                                    _tempVisibility[_index] = v;
+                                }
                             }
                             if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
                                 $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
                             }
                         });
                         $scope.currentVisibility_ = [];
+                        $scope.memoryVisibility = [];
                         $scope.currentChart.updateOptions({
                             'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 2,
@@ -3725,13 +3755,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             if($scope.currentVisibility_[_index]){
                                 _tempVisibility[_index] = $scope.currentVisibility_[_index];
                             }else{
-                                _tempVisibility[_index] = v;
+                                if($scope.memoryVisibility[_index]){
+                                    _tempVisibility[_index] = $scope.memoryVisibility[_index];
+                                }else{
+                                    _tempVisibility[_index] = v;
+                                }
                             }
                             if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
                                 $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
                             }
                         });
                         $scope.currentVisibility_ = [];
+                        $scope.memoryVisibility = [];
                         $scope.currentChart.updateOptions({
                             'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 2,
@@ -4074,13 +4109,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     if($scope.currentVisibility_[_index]){
                                         _tempVisibility[_index] = $scope.currentVisibility_[_index];
                                     }else{
-                                        _tempVisibility[_index] = v;
+                                        if($scope.memoryVisibility[_index]){
+                                            _tempVisibility[_index] = $scope.memoryVisibility[_index];
+                                        }else{
+                                            _tempVisibility[_index] = v;
+                                        }
                                     }
                                     if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
                                         $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
                                     }
                                 });
                                 $scope.currentVisibility_ = [];
+                                $scope.memoryVisibility = [];
                                 $scope.currentChart.updateOptions({
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
@@ -4165,13 +4205,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     if($scope.currentVisibility_[_index]){
                                         _tempVisibility[_index] = $scope.currentVisibility_[_index];
                                     }else{
-                                        _tempVisibility[_index] = v;
+                                        if($scope.memoryVisibility[_index]){
+                                            _tempVisibility[_index] = $scope.memoryVisibility[_index];
+                                        }else{
+                                            _tempVisibility[_index] = v;
+                                        }
                                     }
                                     if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
                                         $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
                                     }
                                 });
                                 $scope.currentVisibility_ = [];
+                                $scope.memoryVisibility = [];
                                 $scope.currentChart.updateOptions({
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
@@ -4733,7 +4778,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnpanleft = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            // $scope.changeVisibility(g);
+            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+                $scope.memoryVisibility = g.getOption("visibility");
+                var _tempVi = [];
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                    _tempVi[_index] = false;
+                });
+                $scope.currentChart.updateOptions({"visibility":_tempVi});
+            }
             var panRange = g.xAxisZoomRange;
             if (g.xAxisZoomRange[0] instanceof Date) {
                 panRange[0] = g.xAxisZoomRange[0].getTime();
@@ -4800,7 +4852,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnpanright = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            // $scope.changeVisibility(g);
+            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+                $scope.memoryVisibility = g.getOption("visibility");
+                var _tempVi = [];
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                    _tempVi[_index] = false;
+                });
+                $scope.currentChart.updateOptions({"visibility":_tempVi});
+            }
             var panRange = g.xAxisZoomRange;
             if (g.xAxisZoomRange[0] instanceof Date) {
                 panRange[0] = g.xAxisZoomRange[0].getTime();
@@ -4868,7 +4927,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnzoomin = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            // $scope.changeVisibility(g);
+            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+                $scope.memoryVisibility = g.getOption("visibility");
+                var _tempVi = [];
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                    _tempVi[_index] = false;
+                });
+                $scope.currentChart.updateOptions({"visibility":_tempVi});
+            }
             //split range to 20 pieces
             var startDate;
             var endDate;
@@ -4908,7 +4974,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnzoomout = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            // $scope.changeVisibility(g);
+            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+                $scope.memoryVisibility = g.getOption("visibility");
+                var _tempVi = [];
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                    _tempVi[_index] = false;
+                });
+                $scope.currentChart.updateOptions({"visibility":_tempVi});
+            }
             var panRange = g.xAxisZoomRange;
             if (g.xAxisZoomRange[0] instanceof Date) {
                 panRange[0] = g.xAxisZoomRange[0].getTime();
