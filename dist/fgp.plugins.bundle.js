@@ -1,3 +1,15 @@
+Dygraph.Plugins.HideLines = function() {
+    "use strict";
+    var hideLines = function(opt_options) {
+        this.visibility = [];
+        this.opt_options = opt_options || {};
+    };
+    hideLines.prototype.toString = function() {
+        return "Hide Lines Plugin";
+    };
+    hideLines.prototype.activate = function(g) {};
+    return hideLines;
+}();
 Dygraph.Plugins.RectSelection = function() {
     "use strict";
     var rectSelection = function(opt_options) {
@@ -99,6 +111,195 @@ Dygraph.Plugins.RectSelection = function() {
     };
     return rectSelection;
 }();
+(function() {
+    "use strict";
+    var Dygraph;
+    if (window.Dygraph) {
+        Dygraph = window.Dygraph;
+    } else if (typeof module !== "undefined") {
+        Dygraph = require("../dygraph");
+    }
+    var synchronize = function() {
+        var arguments$1 = arguments;
+
+        if (arguments.length === 0) {
+            throw "Invalid invocation of Dygraph.synchronize(). Need >= 1 argument.";
+        }
+        var OPTIONS = [ "selection", "zoom", "range" ];
+        var opts = {
+            selection: true,
+            zoom: true,
+            range: true
+        };
+        var dygraphs = [];
+        var prevCallbacks = [];
+        var parseOpts = function(obj) {
+            if (!(obj instanceof Object)) {
+                throw "Last argument must be either Dygraph or Object.";
+            } else {
+                for (var i = 0; i < OPTIONS.length; i++) {
+                    var optName = OPTIONS[i];
+                    if (obj.hasOwnProperty(optName)) opts[optName] = obj[optName];
+                }
+            }
+        };
+        if (arguments[0] instanceof Dygraph) {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments$1[i] instanceof Dygraph) {
+                    dygraphs.push(arguments$1[i]);
+                } else {
+                    break;
+                }
+            }
+            if (i < arguments.length - 1) {
+                throw "Invalid invocation of Dygraph.synchronize(). " + "All but the last argument must be Dygraph objects.";
+            } else if (i == arguments.length - 1) {
+                parseOpts(arguments[arguments.length - 1]);
+            }
+        } else if (arguments[0].length) {
+            for (var i = 0; i < arguments[0].length; i++) {
+                dygraphs.push(arguments$1[0][i]);
+            }
+            if (arguments.length == 2) {
+                parseOpts(arguments[1]);
+            } else if (arguments.length > 2) {
+                throw "Invalid invocation of Dygraph.synchronize(). " + "Expected two arguments: array and optional options argument.";
+            }
+        } else {
+            throw "Invalid invocation of Dygraph.synchronize(). " + "First parameter must be either Dygraph or list of Dygraphs.";
+        }
+        if (dygraphs.length < 2) {
+            throw "Invalid invocation of Dygraph.synchronize(). " + "Need two or more dygraphs to synchronize.";
+        }
+        var readycount = dygraphs.length;
+        for (var i = 0; i < dygraphs.length; i++) {
+            var g = dygraphs[i];
+            g.ready(function() {
+                if (--readycount == 0) {
+                    var callBackTypes = [ "drawCallback", "highlightCallback", "unhighlightCallback" ];
+                    for (var j = 0; j < dygraphs.length; j++) {
+                        if (!prevCallbacks[j]) {
+                            prevCallbacks[j] = {};
+                        }
+                        for (var k = callBackTypes.length - 1; k >= 0; k--) {
+                            prevCallbacks[j][callBackTypes[k]] = dygraphs[j].getFunctionOption(callBackTypes[k]);
+                        }
+                    }
+                    if (opts.zoom) {
+                        attachZoomHandlers(dygraphs, opts, prevCallbacks);
+                    }
+                    if (opts.selection) {
+                        attachSelectionHandlers(dygraphs, prevCallbacks);
+                    }
+                }
+            });
+        }
+        return {
+            detach: function() {
+                for (var i = 0; i < dygraphs.length; i++) {
+                    var g = dygraphs[i];
+                    if (opts.zoom) {
+                        g.updateOptions({
+                            drawCallback: prevCallbacks[i].drawCallback
+                        });
+                    }
+                    if (opts.selection) {
+                        g.updateOptions({
+                            highlightCallback: prevCallbacks[i].highlightCallback,
+                            unhighlightCallback: prevCallbacks[i].unhighlightCallback
+                        });
+                    }
+                }
+                dygraphs = null;
+                opts = null;
+                prevCallbacks = null;
+            }
+        };
+    };
+    function attachZoomHandlers(gs, syncOpts, prevCallbacks) {
+        var block = false;
+        for (var i = 0; i < gs.length; i++) {
+            var g = gs[i];
+            g.updateOptions({
+                drawCallback: function(me, initial) {
+                    var arguments$1 = arguments;
+                    var this$1 = this;
+
+                    if (block || initial) return;
+                    block = true;
+                    var opts = {
+                        dateWindow: me.xAxisRange()
+                    };
+                    if (syncOpts.range) opts.valueRange = me.yAxisRange();
+                    for (var j = 0; j < gs.length; j++) {
+                        if (gs[j] == me) {
+                            if (prevCallbacks[j] && prevCallbacks[j].drawCallback) {
+                                prevCallbacks[j].drawCallback.apply(this$1, arguments$1);
+                            }
+                            continue;
+                        }
+                        if (gs[j].id && gs[j].hasOwnProperty("hideLines") && gs[j]["hideLines"]) {
+                            var _tempVisibility = gs[j].getOption("visibility");
+                            for (var k = 0; k < _tempVisibility.length; k++) {
+                                _tempVisibility[k] = false;
+                            }
+                        }
+                        gs[j].updateOptions(opts);
+                    }
+                    block = false;
+                }
+            }, true);
+        }
+    }
+    function attachSelectionHandlers(gs, prevCallbacks) {
+        var block = false;
+        for (var i = 0; i < gs.length; i++) {
+            var g = gs[i];
+            g.updateOptions({
+                highlightCallback: function(event, x, points, row, seriesName) {
+                    var arguments$1 = arguments;
+                    var this$1 = this;
+
+                    if (block) return;
+                    block = true;
+                    var me = this;
+                    for (var i = 0; i < gs.length; i++) {
+                        if (me == gs[i]) {
+                            if (prevCallbacks[i] && prevCallbacks[i].highlightCallback) {
+                                prevCallbacks[i].highlightCallback.apply(this$1, arguments$1);
+                            }
+                            continue;
+                        }
+                        var idx = gs[i].getRowForX(x);
+                        if (idx !== null) {
+                            gs[i].setSelection(idx, seriesName);
+                        }
+                    }
+                    block = false;
+                },
+                unhighlightCallback: function(event) {
+                    var arguments$1 = arguments;
+                    var this$1 = this;
+
+                    if (block) return;
+                    block = true;
+                    var me = this;
+                    for (var i = 0; i < gs.length; i++) {
+                        if (me == gs[i]) {
+                            if (prevCallbacks[i] && prevCallbacks[i].unhighlightCallback) {
+                                prevCallbacks[i].unhighlightCallback.apply(this$1, arguments$1);
+                            }
+                            continue;
+                        }
+                        gs[i].clearSelection();
+                    }
+                    block = false;
+                }
+            }, true);
+        }
+    }
+    Dygraph.synchronize = synchronize;
+})();
 (function(root, factory) {
     "use strict";
     if (typeof module !== "undefined" && module.exports) {
