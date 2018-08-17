@@ -1890,6 +1890,11 @@ class fgpWidgetGraph {
                                     }
                                 });
                             });
+                            //
+                            // $scope.childrenDevices.sort(function(a, b) {
+                            //     return a.name > b.name ? 1 : -1;
+                            // });
+
                             var fields = [];
                             var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
                             angular.forEach(metadata.data.groups[2].collections, function(level) {
@@ -1930,8 +1935,14 @@ class fgpWidgetGraph {
                                             }
                                         });
                                     });
+                                    showData.sort(function(a, b){
+                                        return a.device > b.device ? 1 : -1;
+                                    });
                                     //reset childrenDevies
                                     $scope.childrenDevices = devicesMatchData;
+                                    $scope.childrenDevices.sort(function(a, b) {
+                                        return a.name > b.name ? 1 : -1;
+                                    });
                                     //get configuration
                                     updateChildrenDetailChart(metadata, currentStore, $scope.rangeChildrenData, showData);
                                 }, function(data) {
@@ -2167,6 +2178,11 @@ class fgpWidgetGraph {
                 //range data with all device
                 $scope.childTrees = [];
                 $scope.childrenDevices = [];
+
+                deviceDatas.sort(function(a,b){
+                    return a.device.name > b.device.name ? 1 : -1;
+                });
+
                 // we should give colors to all devices (no matter has data or not)
                 deviceDatas.forEach(function(_device, _index) {
                     if ($scope.defaultColors[_index]) {
@@ -2269,6 +2285,7 @@ class fgpWidgetGraph {
                 angular.forEach(allXLabels, function(label) {
                     allLines.push([label]);
                 });
+
 
                 var yRange = {
                     min: null,
@@ -2547,7 +2564,6 @@ class fgpWidgetGraph {
                 if (relationConfig.initScale) {
                     initScale = relationConfig.initScale; // {left:{level:"",range:[num1,num2]},right:{}}
                 }
-
 
                 var counter = 0;
                 var showY2axis = null;
