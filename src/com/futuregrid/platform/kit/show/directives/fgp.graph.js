@@ -105,6 +105,11 @@ class fgpWidgetGraph {
             var sampleData = getData(1, 10, 'Device');
 
             function movePan(event, g, context, side) {
+                if(scope.memoryVisibility && scope.memoryVisibility.length == 0){
+                    // store current visiability
+                    // scope.changeVisibility(g);
+                }
+
                 context.dragEndX = Dygraph.dragGetX_(event, context);
                 context.dragEndY = Dygraph.dragGetY_(event, context);
                 // y-axis scaling is automatic unless this is a full 2D pan.
@@ -211,7 +216,7 @@ class fgpWidgetGraph {
                         }
                     }
                 }
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             }
 
 
@@ -283,8 +288,7 @@ class fgpWidgetGraph {
                             scope.currentInitScaleLevelRightConf.range = newYAxes[1];
                         }
                     }
-
-                    g.drawGraph_(false);
+                    g.drawGraph_(true);
                 } else {
                     var ranges = [];
                     angular.forEach(g.xAxisRange(), function(range) {
@@ -312,15 +316,15 @@ class fgpWidgetGraph {
                     } else if (newZoomRange[0] <= zoomRange[0] && newZoomRange[1] < zoomRange[1]) {
                         g.updateOptions({
                             dateWindow: [zoomRange[0], newZoomRange[1]]
-                        });
+                        },false)
                     } else if (newZoomRange[0] > zoomRange[0] && newZoomRange[1] >= zoomRange[1]) {
                         g.updateOptions({
                             dateWindow: [newZoomRange[0], zoomRange[1]]
-                        });
+                        },false);
                     } else {
                         g.updateOptions({
                             dateWindow: newZoomRange
-                        });
+                        },false);
                     }
                 }
             }
@@ -462,16 +466,16 @@ class fgpWidgetGraph {
             //init configuration
             var configuration = {
                 drawGapEdgePoints: true,
-                'pointSize': 3,
+                'pointSize': 2,
                 legend: 'follow',
                 labelsKMB: true,
                 labelsSeparateLines: true,
                 // data formate
                 labels: ['x'].concat(sampleData.labels),
                 highlightSeriesOpts: {
-                    strokeWidth: 3,
+                    strokeWidth: 1.5,
                     strokeBorderWidth: 1,
-                    highlightCircleSize: 5
+                    highlightCircleSize: 2
                 },
                 drawPoints: false,
                 drawAxesAtZero: false,
@@ -525,6 +529,7 @@ class fgpWidgetGraph {
                 },
                 'interactionModel': interactionModel
             };
+            configuration["plugins"] = [];
             if (Dygraph.Plugins.RectSelection) {
                 scope.selectControl = new Dygraph.Plugins.RectSelection({
                     highlight: function(series) {
@@ -542,7 +547,7 @@ class fgpWidgetGraph {
                         }
                     }
                 });
-                configuration["plugins"] = [scope.selectControl];
+                configuration["plugins"].push(scope.selectControl);
                 scope.selectControlStatus = false;
                 scope.switchSelectFeature = function() {
                     if (scope.selectControlStatus) {
@@ -554,7 +559,14 @@ class fgpWidgetGraph {
                     }
                 };
             }
+
+
+            // if (Dygraph.Plugins.HideLines) {
+            //     configuration["plugins"].push(new Dygraph.Plugins.HideLines());
+            // }
+
             scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
+
             element.find("canvas").css("zIndex", 99);
             var timer_auto = null;
             var process_bar_timer = null;
@@ -620,10 +632,10 @@ class fgpWidgetGraph {
                 scope.realTimeGraph.updateOptions({
                     "file": [],
                     highlightSeriesOpts: {
-                        strokeWidth: 3,
+                        strokeWidth: 1.5,
                         strokeBorderWidth: 1,
-                        highlightCircleSize: 5
-                    },
+                        highlightCircleSize: 2
+                    }
                 });
 
                 timer_auto = dataService.autoUpdateGraph(scope.applicationName, scope.auto_device_name, scope.auto_schema, scope.auto_store, scope.auto_fields, element.find("div[class='real-time-graph']").width() / 4, function(graph_data, worker, interval) {
@@ -829,6 +841,7 @@ class fgpWidgetGraph {
                 scope.$on('bindFatherGraphEvent', function(event, data) {
                     angular.forEach(data.children, function(child) {
                         if (child == attrs.id) {
+                            scope.currentChart["id"] = attrs.id;
                             Dygraph.synchronize([scope.currentChart].concat(data.parent), {
                                 zoom: true,
                                 selection: false,
@@ -837,7 +850,7 @@ class fgpWidgetGraph {
                             scope.currentChart.updateOptions({
                                 drawCallback: function(g, isInit) {
                                     // console.info("refersh running!" + " is  Init?"+ isInit);
-                                    scope.refersh(g, isInit);
+                                    scope.refersh(g, isInit, true);
                                 }
                             });
                         }
@@ -845,6 +858,9 @@ class fgpWidgetGraph {
                 });
                 element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function(event) {
                     if (status) {
+                        if(scope.memoryVisibility && scope.memoryVisibility.length == 0){
+                            // scope.changeVisibility(scope.currentChart);
+                        }
                         timeOut(function() {
                             scope.chartDateWindow = scope.currentChart.xAxisRange();
                         });
@@ -892,6 +908,9 @@ class fgpWidgetGraph {
         $scope.auto_schema = "";
         $scope.auto_store = "";
         $scope.auto_fields = [];
+
+        $scope.memoryVisibility = [];
+
         // default data-time intervals
         $scope.defaultTimeIntervals = [{
                 name: "10 seconds",
@@ -940,6 +959,35 @@ class fgpWidgetGraph {
         ];
         $scope.dateTimeIntervals = [].concat($scope.defaultTimeIntervals);
         $scope.locked_interval = null;
+
+
+        $scope.changeVisibility = function(graph){
+                // store current visiability
+                $scope.memoryVisibility = graph.getOption('visibility');
+                // temp visibility
+                var _visibility = [];
+                $scope.memoryVisibility.forEach((vi)=>{
+                    _visibility.push(false);
+                });
+                // set visibility to false
+                // graph.updateOptions({
+                //     'visibility': _visibility
+                // },true);
+        };
+
+        $scope.chartDateWindow = [];
+        //
+        // $scope.$watchCollection('currentChart.dateWindow_', function(newVal, oldVal){
+        //     //
+        //     if(newVal && $scope.memoryVisibility && $scope.memoryVisibility.length == 0){
+        //         // $scope.changeVisibility($scope.currentChart);
+        //         console.info("!");
+        //     }else{
+        //         console.info("~");
+        //     }
+        //     console.info(newVal);
+        // });
+
         // lock interval
         $scope.lock = function(interval) {
             if ($scope.locked_interval) {
@@ -1758,9 +1806,9 @@ class fgpWidgetGraph {
                                                         'labels': ['x'].concat(rangeBarLabels),
                                                         'series': series_range,
                                                         highlightSeriesOpts: {
-                                                            strokeWidth: 3,
+                                                            strokeWidth: 1.5,
                                                             strokeBorderWidth: 1,
-                                                            highlightCircleSize: 5
+                                                            highlightCircleSize: 2
                                                         }
                                                     };
                                                     if (basicInfo && basicInfo.range_show) {
@@ -1770,9 +1818,9 @@ class fgpWidgetGraph {
                                                     $scope.rangeSelectorBar.updateOptions({
                                                         'file': allLines,
                                                         highlightSeriesOpts: {
-                                                            strokeWidth: 3,
+                                                            strokeWidth: 1.5,
                                                             strokeBorderWidth: 1,
-                                                            highlightCircleSize: 5
+                                                            highlightCircleSize: 2
                                                         }
                                                     });
                                                 }
@@ -1792,9 +1840,9 @@ class fgpWidgetGraph {
                                                     'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
                                                     'series': series_range,
                                                     highlightSeriesOpts: {
-                                                        strokeWidth: 3,
+                                                        strokeWidth: 1.5,
                                                         strokeBorderWidth: 1,
-                                                        highlightCircleSize: 5
+                                                        highlightCircleSize: 2
                                                     }
                                                 };
                                                 if (basicInfo && basicInfo.range_show) {
@@ -2330,11 +2378,11 @@ class fgpWidgetGraph {
                             labelsSeparateLines: false,
                             highlightCircleSize: 2,
 
-                            strokeBorderWidth: 1,
+                            strokeBorderWidth: 0,
                             highlightSeriesOpts: {
-                                strokeWidth: 3,
+                                strokeWidth: 1.5,
                                 strokeBorderWidth: 1,
-                                highlightCircleSize: 5
+                                highlightCircleSize: 2
                             },
                             'labels': ['x'].concat(labels),
                             'ylabel': leftAndRight.left,
@@ -2363,18 +2411,17 @@ class fgpWidgetGraph {
                         $scope.childrenRangeConfig = {
                             'connectSeparatedPoints': connectSeparatedPoints,
                             'drawGapEdgePoints': true,
-                            'pointSize': 3,
+                            'pointSize': 2,
                             'legend': 'never',
                             'labelsKMB': true,
                             'file': newLines,
                             'labelsSeparateLines': false,
                             highlightCircleSize: 2,
-
-                            strokeBorderWidth: 1,
+                            strokeBorderWidth: 0,
                             highlightSeriesOpts: {
-                                strokeWidth: 3,
+                                strokeWidth: 1.5,
                                 strokeBorderWidth: 1,
-                                highlightCircleSize: 5
+                                highlightCircleSize: 2
                             },
                             'labels': ['x'].concat(labels).concat(['span_y2']),
                             'ylabel': leftAndRight.left,
@@ -2412,9 +2459,9 @@ class fgpWidgetGraph {
                                 'series': series,
                                 'labels': ['x'].concat(labels),
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
+                                    highlightCircleSize: 2
                                 }
                             };
                         } else {
@@ -2423,9 +2470,9 @@ class fgpWidgetGraph {
                                 'series': series,
                                 'labels': ['x'].concat(labels).concat(['span_y2']),
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
+                                    highlightCircleSize: 2
                                 }
                             };
                         }
@@ -2640,15 +2687,15 @@ class fgpWidgetGraph {
                         if (showY2axis) {
                             $scope.currentChartOptions = {
                                 'connectSeparatedPoints': connectSeparatedPoints,
-                                'pointSize': 3,
+                                'pointSize': 2,
                                 'legend': 'never',
                                 'labelsKMB': true,
                                 highlightCircleSize: 2,
-                                strokeBorderWidth: 1,
+                                strokeBorderWidth: 0,
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
+                                    highlightCircleSize: 2
                                 },
                                 labelsSeparateLines: false,
                                 'file': chartData,
@@ -2664,18 +2711,30 @@ class fgpWidgetGraph {
                                     }
                                 }
                             };
-
+                            var _tempVisibility = [];
+                            $scope.currentChart.getOption('visibility').forEach(function(v,_index){
+                                if($scope.currentVisibility_[_index]){
+                                    _tempVisibility[_index] = $scope.currentVisibility_[_index]
+                                }else{
+                                    _tempVisibility[_index] = v;
+                                }
+                                if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                                    $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                                }
+                            });
+                            $scope.currentVisibility_ = [];
                             $scope.currentChart.updateOptions({
                                 'connectSeparatedPoints': connectSeparatedPoints,
-                                'pointSize': 3,
+                                'pointSize': 2,
                                 'legend': 'never',
                                 'labelsKMB': true,
+                                'visibility':_tempVisibility,
                                 highlightCircleSize: 2,
-                                strokeBorderWidth: 1,
+                                strokeBorderWidth: 0,
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
+                                    highlightCircleSize: 2
                                 },
                                 labelsSeparateLines: false,
                                 'file': chartData,
@@ -2704,7 +2763,7 @@ class fgpWidgetGraph {
                             };
                             $scope.currentChartOptions = {
                                 'connectSeparatedPoints': connectSeparatedPoints,
-                                'pointSize': 3,
+                                'pointSize': 2,
                                 'legend': 'never',
                                 'labelsKMB': true,
                                 'file': newLines,
@@ -2712,9 +2771,9 @@ class fgpWidgetGraph {
                                 'labels': ['x'].concat(labels).concat(["span_y2"]),
                                 'ylabel': leftAndRight.left,
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
+                                    highlightCircleSize: 2
                                 },
                                 'y2label': "",
                                 'series': series,
@@ -2733,22 +2792,36 @@ class fgpWidgetGraph {
                                 }
                                 // showRangeSelector: true
                             };
+
+
+                            var _tempVisibility = [];
+                            $scope.currentChart.getOption('visibility').forEach(function(v,_index){
+                                if($scope.currentVisibility_[_index]){
+                                    _tempVisibility[_index] = $scope.currentVisibility_[_index]
+                                }else{
+                                    _tempVisibility[_index] = v;
+                                }
+                                if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                                    $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                                }
+                            });
+                            $scope.currentVisibility_ = [];
                             $scope.currentChart.updateOptions({
                                 'connectSeparatedPoints': connectSeparatedPoints,
-                                'pointSize': 3,
+                                'pointSize': 2,
                                 'legend': 'never',
                                 'labelsKMB': true,
                                 'file': newLines,
+                                'visibility':_tempVisibility,
                                 labelsSeparateLines: false,
                                 'labels': ['x'].concat(labels).concat(["span_y2"]),
                                 'ylabel': leftAndRight.left,
                                 highlightCircleSize: 2,
-
-                                strokeBorderWidth: 1,
+                                strokeBorderWidth: 0,
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
+                                    highlightCircleSize: 2
                                 },
                                 highlightCallback: function(e, x, pts, row, seriesName) {
                                     if ($scope.currentView == -1) {
@@ -3022,10 +3095,10 @@ class fgpWidgetGraph {
                             $scope.currentChart.updateOptions({
                                 'file': [],
                                 highlightSeriesOpts: {
-                                    strokeWidth: 3,
+                                    strokeWidth: 1.5,
                                     strokeBorderWidth: 1,
-                                    highlightCircleSize: 5
-                                },
+                                    highlightCircleSize: 2
+                                }
                             });
                             if ($scope.rangeSelectorBar) {
                                 $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
@@ -3041,13 +3114,13 @@ class fgpWidgetGraph {
                                     $scope.currentChartOptions = {
                                         'connectSeparatedPoints': connectSeparatedPoints,
                                         'drawGapEdgePoints': true,
-                                        'pointSize': 3,
+                                        'pointSize': 2,
                                         'legend': 'follow',
                                         labelsSeparateLines: true,
                                         highlightSeriesOpts: {
-                                            strokeWidth: 3,
+                                            strokeWidth: 1.5,
                                             strokeBorderWidth: 1,
-                                            highlightCircleSize: 5
+                                            highlightCircleSize: 2
                                         },
                                         'labelsKMB': true,
                                         'file': allLines,
@@ -3069,16 +3142,30 @@ class fgpWidgetGraph {
                                         'colors': colors
                                         // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                     };
+
+                                    var _tempVisibility = [];
+                                    $scope.currentChart.getOption('visibility').forEach(function(v,_index){
+                                        if($scope.currentVisibility_[_index]){
+                                            _tempVisibility[_index] = $scope.currentVisibility_[_index]
+                                        }else{
+                                            _tempVisibility[_index] = v;
+                                        }
+                                        if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                                            $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                                        }
+                                    });
+                                    $scope.currentVisibility_ = [];
                                     $scope.currentChart.updateOptions({
                                         'connectSeparatedPoints': connectSeparatedPoints,
                                         'drawGapEdgePoints': true,
-                                        'pointSize': 3,
+                                        'pointSize': 2,
                                         'legend': 'follow',
+                                        'visibility': _tempVisibility,
                                         labelsSeparateLines: true,
                                         highlightSeriesOpts: {
-                                            strokeWidth: 3,
+                                            strokeWidth: 1.5,
                                             strokeBorderWidth: 1,
-                                            highlightCircleSize: 5
+                                            highlightCircleSize: 2
                                         },
                                         'labelsKMB': true,
                                         'file': allLines,
@@ -3111,16 +3198,17 @@ class fgpWidgetGraph {
                                     series["span-Y2"] = {
                                         axis: 'y2'
                                     };
+
                                     $scope.currentChartOptions = {
                                         'connectSeparatedPoints': connectSeparatedPoints,
                                         'drawGapEdgePoints': true,
-                                        'pointSize': 3,
+                                        'pointSize': 2,
                                         'legend': 'follow',
                                         labelsSeparateLines: true,
                                         highlightSeriesOpts: {
-                                            strokeWidth: 3,
+                                            strokeWidth: 1.5,
                                             strokeBorderWidth: 1,
-                                            highlightCircleSize: 5
+                                            highlightCircleSize: 2
                                         },
                                         'labelsKMB': true,
                                         'file': newLines,
@@ -3143,16 +3231,32 @@ class fgpWidgetGraph {
                                         'colors': colors
                                         // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                     };
+
+
+
+                                    var _tempVisibility = [];
+                                    $scope.currentChart.getOption('visibility').forEach(function(v,_index){
+                                        if($scope.currentVisibility_[_index]){
+                                            _tempVisibility[_index] = $scope.currentVisibility_[_index]
+                                        }else{
+                                            _tempVisibility[_index] = v;
+                                        }
+                                        if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                                            $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                                        }
+                                    });
+                                    $scope.currentVisibility_ = [];
                                     $scope.currentChart.updateOptions({
                                         'connectSeparatedPoints': connectSeparatedPoints,
                                         'drawGapEdgePoints': true,
-                                        'pointSize': 3,
+                                        'pointSize': 2,
                                         'legend': 'follow',
                                         labelsSeparateLines: true,
+                                        'visibility': _tempVisibility,
                                         highlightSeriesOpts: {
-                                            strokeWidth: 3,
+                                            strokeWidth: 1.5,
                                             strokeBorderWidth: 1,
-                                            highlightCircleSize: 5
+                                            highlightCircleSize: 2
                                         },
                                         'labelsKMB': true,
                                         'file': newLines,
@@ -3361,10 +3465,10 @@ class fgpWidgetGraph {
                                         'labels': ['x'].concat(rangeBarLabels),
                                         'series': series_range,
                                         highlightSeriesOpts: {
-                                            strokeWidth: 3,
+                                            strokeWidth: 1.5,
                                             strokeBorderWidth: 1,
-                                            highlightCircleSize: 5
-                                        },
+                                            highlightCircleSize: 2
+                                        }
                                     });
                                 } else {
                                     series_range["span_y2"] = {
@@ -3382,10 +3486,10 @@ class fgpWidgetGraph {
                                         'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
                                         'series': series_range,
                                         highlightSeriesOpts: {
-                                            strokeWidth: 3,
+                                            strokeWidth: 1.5,
                                             strokeBorderWidth: 1,
-                                            highlightCircleSize: 5
-                                        },
+                                            highlightCircleSize: 2
+                                        }
                                     });
                                     // save
                                 }
@@ -3411,13 +3515,13 @@ class fgpWidgetGraph {
                                 $scope.rangeConfig = {
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
-                                    'pointSize': 3,
+                                    'pointSize': 2,
                                     'legend': 'follow',
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: {
-                                        strokeWidth: 3,
+                                        strokeWidth: 1.5,
                                         strokeBorderWidth: 1,
-                                        highlightCircleSize: 5
+                                        highlightCircleSize: 2
                                     },
                                     'labelsKMB': true,
                                     'file': allLines,
@@ -3455,13 +3559,13 @@ class fgpWidgetGraph {
                                 $scope.rangeConfig = {
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
-                                    'pointSize': 3,
+                                    'pointSize': 2,
                                     'legend': 'follow',
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: {
-                                        strokeWidth: 3,
+                                        strokeWidth: 1.5,
                                         strokeBorderWidth: 1,
-                                        highlightCircleSize: 5
+                                        highlightCircleSize: 2
                                     },
                                     'labelsKMB': true,
                                     'file': newLines,
@@ -3490,6 +3594,8 @@ class fgpWidgetGraph {
 
 
                             if (basicInfo && basicInfo.range_show) {
+                                $scope.rangeSelectorBar["_name_fgp"] = "rangebar";
+                                $scope.currentChart["_name_fgp"] = deviceConfig;
                                 Dygraph.synchronize([$scope.rangeSelectorBar, $scope.currentChart], {
                                     zoom: true,
                                     selection: false,
@@ -3603,14 +3709,13 @@ class fgpWidgetGraph {
 
             var btntimer = null;
 
-
             $scope.btnZoomInVLeft = function() {
                 var g = $scope.currentChart;
                 var yAxes = g.axes_;
                 var range = yAxes[0].valueRange;
                 yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
                 yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
             $scope.btnZoomOutVLeft = function() {
@@ -3619,7 +3724,7 @@ class fgpWidgetGraph {
                 var range = yAxes[0].valueRange;
                 yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
                 yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
             $scope.btnZoomInVRight = function() {
@@ -3628,7 +3733,7 @@ class fgpWidgetGraph {
                 var range = yAxes[1].valueRange;
                 yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
                 yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
             $scope.btnZoomOutVRight = function() {
@@ -3637,7 +3742,7 @@ class fgpWidgetGraph {
                 var range = yAxes[1].valueRange;
                 yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
                 yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
             $scope.btnPanVULeft = function() {
@@ -3651,7 +3756,7 @@ class fgpWidgetGraph {
                 }
                 yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
                 yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
 
@@ -3666,7 +3771,7 @@ class fgpWidgetGraph {
                 }
                 yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
                 yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
 
@@ -3681,7 +3786,7 @@ class fgpWidgetGraph {
                 }
                 yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
                 yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
             $scope.btnPanVDRight = function() {
@@ -3695,13 +3800,14 @@ class fgpWidgetGraph {
                 }
                 yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
                 yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-                g.drawGraph_(false);
+                g.drawGraph_(true);
             };
 
             // functions for buttons
             $scope.btnpanleft = function() {
                 // get current datetime window
                 var g = $scope.currentChart;
+                // $scope.changeVisibility(g);
                 var panRange = g.xAxisZoomRange;
                 if (g.xAxisZoomRange[0] instanceof Date) {
                     panRange[0] = g.xAxisZoomRange[0].getTime();
@@ -3757,6 +3863,7 @@ class fgpWidgetGraph {
                 }
 
                 btntimer = $timeout(function() {
+                    btntimer = null;
                     $scope.chartDateTime = {
                         begin: new Date(new Number(startDate)),
                         end: new Date(new Number(endDate))
@@ -3767,6 +3874,7 @@ class fgpWidgetGraph {
             $scope.btnpanright = function() {
                 // get current datetime window
                 var g = $scope.currentChart;
+                // $scope.changeVisibility(g);
                 var panRange = g.xAxisZoomRange;
                 if (g.xAxisZoomRange[0] instanceof Date) {
                     panRange[0] = g.xAxisZoomRange[0].getTime();
@@ -3812,16 +3920,17 @@ class fgpWidgetGraph {
                 }
 
                 //update graph
+                if (btntimer) {
+                    $timeout.cancel(btntimer);
+                }
+
                 $scope.chartDateWindow = [new Date(new Number(startDate)), new Date(new Number(endDate))];
                 g.updateOptions({
                     dateWindow: [new Date(new Number(startDate)), new Date(new Number(endDate))]
                 });
 
-                if (btntimer) {
-                    $timeout.cancel(btntimer);
-                }
-
                 btntimer = $timeout(function() {
+                    btntimer = null;
                     $scope.chartDateTime = {
                         begin: new Date(new Number(startDate)),
                         end: new Date(new Number(endDate))
@@ -3833,6 +3942,7 @@ class fgpWidgetGraph {
             $scope.btnzoomin = function() {
                 // get current datetime window
                 var g = $scope.currentChart;
+                // $scope.changeVisibility(g);
                 //split range to 20 pieces
                 var startDate;
                 var endDate;
@@ -3872,6 +3982,7 @@ class fgpWidgetGraph {
             $scope.btnzoomout = function() {
                 // get current datetime window
                 var g = $scope.currentChart;
+                // $scope.changeVisibility(g);
                 var panRange = g.xAxisZoomRange;
                 if (g.xAxisZoomRange[0] instanceof Date) {
                     panRange[0] = g.xAxisZoomRange[0].getTime();
@@ -3926,36 +4037,26 @@ class fgpWidgetGraph {
 
             $scope.currentGxAxisRange = [];
 
-
-
-
-            var callFunc = function() {
-                var currentTimestamp = Math.floor(Date.now());
-                if ((currentTimestamp - lastUpdateTimestamp) > 600) {
-                    // update datewindow
-                    $scope.chartDateTime = {
-                        begin: $scope.currentGxAxisRange[0],
-                        end: $scope.currentGxAxisRange[1]
-                    };
-                    $scope.chartDateWindow = $scope.currentGxAxisRange;
-                    lastUpdateTimestamp = -1;
-                }
-            }
-
+            $scope.currentVisibility_ = [];
 
             $scope.refershTimer;
-            $scope.refersh = function(g, init) {
-                if (init || g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end) {
+            $scope.refersh = function(g, init, childGraph) {
+                if (init || (g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end)) {
                     if ($scope.refershTimer) {
+                        g["hideLines"] = true;
+                        if($scope.currentVisibility_.length == 0){
+                            $scope.currentVisibility_ = [].concat($scope.currentChart.getOption("visibility"));
+                        }
                         $timeout.cancel($scope.refershTimer);
                     }
                     $scope.refershTimer = $timeout(function() {
                         $scope.refershTimer = null;
+                        g["hideLines"] = false;
                         $scope.chartDateTime = {
                             begin: g.xAxisRange()[0],
                             end: g.xAxisRange()[1]
                         };
-                    }, 500);
+                    }, 300);
                 }
             };
 
