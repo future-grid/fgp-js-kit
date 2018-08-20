@@ -1812,6 +1812,14 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function(event) {
                 if (status) {
+                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                        scope.memoryVisibility = scope.currentChart.getOption("visibility");
+                        var _tempVi = [];
+                        scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                            _tempVi[_index] = false;
+                        });
+                        scope.currentChart.updateOptions({"visibility":_tempVi});
+                    }
                     timeOut(function() {
                         scope.chartDateWindow = scope.currentChart.xAxisRange();
                     });
@@ -1819,14 +1827,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousedown', function(event) {
                 status = true;
-                if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
-                    scope.memoryVisibility = scope.currentChart.getOption("visibility");
-                    var _tempVi = [];
-                    scope.currentChart.getOption("visibility").forEach(function(_v, _index){
-                        _tempVi[_index] = false;
-                    });
-                    scope.currentChart.updateOptions({"visibility":_tempVi});
-                }
             });
             //bind chart
             if (basicInfo && basicInfo.childrenChart.length > 0) {
