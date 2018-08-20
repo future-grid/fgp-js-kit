@@ -1413,7 +1413,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 
 
         //init configuration
-        var configuration = {
+        var configuration = scope.defaultNullCOnfig = {
             drawGapEdgePoints: true,
             'pointSize': 2,
             legend: 'follow',
@@ -3316,10 +3316,19 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     });
                 });
                 if (showY2axis) {
+                    var _currentVisi = [];
+
+                    if($scope.currentChart.visibility().length < labels.length){
+                        // set visibilitiy first
+                        labels.forEach(function(_index){
+                            _currentVisi.push(true);
+                        });
+                    }
                     $scope.childrenRangeConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'labelsKMB': true,
                         'file': allLines,
+                        // 'visibility':_currentVisi,
                         legend: 'never',
                         labelsKMB: true,
                         labelsSeparateLines: false,
@@ -3355,10 +3364,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     series["span_y2"] = {
                         'axis': 'y2'
                     };
+
+
+                    var _currentVisi = [];
+
+                    if($scope.currentChart.visibility().length < labels.length){
+                        // set visibilitiy first
+                        labels.forEach(function(_index){
+                            _currentVisi.push(true);
+                        });
+                    }
+
                     $scope.childrenRangeConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'drawGapEdgePoints': true,
                         'pointSize': 2,
+                        // 'visibility':_currentVisi,
                         'legend': 'never',
                         'labelsKMB': true,
                         'file': newLines,
@@ -3388,7 +3409,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         // showRangeSelector: true
                     };
                 }
-                //
+
+                // $scope.currentChart.updateOptions($scope.defaultNullCOnfig);
+
                 $scope.currentChart.updateOptions($scope.childrenRangeConfig);
 
                 // set the first one to range bar
@@ -4099,21 +4122,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 };
 
-                                var _tempVisibility = [];
-                                $scope.currentChart.getOption('visibility').forEach(function(v,_index){
-                                    if($scope.currentVisibility_[_index]){
-                                        _tempVisibility[_index] = $scope.currentVisibility_[_index];
-                                    }else{
-                                        if($scope.memoryVisibility[_index]){
-                                            _tempVisibility[_index] = $scope.memoryVisibility[_index];
-                                        }else{
-                                            _tempVisibility[_index] = v;
-                                        }
-                                    }
-                                    if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
-                                        $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
-                                    }
-                                });
+                                // var _tempVisibility = [];
+                                // $scope.currentChart.getOption('visibility').forEach(function(v,_index){
+                                // if($scope.currentVisibility_[_index]){
+                                //     _tempVisibility[_index] = $scope.currentVisibility_[_index];
+                                // }else{
+                                //     if($scope.memoryVisibility[_index]){
+                                //         _tempVisibility[_index] = $scope.memoryVisibility[_index];
+                                //     }else{
+                                //         _tempVisibility[_index] = v;
+                                //     }
+                                // }
+                                // if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                                //     $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                                // }
+                                // });
                                 $scope.currentVisibility_ = [];
                                 $scope.memoryVisibility = [];
                                 $scope.currentChart.updateOptions({
@@ -4121,7 +4144,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'drawGapEdgePoints': true,
                                     'pointSize': 2,
                                     'legend': 'follow',
-                                    'visibility': _tempVisibility,
+                                    // 'visibility': _tempVisibility,
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: {
                                         strokeWidth: 1.5,
@@ -4195,21 +4218,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
 
-                                var _tempVisibility = [];
-                                $scope.currentChart.getOption('visibility').forEach(function(v,_index){
-                                    if($scope.currentVisibility_[_index]){
-                                        _tempVisibility[_index] = $scope.currentVisibility_[_index];
-                                    }else{
-                                        if($scope.memoryVisibility[_index]){
-                                            _tempVisibility[_index] = $scope.memoryVisibility[_index];
-                                        }else{
-                                            _tempVisibility[_index] = v;
-                                        }
-                                    }
-                                    if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
-                                        $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
-                                    }
-                                });
+                                // var _tempVisibility = [];
+                                // $scope.currentChart.getOption('visibility').forEach(function(v,_index){
+                                // if($scope.currentVisibility_[_index]){
+                                //     _tempVisibility[_index] = $scope.currentVisibility_[_index];
+                                // }else{
+                                //     if($scope.memoryVisibility[_index]){
+                                //         _tempVisibility[_index] = $scope.memoryVisibility[_index];
+                                //     }else{
+                                //         _tempVisibility[_index] = v;
+                                //     }
+                                // }
+                                // if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                                //     $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                                // }
+                                // });
                                 $scope.currentVisibility_ = [];
                                 $scope.memoryVisibility = [];
                                 $scope.currentChart.updateOptions({
@@ -4218,7 +4241,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'pointSize': 2,
                                     'legend': 'follow',
                                     labelsSeparateLines: true,
-                                    'visibility': _tempVisibility,
+                                    // 'visibility': _tempVisibility,
                                     highlightSeriesOpts: {
                                         strokeWidth: 1.5,
                                         strokeBorderWidth: 1,
