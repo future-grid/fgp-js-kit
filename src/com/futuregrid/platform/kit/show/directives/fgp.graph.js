@@ -1488,7 +1488,7 @@ class fgpWidgetGraph {
                                                 if ($scope.defaultColors[$index]) {
                                                     colors.push($scope.defaultColors[$index]);
                                                 } else {
-                                                    colors.push('#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6));
+                                                    colors.push($scope.defaultColors[Math.floor(Math.random()*(10))]);
                                                 }
                                             }
                                         });
@@ -2218,7 +2218,7 @@ class fgpWidgetGraph {
                     } else {
                         $scope.childrenColors.push({
                             name: _device.device.name,
-                            color: '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
+                            color: $scope.defaultColors[Math.floor(Math.random()*(10))]
                         });
                     }
                 });
