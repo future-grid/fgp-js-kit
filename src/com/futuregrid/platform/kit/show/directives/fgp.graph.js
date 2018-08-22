@@ -2203,6 +2203,8 @@ class fgpWidgetGraph {
                 //range data with all device
                 $scope.childTrees = [];
                 $scope.childrenDevices = [];
+                //reset colors
+                $scope.childrenColors = [];
 
                 deviceDatas.sort(function(a,b){
                     return a.device.name > b.device.name ? 1 : -1;
@@ -2411,14 +2413,6 @@ class fgpWidgetGraph {
                         });
                     });
                     if (showY2axis) {
-                        var _currentVisi = [];
-
-                        if($scope.currentChart.visibility().length < labels.length){
-                            // set visibilitiy first
-                            labels.forEach(function(_index){
-                                _currentVisi.push(true);
-                            });
-                        }
                         $scope.childrenRangeConfig = {
                             'connectSeparatedPoints': connectSeparatedPoints,
                             'labelsKMB': true,
@@ -2459,16 +2453,6 @@ class fgpWidgetGraph {
                         series["span_y2"] = {
                             'axis': 'y2'
                         };
-
-
-                        var _currentVisi = [];
-
-                        if($scope.currentChart.visibility().length < labels.length){
-                            // set visibilitiy first
-                            labels.forEach(function(_index){
-                                _currentVisi.push(true);
-                            });
-                        }
 
                         $scope.childrenRangeConfig = {
                             'connectSeparatedPoints': connectSeparatedPoints,

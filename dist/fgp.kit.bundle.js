@@ -27,6 +27,7 @@ var fgpStage = function fgpStage() {
         standalone: "=",
         interactions: "=",
         drill: "=",
+        childrenDrill:"=",
         highlights: "=",
         eventsHandler: "="
     };
@@ -116,6 +117,7 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
 
             newScope["interactions"] = $scope.interactions;
             newScope["drill"] = $scope.drill;
+            newScope["childrenDrill"] = $scope.childrenDrill;
             newScope["highlights"] = $scope.highlights;
             newScope["eventsHandler"] = $scope.eventsHandler;
 
@@ -712,8 +714,14 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
 dataAccessApi.prototype.defaultColors = function defaultColors () {
     if (!this.colors) {
         // dark blue, green, orange,pink,red
-        var defaultColors = [ "#1B2631","#C0392B","#884EA0","#2471A3","#138D75","#229954","#F39C12","#34495E","#154360", "#641E16", "#4A235A", "#0B5345", "#7D6608", "#6E2C00"];
-        this['colors'] = defaultColors;
+        var defaultColors = ["#1B2631", "#C0392B", "#884EA0", "#2471A3", "#138D75", "#229954", "#F39C12", "#34495E", "#154360", "#641E16", "#4A235A", "#0B5345", "#7D6608", "#6E2C00"];
+
+        var _tempColors = [];
+        // generate 500 colors
+        for (var i = 0; i < 500; i++) {
+            _tempColors.push(defaultColors[Math.floor(Math.random()*(10))]);
+        }
+        this['colors'] = defaultColors.concat(_tempColors);
     }
     return this.colors;
 };
@@ -3108,6 +3116,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             //range data with all device
             $scope.childTrees = [];
             $scope.childrenDevices = [];
+            //reset colors
+            $scope.childrenColors = [];
 
             deviceDatas.sort(function(a,b){
                 return a.device.name > b.device.name ? 1 : -1;
@@ -3316,14 +3326,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     });
                 });
                 if (showY2axis) {
-                    var _currentVisi = [];
-
-                    if($scope.currentChart.visibility().length < labels.length){
-                        // set visibilitiy first
-                        labels.forEach(function(_index){
-                            _currentVisi.push(true);
-                        });
-                    }
                     $scope.childrenRangeConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'labelsKMB': true,
@@ -3364,16 +3366,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     series["span_y2"] = {
                         'axis': 'y2'
                     };
-
-
-                    var _currentVisi = [];
-
-                    if($scope.currentChart.visibility().length < labels.length){
-                        // set visibilitiy first
-                        labels.forEach(function(_index){
-                            _currentVisi.push(true);
-                        });
-                    }
 
                     $scope.childrenRangeConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
