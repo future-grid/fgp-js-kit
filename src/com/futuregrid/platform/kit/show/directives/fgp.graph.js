@@ -574,7 +574,8 @@ class fgpWidgetGraph {
                 'interactionModel': interactionModel
             };
             configuration["plugins"] = [];
-            if (Dygraph.Plugins.RectSelection) {
+            // enable and disables
+            if (Dygraph.Plugins.RectSelection && scope.highlights) {
                 scope.selectControl = new Dygraph.Plugins.RectSelection({
                     highlight: function(series) {
                         console.info("highlight:" + series); // would be children devices in scatter view
