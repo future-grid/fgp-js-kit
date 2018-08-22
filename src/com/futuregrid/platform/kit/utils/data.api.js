@@ -516,8 +516,14 @@ class dataAccessApi {
     defaultColors() {
         if (!this.colors) {
             // dark blue, green, orange,pink,red
-            var defaultColors = [ "#1B2631","#C0392B","#884EA0","#2471A3","#138D75","#229954","#F39C12","#34495E","#154360", "#641E16", "#4A235A", "#0B5345", "#7D6608", "#6E2C00"];
-            this['colors'] = defaultColors;
+            var defaultColors = ["#1B2631", "#C0392B", "#884EA0", "#2471A3", "#138D75", "#229954", "#F39C12", "#34495E", "#154360", "#641E16", "#4A235A", "#0B5345", "#7D6608", "#6E2C00"];
+
+            var _tempColors = [];
+            // generate 500 colors
+            for (var i = 0; i < 500; i++) {
+                _tempColors.push(defaultColors[Math.floor(Math.random()*(10))]);
+            }
+            this['colors'] = defaultColors.concat(_tempColors);
         }
         return this.colors;
     }

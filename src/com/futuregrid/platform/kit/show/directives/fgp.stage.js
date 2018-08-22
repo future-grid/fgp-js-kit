@@ -15,6 +15,7 @@ class fgpStage {
             standalone: "=",
             interactions: "=",
             drill: "=",
+            childrenDrill:"=",
             highlights: "=",
             eventsHandler: "="
         };
@@ -104,6 +105,7 @@ class fgpStage {
 
                 newScope["interactions"] = $scope.interactions;
                 newScope["drill"] = $scope.drill;
+                newScope["childrenDrill"] = $scope.childrenDrill;
                 newScope["highlights"] = $scope.highlights;
                 newScope["eventsHandler"] = $scope.eventsHandler;
 
