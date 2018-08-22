@@ -1521,7 +1521,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         // if (Dygraph.Plugins.HideLines) {
         // configuration["plugins"].push(new Dygraph.Plugins.HideLines());
         // }
-
+        scope.chartInitStatus = true;
         scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
 
         element.find("canvas").css("zIndex", 99);
@@ -3318,10 +3318,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 $scope.rangeChildrenData = allLines;
                 // reset colors by labels
                 colors = [];
+                var _initVisibility = [];
                 labels.forEach(function(key) {
                     $scope.childrenColors.forEach(function(_item) {
                         if (_item.name == key) {
                             colors.push(_item.color);
+                            _initVisibility.push(true);
                         }
                     });
                 });
@@ -3330,12 +3332,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'labelsKMB': true,
                         'file': allLines,
-                        // 'visibility':_currentVisi,
+                        // 'visibility':_initVisibility,
                         legend: 'never',
                         labelsKMB: true,
                         labelsSeparateLines: false,
                         highlightCircleSize: 2,
-
                         strokeBorderWidth: 0,
                         highlightSeriesOpts: {
                             strokeWidth: 1.5,
@@ -3367,11 +3368,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'axis': 'y2'
                     };
 
+
                     $scope.childrenRangeConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'drawGapEdgePoints': true,
                         'pointSize': 2,
-                        // 'visibility':_currentVisi,
+                        // 'visibility':_initVisibility,
                         'legend': 'never',
                         'labelsKMB': true,
                         'file': newLines,
@@ -3403,8 +3405,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
 
                 // $scope.currentChart.updateOptions($scope.defaultNullCOnfig);
-
-                $scope.currentChart.updateOptions($scope.childrenRangeConfig);
+                $scope.currentChart.updateOptions($scope.childrenRangeConfig,false);
 
                 // set the first one to range bar
                 // update range bar with the first channel data
@@ -5049,14 +5050,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.currentVisibility_ = [];
 
         $scope.refershTimer;
+        $scope.childrenInit = true;
         $scope.refersh = function(g, init, childGraph) {
             if (init || (g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end)) {
                 if ($scope.refershTimer) {
-                    g["hideLines"] = true;
-                    if($scope.currentVisibility_.length == 0){
+                    if($scope.currentVisibility_.length == 0 && !$scope.childrenInit){
+                        g["hideLines"] = true;
                         $scope.currentVisibility_ = [].concat($scope.currentChart.getOption("visibility"));
                     }
                     $timeout.cancel($scope.refershTimer);
+                }
+
+                if($scope.currentChart){
+                    var currentLabels = $scope.currentChart.getLabels();
+                    if(currentLabels.length >= 2 && currentLabels[1] != "Device0"){
+                        $scope.childrenInit = false;
+                    }
                 }
                 $scope.refershTimer = $timeout(function() {
                     $scope.refershTimer = null;
