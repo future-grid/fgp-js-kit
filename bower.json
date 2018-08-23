@@ -15,7 +15,6 @@
     "tests"
   ],
   "dependencies": {
-    "eric_dygraphs": "^1.0.0",
     "angular": "^1.5.0",
     "Chart.js": "^2.1.6",
     "jquery": "~>3.0.0",
@@ -23,7 +22,6 @@
     "ngmap": "^1.17.1",
     "angular-ui-ace": "bower",
     "angular-cache": "^4.6.0",
-    "moment-timezone": "^0.5.14",
-    "angular-openlayers-directive": "^2.1.0"
+    "moment-timezone": "^0.5.14"
   }
 }
