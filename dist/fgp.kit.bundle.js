@@ -1223,56 +1223,56 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 } else if (newZoomRange[0] >= newZoomRange[1]) {
                     return;
                 } else if (newZoomRange[0] <= zoomRange[0] && newZoomRange[1] < zoomRange[1]) {
-                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                    if (scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true) {
                         scope.memoryVisibility = g.getOption("visibility");
                         var vis = g.getOption("visibility");
                         var _tempVi = [];
-                        vis.forEach(function(v,_index){
+                        vis.forEach(function(v, _index) {
                             _tempVi[_index] = false;
                         });
                         g.updateOptions({
                             dateWindow: newZoomRange,
-                            visibility:_tempVi
-                        },false);
-                    }else{
+                            visibility: _tempVi
+                        }, false);
+                    } else {
                         g.updateOptions({
                             dateWindow: newZoomRange
-                        },false);
+                        }, false);
                     }
 
                 } else if (newZoomRange[0] > zoomRange[0] && newZoomRange[1] >= zoomRange[1]) {
-                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                    if (scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true) {
                         scope.memoryVisibility = g.getOption("visibility");
                         var vis = g.getOption("visibility");
                         var _tempVi = [];
-                        vis.forEach(function(v,_index){
+                        vis.forEach(function(v, _index) {
                             _tempVi[_index] = false;
                         });
                         g.updateOptions({
                             dateWindow: newZoomRange,
-                            visibility:_tempVi
-                        },false);
-                    }else{
+                            visibility: _tempVi
+                        }, false);
+                    } else {
                         g.updateOptions({
                             dateWindow: newZoomRange
-                        },false);
+                        }, false);
                     }
                 } else {
-                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                    if (scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true) {
                         scope.memoryVisibility = g.getOption("visibility");
                         var vis = g.getOption("visibility");
                         var _tempVi = [];
-                        vis.forEach(function(v,_index){
+                        vis.forEach(function(v, _index) {
                             _tempVi[_index] = false;
                         });
                         g.updateOptions({
                             dateWindow: newZoomRange,
-                            visibility:_tempVi
-                        },false);
-                    }else{
+                            visibility: _tempVi
+                        }, false);
+                    } else {
                         g.updateOptions({
                             dateWindow: newZoomRange
-                        },false);
+                        }, false);
                     }
                 }
             }
@@ -1292,7 +1292,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 timeOut.cancel(timer);
             }
             timer = timeOut(function() {
-                timer=null;
+                timer = null;
                 canScroll = true;
             }, 1000);
         };
@@ -1307,7 +1307,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 timeOut.cancel(timer);
             }
             timer = timeOut(function() {
-                timer=null;
+                timer = null;
                 canScroll = true;
             }, 1000);
         };
@@ -1383,13 +1383,15 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                 } else if (e.offsetX >= (g.plotter_.area.x + g.plotter_.area.w)) {
                     movePan(e, g, context, 'r');
                 } else {
-                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                    if (scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true) {
                         scope.memoryVisibility = g.getOption("visibility");
                         var _tempVi = [];
-                        g.getOption("visibility").forEach(function(_v, _index){
+                        g.getOption("visibility").forEach(function(_v, _index) {
                             _tempVi[_index] = false;
                         });
-                        g.updateOptions({"visibility":_tempVi});
+                        g.updateOptions({
+                            "visibility": _tempVi
+                        });
                     }
                     movePan(e, g, context, 'h');
                 }
@@ -1524,6 +1526,13 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         // }
         scope.chartInitStatus = true;
         scope.currentChart = new Dygraph(element.find("div[class='line-chart-graph']")[0], sampleData.data, configuration);
+
+        // start and end are timestamp
+        scope.currentChart._updateDatetimeWindow = function(datetimeWindow) {
+            // change chart datetime and refersh graph
+            scope.chartDateTime = datetimeWindow;
+        };
+
 
         element.find("canvas").css("zIndex", 99);
         var timer_auto = null;
@@ -1816,13 +1825,15 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
             });
             element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousemove', function(event) {
                 if (status) {
-                    if(scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true){
+                    if (scope.memoryVisibility && scope.memoryVisibility.length == 0 && scope.hp && scope.hp == true) {
                         scope.memoryVisibility = scope.currentChart.getOption("visibility");
                         var _tempVi = [];
-                        scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                        scope.currentChart.getOption("visibility").forEach(function(_v, _index) {
                             _tempVi[_index] = false;
                         });
-                        scope.currentChart.updateOptions({"visibility":_tempVi});
+                        scope.currentChart.updateOptions({
+                            "visibility": _tempVi
+                        });
                     }
                     timeOut(function() {
                         scope.chartDateWindow = scope.currentChart.xAxisRange();
@@ -2290,7 +2301,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     } else {
                         $scope.autoupdate = false;
                         // check interactions configuration $scope.hp
-                        if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true){
+                        if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true) {
                             $scope.hp = true;
                         }
                         //get relation config
@@ -2402,7 +2413,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             if ($scope.defaultColors[$index]) {
                                                 colors.push($scope.defaultColors[$index]);
                                             } else {
-                                                colors.push($scope.defaultColors[Math.floor(Math.random()*(10))]);
+                                                colors.push($scope.defaultColors[Math.floor(Math.random() * (10))]);
                                             }
                                         }
                                     });
@@ -2524,6 +2535,23 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                     }
 
+                    if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter && $scope.interactions.graphs.buttons.scatter.others) {
+                        var buttons = $scope.interactions.graphs.buttons.scatter.others;
+                        angular$1.forEach(buttons, function(button) {
+                            var buttons_html = '';
+                            var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                            $scope.button_handlers[_func] = function() {
+                                button._func($scope.currentChart);
+                            };
+                            // add buttons and call this function when click
+                            buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                            // compile the html and add it into toolbar
+                            $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                        });
+
+
+                    }
+
                 }
                 // n. other.....
             };
@@ -2581,7 +2609,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.$watch("chartDateTime", function(newValue, oldValue) {
                 if (newValue.begin != null && newValue.end != null) {
                     var expect_points = Math.floor($element.parent().width());
-                    if(expect_points == 0){
+                    if (expect_points == 0) {
                         expect_points = 1000;
                     }
                     // find a interval
@@ -2874,7 +2902,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         }
                                     });
                                 });
-                                showData.sort(function(a, b){
+                                showData.sort(function(a, b) {
                                     return a.device > b.device ? 1 : -1;
                                 });
                                 //reset childrenDevies
@@ -3120,7 +3148,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             //reset colors
             $scope.childrenColors = [];
 
-            deviceDatas.sort(function(a,b){
+            deviceDatas.sort(function(a, b) {
                 return a.device.name > b.device.name ? 1 : -1;
             });
 
@@ -3134,7 +3162,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 } else {
                     $scope.childrenColors.push({
                         name: _device.device.name,
-                        color: $scope.defaultColors[Math.floor(Math.random()*(10))]
+                        color: $scope.defaultColors[Math.floor(Math.random() * (10))]
                     });
                 }
             });
@@ -3406,7 +3434,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
 
                 // $scope.currentChart.updateOptions($scope.defaultNullCOnfig);
-                $scope.currentChart.updateOptions($scope.childrenRangeConfig,false);
+                $scope.currentChart.updateOptions($scope.childrenRangeConfig, false);
 
                 // set the first one to range bar
                 // update range bar with the first channel data
@@ -3675,17 +3703,17 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         };
                         var _tempVisibility = [];
-                        $scope.currentChart.getOption('visibility').forEach(function(v,_index){
-                            if($scope.currentVisibility_[_index]){
+                        $scope.currentChart.getOption('visibility').forEach(function(v, _index) {
+                            if ($scope.currentVisibility_[_index]) {
                                 _tempVisibility[_index] = $scope.currentVisibility_[_index];
-                            }else{
-                                if($scope.memoryVisibility[_index]){
+                            } else {
+                                if ($scope.memoryVisibility[_index]) {
                                     _tempVisibility[_index] = $scope.memoryVisibility[_index];
-                                }else{
+                                } else {
                                     _tempVisibility[_index] = v;
                                 }
                             }
-                            if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                            if ($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")) {
                                 $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
                             }
                         });
@@ -3696,7 +3724,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             'pointSize': 2,
                             'legend': 'never',
                             'labelsKMB': true,
-                            'visibility':_tempVisibility,
+                            'visibility': _tempVisibility,
                             highlightCircleSize: 2,
                             strokeBorderWidth: 0,
                             highlightSeriesOpts: {
@@ -3763,17 +3791,17 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                         var _tempVisibility = [];
-                        $scope.currentChart.getOption('visibility').forEach(function(v,_index){
-                            if($scope.currentVisibility_[_index]){
+                        $scope.currentChart.getOption('visibility').forEach(function(v, _index) {
+                            if ($scope.currentVisibility_[_index]) {
                                 _tempVisibility[_index] = $scope.currentVisibility_[_index];
-                            }else{
-                                if($scope.memoryVisibility[_index]){
+                            } else {
+                                if ($scope.memoryVisibility[_index]) {
                                     _tempVisibility[_index] = $scope.memoryVisibility[_index];
-                                }else{
+                                } else {
                                     _tempVisibility[_index] = v;
                                 }
                             }
-                            if($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")){
+                            if ($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")) {
                                 $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
                             }
                         });
@@ -3785,7 +3813,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             'legend': 'never',
                             'labelsKMB': true,
                             'file': newLines,
-                            'visibility':_tempVisibility,
+                            'visibility': _tempVisibility,
                             labelsSeparateLines: false,
                             'labels': ['x'].concat(labels).concat(["span_y2"]),
                             'ylabel': leftAndRight.left,
@@ -4790,13 +4818,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnpanleft = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+            if ($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true) {
                 $scope.memoryVisibility = g.getOption("visibility");
                 var _tempVi = [];
-                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index) {
                     _tempVi[_index] = false;
                 });
-                $scope.currentChart.updateOptions({"visibility":_tempVi});
+                $scope.currentChart.updateOptions({
+                    "visibility": _tempVi
+                });
             }
             var panRange = g.xAxisZoomRange;
             if (g.xAxisZoomRange[0] instanceof Date) {
@@ -4864,13 +4894,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnpanright = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+            if ($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true) {
                 $scope.memoryVisibility = g.getOption("visibility");
                 var _tempVi = [];
-                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index) {
                     _tempVi[_index] = false;
                 });
-                $scope.currentChart.updateOptions({"visibility":_tempVi});
+                $scope.currentChart.updateOptions({
+                    "visibility": _tempVi
+                });
             }
             var panRange = g.xAxisZoomRange;
             if (g.xAxisZoomRange[0] instanceof Date) {
@@ -4939,13 +4971,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnzoomin = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+            if ($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true) {
                 $scope.memoryVisibility = g.getOption("visibility");
                 var _tempVi = [];
-                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index) {
                     _tempVi[_index] = false;
                 });
-                $scope.currentChart.updateOptions({"visibility":_tempVi});
+                $scope.currentChart.updateOptions({
+                    "visibility": _tempVi
+                });
             }
             //split range to 20 pieces
             var startDate;
@@ -4986,13 +5020,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.btnzoomout = function() {
             // get current datetime window
             var g = $scope.currentChart;
-            if($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true){
+            if ($scope.memoryVisibility && $scope.memoryVisibility.length == 0 && $scope.hp && $scope.hp == true) {
                 $scope.memoryVisibility = g.getOption("visibility");
                 var _tempVi = [];
-                $scope.currentChart.getOption("visibility").forEach(function(_v, _index){
+                $scope.currentChart.getOption("visibility").forEach(function(_v, _index) {
                     _tempVi[_index] = false;
                 });
-                $scope.currentChart.updateOptions({"visibility":_tempVi});
+                $scope.currentChart.updateOptions({
+                    "visibility": _tempVi
+                });
             }
             var panRange = g.xAxisZoomRange;
             if (g.xAxisZoomRange[0] instanceof Date) {
@@ -5055,16 +5091,16 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.refersh = function(g, init, childGraph) {
             if (init || (g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end)) {
                 if ($scope.refershTimer) {
-                    if($scope.currentVisibility_.length == 0 && !$scope.childrenInit){
+                    if ($scope.currentVisibility_.length == 0 && !$scope.childrenInit) {
                         g["hideLines"] = true;
                         $scope.currentVisibility_ = [].concat($scope.currentChart.getOption("visibility"));
                     }
                     $timeout.cancel($scope.refershTimer);
                 }
 
-                if($scope.currentChart){
+                if ($scope.currentChart) {
                     var currentLabels = $scope.currentChart.getLabels();
-                    if(currentLabels.length >= 2 && currentLabels[1] != "Device0"){
+                    if (currentLabels.length >= 2 && currentLabels[1] != "Device0") {
                         $scope.childrenInit = false;
                     }
                 }
