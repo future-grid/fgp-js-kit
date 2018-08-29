@@ -60,6 +60,14 @@ class fgpWidgetContainer {
             }
         });
 
+        // dynamic change title
+        $rootScope.$on('changeContainerTitleEvent', function (event, params) {
+            if(params.id == element_id){
+                // change title
+                $scope.css["title"]["text"] = params.title;
+            }
+        });
+
 
         var metadata = widgetData.data.metadata;
         $scope.css = {};
@@ -77,7 +85,6 @@ class fgpWidgetContainer {
         if (metadata.data) {
             $scope.data["source"] = metadata.data.source;
             if ($scope.data && $scope.data.source.device && $scope.data.source.device != -1) {
-
                 if ($scope.data.source.device) {
                     /**
                      * get device information
@@ -89,7 +96,6 @@ class fgpWidgetContainer {
                         });
                     });
                 }
-
             }
         }
 
