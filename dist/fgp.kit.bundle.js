@@ -121,6 +121,8 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
             newScope["highlights"] = $scope.highlights;
             newScope["eventsHandler"] = $scope.eventsHandler;
 
+
+
             newScope.$on('bindChildRepeatEvent', function(evt, msg) {
                 angular$1.forEach($scope.configuration, function(item) {
                     if (item.id == msg.id) {
@@ -872,6 +874,14 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
         }
     });
 
+    // dynamic change title
+    $rootScope.$on('changeContainerTitleEvent', function (event, params) {
+        if(params.id == element_id){
+            // change title
+            $scope.css["title"]["text"] = params.title;
+        }
+    });
+
 
     var metadata = widgetData.data.metadata;
     $scope.css = {};
@@ -889,7 +899,6 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
     if (metadata.data) {
         $scope.data["source"] = metadata.data.source;
         if ($scope.data && $scope.data.source.device && $scope.data.source.device != -1) {
-
             if ($scope.data.source.device) {
                 /**
                  * get device information
@@ -901,7 +910,6 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
                     });
                 });
             }
-
         }
     }
 
@@ -988,6 +996,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
     var timeOut = this.$timeout;
     scope.completionPercent = 0;
     scope.graphId = attrs.id;
+    scope.parent_id = attrs.container;
     this.$timeout(function() {
         var getData = function(numSeries, numRows, name) {
             var result = {
@@ -2245,6 +2254,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.auto_schema = metadata.data.source.store;
             $scope.auto_metadata = metadata;
             $scope.auto_device_name = deviceData.device.name;
+
             $scope.$watch('currentView', function(nObj, oObj) {
                 // change
                 if (nObj != oObj) {
@@ -2299,6 +2309,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             });
                         }
                     } else {
+
+
+
+
                         $scope.autoupdate = false;
                         // check interactions configuration $scope.hp
                         if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true) {
@@ -2308,6 +2322,130 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
                             return;
                         } else {
+
+                            if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
+
+                                if($scope.interactions.graphs.buttons.scatter.extraDataConfig){
+                                    // create buttons
+                                    var buttons = $scope.interactions.graphs.buttons.scatter.extraDataConfig;
+                                    angular$1.forEach(buttons, function(button) {
+                                        var buttons_html = '';
+                                        // create an event handler
+                                        var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                                        var _config = button.config;
+
+                                        if(!$scope.button_handlers){
+                                            $scope.button_handlers = {};
+                                        }
+
+                                        $scope.button_handlers[_func] = function() {
+                                            // change config then refersh scatter view
+                                            $scope.autoupdate = false;
+                                            $scope.forceScale = true;
+                                            // check interactions configuration $scope.hp
+                                            if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true) {
+                                                $scope.hp = true;
+                                            }
+                                            //get relation config
+                                            if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
+                                                return;
+                                            } else {
+                                                // send title to parent container
+                                                $scope.$emit('changeContainerTitleEvent',{"id":$scope.parent_id,"title":button.title});
+
+                                                metadata.data.groups[2] = _config;
+                                                var rangeLevel = null;
+                                                var otherLevels = [];
+                                                var relationConfig = _config;
+                                                if (relationConfig.nameColumn) {
+                                                    $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
+                                                } else {
+                                                    $scope.childrenDeviceNameColumn = "name";
+                                                }
+                                                angular$1.forEach(_config.collections, function(level) {
+                                                    if (level.rows.length > 0) {
+                                                        if (rangeLevel != null) {
+                                                            otherLevels.push(rangeLevel);
+                                                        }
+                                                        rangeLevel = level.name;
+                                                    }
+                                                });
+                                                if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
+                                                    var fields = [];
+                                                    var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
+                                                    angular$1.forEach(_config.collections, function(level) {
+                                                        if (level.rows.length > 0 && level.name === rangeLevel) {
+                                                            var lines = level.rows;
+                                                            if (lines) {
+                                                                angular$1.forEach(lines, function(line) {
+                                                                    if (line.value) {
+                                                                        var columns = (line.value).match(patt);
+                                                                        angular$1.forEach(columns, function(column) {
+                                                                            if (column.startsWith('data.')) {
+                                                                                fields.push(column.replace('data.', ''));
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                });
+                                                            }
+                                                        }
+                                                    });
+                                                    $scope.auto_fields = fields;
+                                                    // show children view
+                                                    dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function(data) {
+                                                        if (data != null && data.length > 0) {
+                                                            initChildrenChart(data);
+                                                            // interactionHandler(); // do not need to update interactions
+                                                        } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children) {
+                                                            // no relationship in fgp platform just take it from interactions Configuration  extension_type
+                                                            if ($scope.interactions.graphs.device.children.data) {
+                                                                var devices_key = $scope.interactions.graphs.device.children.data().then(
+                                                                    function(data) {
+                                                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                            function(data) {
+                                                                                initChildrenChart(data);
+                                                                                interactionHandler();
+                                                                            },
+                                                                            function(error) {
+                                                                                console.error(error);
+                                                                            }
+                                                                        );
+                                                                    },
+                                                                    function(error) {
+                                                                        return;
+                                                                    }
+                                                                );
+                                                            } else {
+                                                                return;
+                                                            }
+                                                        } else {
+                                                            return;
+                                                        }
+                                                    }, function(error) {
+                                                        console.error(error);
+                                                    });
+
+                                                }
+                                            }
+
+
+
+
+
+                                        };
+                                        // create click event handler for this button and put it into $scope
+                                        buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                        // compile the html and add it into toolbar
+                                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                                    });
+                                }
+                            }
+
+
+
+
+
+
                             var rangeLevel = null;
                             var otherLevels = [];
                             var relationConfig = metadata.data.groups[2];
@@ -2381,6 +2519,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                             }
                         }
+
+
+
+
+
                     }
                 }
                 $scope.fixInterval = false;
@@ -3941,12 +4084,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         //init scale found
                         initScale.left.forEach(function(_levelConfig) {
                             // find current
-                            if (store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) {
+                            if ((store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) || $scope.forceScale) {
                                 // found it
                                 // set
                                 axesLeft.valueWindow = _levelConfig.range;
                                 $scope.currentInitScaleLevelLeftConf = _levelConfig;
                                 $scope.currentChart.drawGraph_(false);
+                                $scope.forceScale = false;
                             }
                         });
                     }
@@ -4299,12 +4443,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 //init scale found
                                 initScale.left.forEach(function(_levelConfig) {
                                     // find current
-                                    if (store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) {
+                                    if ((store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) || $scope.forceScale) {
                                         // found it
                                         // set
                                         axesLeft.valueWindow = _levelConfig.range;
                                         $scope.currentInitScaleLevelLeftConf = _levelConfig;
                                         $scope.currentChart.drawGraph_(false);
+                                        $scope.forceScale = false;
                                     }
                                 });
                             }
@@ -4649,12 +4794,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 //init scale found
                                 initScale.left.forEach(function(_levelConfig) {
                                     // find current
-                                    if (store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) {
+                                    if ((store == _levelConfig.level && !$scope.currentInitScaleLevelLeftConf) || $scope.forceScale) {
                                         // found it
                                         // set
                                         axesLeft.valueWindow = _levelConfig.range;
                                         $scope.currentInitScaleLevelLeftConf = _levelConfig;
                                         $scope.currentChart.drawGraph_(false);
+
+                                        $scope.forceScale = false;
                                     }
                                 });
                             }

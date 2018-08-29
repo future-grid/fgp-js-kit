@@ -109,6 +109,8 @@ class fgpStage {
                 newScope["highlights"] = $scope.highlights;
                 newScope["eventsHandler"] = $scope.eventsHandler;
 
+
+
                 newScope.$on('bindChildRepeatEvent', function(evt, msg) {
                     angular.forEach($scope.configuration, function(item) {
                         if (item.id == msg.id) {
