@@ -75,6 +75,8 @@ class fgpWidgetGraph {
         var timeOut = this.$timeout;
         scope.completionPercent = 0;
         scope.graphId = attrs.id;
+        scope.deviceTitle = attrs.hasOwnProperty("dTitle") ? attrs["dTitle"] : null;
+        scope.scatterTitle = attrs.hasOwnProperty("sTitle") ? attrs["sTitle"] : null;
         scope.parent_id = attrs.container;
         this.$timeout(function() {
             var getData = function(numSeries, numRows, name) {
@@ -1255,10 +1257,12 @@ class fgpWidgetGraph {
                     if ($scope.highlights && $scope.highlights.onExternal) {
                         $scope.highlights.onExternal = [];
                         // add only one point
-                        $scope.highlights.onExternal.push({
-                            name: $scope.currentHighLightChildDevice.substring(0, 16),
-                            id: $scope.currentHighLightChildDevice.substring(0, 16)
-                        });
+                        if ($scope.currentHighLightChildDevice) {
+                            $scope.highlights.onExternal.push({
+                                name: $scope.currentHighLightChildDevice.substring(0, 16),
+                                id: $scope.currentHighLightChildDevice.substring(0, 16)
+                            });
+                        }
                     }
                 }
             };
@@ -1337,6 +1341,7 @@ class fgpWidgetGraph {
                 $scope.$watch('currentView', function(nObj, oObj) {
                     // change
                     if (nObj != oObj) {
+                        $scope.forceScale = true;
                         if ($scope.eventsHandler && $scope.eventsHandler.viewChangeListener) {
                             $scope.eventsHandler.viewChangeListener(nObj);
                         }
@@ -1344,6 +1349,8 @@ class fgpWidgetGraph {
                             children: $scope.basicInfo.childrenChart,
                             view: nObj
                         });
+
+                        // get titles from interactions
                         $scope.button_handlers = {}; // clean handlers
                         $element.find("#buttons_area").empty();
                         if (nObj == -1) {
@@ -1360,6 +1367,13 @@ class fgpWidgetGraph {
                                 }
                             });
                             if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
+                                if ($scope.deviceTitle) {
+                                    $scope.$emit('changeContainerTitleEvent', {
+                                        "id": $scope.parent_id,
+                                        "title": $scope.deviceTitle
+                                    });
+                                }
+
                                 // show device view
                                 var fields = [];
                                 var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
@@ -1388,10 +1402,6 @@ class fgpWidgetGraph {
                                 });
                             }
                         } else {
-
-
-
-
                             $scope.autoupdate = false;
                             // check interactions configuration $scope.hp
                             if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true) {
@@ -1401,10 +1411,15 @@ class fgpWidgetGraph {
                             if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
                                 return;
                             } else {
-
+                                if ($scope.scatterTitle) {
+                                    $scope.$emit('changeContainerTitleEvent', {
+                                        "id": $scope.parent_id,
+                                        "title": $scope.scatterTitle
+                                    });
+                                }
                                 if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
 
-                                    if($scope.interactions.graphs.buttons.scatter.extraDataConfig){
+                                    if ($scope.interactions.graphs.buttons.scatter.extraDataConfig) {
                                         // create buttons
                                         var buttons = $scope.interactions.graphs.buttons.scatter.extraDataConfig;
                                         angular.forEach(buttons, function(button) {
@@ -1413,7 +1428,7 @@ class fgpWidgetGraph {
                                             var _func = '_' + (Math.random().toString(36).slice(2, 13));
                                             var _config = button.config;
 
-                                            if(!$scope.button_handlers){
+                                            if (!$scope.button_handlers) {
                                                 $scope.button_handlers = {};
                                             }
 
@@ -1430,7 +1445,10 @@ class fgpWidgetGraph {
                                                     return;
                                                 } else {
                                                     // send title to parent container
-                                                    $scope.$emit('changeContainerTitleEvent',{"id":$scope.parent_id,"title":button.title});
+                                                    $scope.$emit('changeContainerTitleEvent', {
+                                                        "id": $scope.parent_id,
+                                                        "title": button.title
+                                                    });
 
                                                     metadata.data.groups[2] = _config;
                                                     var rangeLevel = null;
@@ -3111,7 +3129,7 @@ class fgpWidgetGraph {
                                             angular.forEach(pts, function(point) {
                                                 if (point.name === seriesName) {
                                                     point_show.y = point.canvasy + 30;
-                                                    point_show.x = point.canvasx + 30;
+                                                    point_show.x = point.canvasx + 50;
                                                 }
                                             });
                                         }
@@ -3184,10 +3202,10 @@ class fgpWidgetGraph {
                                     axesRight.valueWindow = _levelConfig.range;
                                     $scope.currentInitScaleLevelRightConf = _levelConfig;
                                     $scope.currentChart.drawGraph_(false);
+                                    $scope.forceScale = false;
                                 }
                             });
                         }
-
                         $scope.loadingShow = false;
                     }
                 }
@@ -3516,8 +3534,8 @@ class fgpWidgetGraph {
                                 }
 
                                 // reset l & r axes window
-                                var axesRight = $scope.currentChart.axes_[0];
-                                var axesLeft = $scope.currentChart.axes_[1];
+                                var axesRight = $scope.currentChart.axes_[1];
+                                var axesLeft = $scope.currentChart.axes_[0];
                                 if (initScale && initScale.left && initScale.left.length > 0) {
                                     //init scale found
                                     initScale.left.forEach(function(_levelConfig) {
@@ -4317,7 +4335,7 @@ class fgpWidgetGraph {
             $scope.refersh = function(g, init, childGraph) {
                 if (init || (g.xAxisRange()[0] != $scope.chartDateTime.begin || g.xAxisRange()[1] != $scope.chartDateTime.end)) {
                     if ($scope.refershTimer) {
-                        if ($scope.currentVisibility_.length == 0 && !$scope.childrenInit) {
+                        if ($scope.currentView == 1 && $scope.currentVisibility_.length == 0 && !$scope.childrenInit) {
                             g["hideLines"] = true;
                             $scope.currentVisibility_ = [].concat($scope.currentChart.getOption("visibility"));
                         }
