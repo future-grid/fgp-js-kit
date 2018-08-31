@@ -999,6 +999,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
     scope.deviceTitle = attrs.hasOwnProperty("dTitle") ? attrs["dTitle"] : null;
     scope.scatterTitle = attrs.hasOwnProperty("sTitle") ? attrs["sTitle"] : null;
     scope.parent_id = attrs.container;
+    scope.graphId = attrs.id;
     this.$timeout(function() {
         var getData = function(numSeries, numRows, name) {
             var result = {
@@ -2262,6 +2263,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.$watch('currentView', function(nObj, oObj) {
                 // change
                 if (nObj != oObj) {
+                    $scope.currentInitScaleLevelLeftConf = null;
                     $scope.forceScale = true;
                     if ($scope.eventsHandler && $scope.eventsHandler.viewChangeListener) {
                         $scope.eventsHandler.viewChangeListener(nObj);
@@ -2755,8 +2757,30 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     //send a rest request
                     dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
                         if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
-                            //call scatter view init.
-                            $scope.currentView = 1;
+
+                            if($scope['interactions'].graphs.scatter instanceof Array){
+                                //try to find the id in this array
+                                var found = false;
+                                $scope['interactions'].graphs.scatter.forEach(function(_id){
+                                    if(_id == $scope.graphId){
+                                        found = true;
+                                    }
+                                });
+                                if(found){
+                                    $scope.currentView = 1;
+                                }else{
+                                    $scope.currentView = -1;
+                                    initChart(data, deviceData.device.name);
+                                }
+
+                            }else if($scope['interactions'].graphs.scatter == true){
+                                //call scatter view init.
+                                $scope.currentView = 1;
+                            }else{
+                                // not found
+                                $scope.currentView = -1;
+                                initChart(data, deviceData.device.name);
+                            }
                         } else {
                             $scope.currentView = -1;
                             initChart(data, deviceData.device.name);
@@ -3601,65 +3625,141 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 // update range bar with the first channel data
                 if ($scope.basicInfo && $scope.basicInfo.range_show && $scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
 
-                    Dygraph.synchronize([$scope.rangeSelectorBar, $scope.currentChart], {
-                        zoom: true,
-                        selection: false,
-                        range: false
-                    });
-                    if (showY2axis) {
-                        $scope.rangeConfig = {
-                            'file': newLines,
-                            'series': series,
-                            'labels': ['x'].concat(labels),
-                            highlightSeriesOpts: {
-                                strokeWidth: 1.5,
-                                strokeBorderWidth: 1,
-                                highlightCircleSize: 2
-                            }
-                        };
-                    } else {
-                        $scope.rangeConfig = {
-                            'file': newLines,
-                            'series': series,
-                            'labels': ['x'].concat(labels).concat(['span_y2']),
-                            highlightSeriesOpts: {
-                                strokeWidth: 1.5,
-                                strokeBorderWidth: 1,
-                                highlightCircleSize: 2
-                            }
-                        };
-                    }
-                    $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
-                    // reset the datetime for current chart
 
-                    if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
-                        // keep the current range bar refresh once.
-                        $scope.chartDateTime = {
-                            begin: $scope.chartDateTime.begin,
-                            end: $scope.chartDateTime.end
-                        };
-                        $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
-                    } else {
-                        $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
-                        if (begin_path && end_path && !init_flag) {
-                            // $scope.chartDateTime = {
-                            // "begin": new Date(new Number(begin_path)),
-                            // "end": new Date(new Number(end_path))
-                            // };
-                            $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
-                            $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
-                            init_flag = true;
-                        } else {
-                            if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
-                                $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
+                    if($scope['interactions'].graphs.scatter instanceof Array){
+                        //try to find the id in this array
+                        var found = false;
+                        $scope['interactions'].graphs.scatter.forEach(function(_id){
+                            if(_id == $scope.graphId){
+                                found = true;
+                            }
+                        });
+                        if(found){
+                            Dygraph.synchronize([$scope.rangeSelectorBar, $scope.currentChart], {
+                                zoom: true,
+                                selection: false,
+                                range: false
+                            });
+                            if (showY2axis) {
+                                $scope.rangeConfig = {
+                                    'file': newLines,
+                                    'series': series,
+                                    'labels': ['x'].concat(labels),
+                                    highlightSeriesOpts: {
+                                        strokeWidth: 1.5,
+                                        strokeBorderWidth: 1,
+                                        highlightCircleSize: 2
+                                    }
+                                };
                             } else {
-                                $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
-                                $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
+                                $scope.rangeConfig = {
+                                    'file': newLines,
+                                    'series': series,
+                                    'labels': ['x'].concat(labels).concat(['span_y2']),
+                                    highlightSeriesOpts: {
+                                        strokeWidth: 1.5,
+                                        strokeBorderWidth: 1,
+                                        highlightCircleSize: 2
+                                    }
+                                };
+                            }
+                            $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                            // reset the datetime for current chart
+
+                            if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
+                                // keep the current range bar refresh once.
+                                $scope.chartDateTime = {
+                                    begin: $scope.chartDateTime.begin,
+                                    end: $scope.chartDateTime.end
+                                };
+                                $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                            } else {
+                                $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
+                                if (begin_path && end_path && !init_flag) {
+                                    // $scope.chartDateTime = {
+                                    // "begin": new Date(new Number(begin_path)),
+                                    // "end": new Date(new Number(end_path))
+                                    // };
+                                    $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    init_flag = true;
+                                } else {
+                                    if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
+                                        $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
+                                    } else {
+                                        $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
+                                        $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
+                                    }
+                                }
+                                $scope.currentChart.updateOptions($scope.rangeConfig);
+                                $scope.currentChartOptions = $scope.rangeConfig;
                             }
                         }
-                        $scope.currentChart.updateOptions($scope.rangeConfig);
-                        $scope.currentChartOptions = $scope.rangeConfig;
+
+                    }else if($scope['interactions'].graphs.scatter == true){
+                        //call scatter view init.
+                        Dygraph.synchronize([$scope.rangeSelectorBar, $scope.currentChart], {
+                            zoom: true,
+                            selection: false,
+                            range: false
+                        });
+                        if (showY2axis) {
+                            $scope.rangeConfig = {
+                                'file': newLines,
+                                'series': series,
+                                'labels': ['x'].concat(labels),
+                                highlightSeriesOpts: {
+                                    strokeWidth: 1.5,
+                                    strokeBorderWidth: 1,
+                                    highlightCircleSize: 2
+                                }
+                            };
+                        } else {
+                            $scope.rangeConfig = {
+                                'file': newLines,
+                                'series': series,
+                                'labels': ['x'].concat(labels).concat(['span_y2']),
+                                highlightSeriesOpts: {
+                                    strokeWidth: 1.5,
+                                    strokeBorderWidth: 1,
+                                    highlightCircleSize: 2
+                                }
+                            };
+                        }
+                        $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                        // reset the datetime for current chart
+
+                        if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
+                            // keep the current range bar refresh once.
+                            $scope.chartDateTime = {
+                                begin: $scope.chartDateTime.begin,
+                                end: $scope.chartDateTime.end
+                            };
+                            $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
+                        } else {
+                            $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
+                            if (begin_path && end_path && !init_flag) {
+                                // $scope.chartDateTime = {
+                                // "begin": new Date(new Number(begin_path)),
+                                // "end": new Date(new Number(end_path))
+                                // };
+                                $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                init_flag = true;
+                            } else {
+                                if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
+                                    $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
+                                } else {
+                                    $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
+                                    $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
+                                }
+                            }
+                            $scope.currentChart.updateOptions($scope.rangeConfig);
+                            $scope.currentChartOptions = $scope.rangeConfig;
+                        }
+
                     }
+
                 } else {
                     //  keep the same time window and refersh
                     $scope.chartDateTime = {
