@@ -23,7 +23,6 @@
     "ngmap": "^1.17.1",
     "angular-ui-ace": "bower",
     "angular-cache": "^4.6.0",
-    "moment-timezone": "^0.5.14",
-    "angular-openlayers-directive": "^2.1.0"
+    "moment-timezone": "^0.5.14"
   }
 }
