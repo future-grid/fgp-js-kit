@@ -3288,7 +3288,7 @@ class fgpWidgetGraph {
                                             angular.forEach(pts, function(point) {
                                                 if (point.name === seriesName) {
                                                     point_show.y = point.canvasy + 30;
-                                                    point_show.x = point.canvasx + 50;
+                                                    point_show.x = point.canvasx + 30;
                                                 }
                                             });
                                         }
@@ -3302,6 +3302,33 @@ class fgpWidgetGraph {
                                         } else {
                                             $scope.legendLeft = point_show.x;
                                         }
+
+                                        // send data to outside
+                                        if ($scope.highlights && $scope.highlights.onExternal) {
+                                            $scope.highlights.onExternal = [];
+
+                                            var labels = $scope.currentChart.getLabels();
+                                            var _tempData = [];
+                                            var _color = null;
+                                            labels.forEach(function(_l, _index) {
+                                                if (_l == $scope.currentHighLightChildDevice) {
+                                                    _color = colors[_index];
+                                                    $scope.currentChart.file_.forEach(function(_row) {
+                                                        var tempObj = {};
+                                                        tempObj[_row[0].getTime()] = _row[_index];
+                                                        _tempData.push(tempObj);
+                                                    });
+                                                }
+                                            });
+                                            $scope.highlights.onExternal.push({
+                                                name: $scope.currentHighLightChildDevice,
+                                                id: $scope.currentHighLightChildDevice,
+                                                data: _tempData,
+                                                color: _color
+                                            });
+                                        }
+
+
                                     });
 
                                 },
