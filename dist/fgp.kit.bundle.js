@@ -1913,10 +1913,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         var tableData = $scope.downloadData.data;
         tableData.forEach(function(infoArray, index) {
             var _tempDate = infoArray[0];
-            if(_tempDate instanceof Date){
+            if (_tempDate instanceof Date) {
                 _tempDate = _tempDate.getTime();
             }
-            if(_tempDate >= datetimeWindow[0] && _tempDate <= datetimeWindow[1]){
+            if (_tempDate >= datetimeWindow[0] && _tempDate <= datetimeWindow[1]) {
                 //dataString
                 var dataString = "";
                 $scope.downloadData.labels.forEach(function(item, _index) {
@@ -2228,14 +2228,99 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.highlights.onExternal = [];
                     // add only one point
                     if ($scope.currentHighLightChildDevice) {
+
+
+                        $scope.highlights.onExternal = [];
+
+                        var labels = $scope.currentChart.getLabels();
+                        var _tempData = [];
+                        var _color = null;
+                        labels.forEach(function(_l, _index) {
+                            if (_l == $scope.currentHighLightChildDevice) {
+                                _color = colors[_index];
+                                $scope.currentChart.file_.forEach(function(_row) {
+                                    var tempObj = {};
+                                    tempObj[_row[0].getTime()] = _row[_index];
+                                    _tempData.push(tempObj);
+                                });
+                            }
+                        });
+                        $scope.highlights.onExternal.push({
+                            name: $scope.currentHighLightChildDevice,
+                            id: $scope.currentHighLightChildDevice,
+                            data: _tempData,
+                            color: _color
+                        });
+
                         $scope.highlights.onExternal.push({
                             name: $scope.currentHighLightChildDevice.substring(0, 16),
                             id: $scope.currentHighLightChildDevice.substring(0, 16)
                         });
                     }
+
+
+
+
+
                 }
             }
         };
+
+
+        if ($scope.highlights && $scope.highlights.onGraphHover) {
+            var highlight_timer_ = null;
+            var lines_timer_ = [];
+            var replay = null;
+            $scope.$watchCollection("highlights.onGraphHover", function(newValue, oldValue) {
+                if (newValue) {
+                    if (highlight_timer_) {
+                        $timeout.cancel(highlight_timer_);
+                    }
+                    // cancel all the old timers
+                    if (lines_timer_.length > 0) {
+                        lines_timer_.forEach(function(_timer) {
+                            $timeout.cancel(_timer);
+                        });
+                    }
+
+                    if (replay) {
+                        $interval.cancel(replay);
+                    }
+
+                    highlight_timer_ = $timeout(function() {
+                        if ($scope.currentView == 1 && newValue && newValue.length > 0) {
+                            var highlightDevice = [];
+                            angular$1.forEach(newValue, function(deviceName) {
+                                $scope.childrenDevices.forEach(function (_child, _index) {
+                                    if (_child.name == deviceName) {
+                                        highlightDevice.push(deviceName);
+                                    }
+                                });
+                            });
+
+                            // replay
+                            replay = $interval(function() {
+                                if (lines_timer_.length > 0) {
+                                    lines_timer_.forEach(function(_timer) {
+                                        $timeout.cancel(_timer);
+                                    });
+                                }
+                                // highlight lines one by one in 500
+                                var timerInterval_ = 500;
+                                highlightDevice.forEach(function(_deviceName) {
+                                    $timeout(function() {
+                                        $scope.currentChart.setSelection(false, _deviceName);
+                                    }, timerInterval_);
+                                    timerInterval_ += 500;
+                                });
+                            }, 2000);
+
+                        }
+                    });
+                }
+            });
+        }
+
         //
         if ($scope.highlights && $scope.highlights.onGraph) {
             var highlight_timer_ = null;
@@ -2273,6 +2358,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 'visibility': oldVisibility
                             });
                         } else if ($scope.currentView == 1 && newValue && newValue.length == 0) {
+                            $scope.highlights.onGraph = [];
+
                             if ($scope.childrenDevices) {
                                 $scope.childrenDevices.forEach(function (_child, _index) {
                                     _child.show = true;
