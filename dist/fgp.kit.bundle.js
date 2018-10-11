@@ -581,7 +581,7 @@ dataAccessApi.prototype.calTree = function calTree (buckets, tree, start, end) {
  * @param start
  * @param end
  */
-dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval) {
+dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval, fixedInterval) {
     var ip = this._$location.host();
     var port = this._$location.port();
     var protocol = this._$location.protocol();
@@ -622,7 +622,8 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
             "devices": devices,
             "fields": JSON.stringify(fields),
             "start": start,
-            "end": end
+            "end": end,
+            "frequency" : fixedInterval && fixedInterval == true ? interval : 0
         }
     }).then(
         function(response) {
@@ -3219,9 +3220,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
                         });
-                        var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval) {
+                        var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval, fixedInterval) {
                             $scope.auto_fields = fields;
-                            dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, expectedInterval).then(function(data) {
+                            dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, expectedInterval, fixedInterval).then(function(data) {
                                 var showData = [];
                                 angular$1.forEach(data, function(arr, key) {
                                     var deviceData = [].concat(arr);
@@ -3254,10 +3255,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 console.info(data);
                             });
                         };
+                        var relationConfig = metadata.data.groups[2];
                         if (deviceInfo.length == 0) {
                             var rangeLevel = null;
                             var otherLevels = [];
-                            var relationConfig = metadata.data.groups[2];
                             if (relationConfig.nameColumn) {
                                 $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
                             } else {
@@ -3272,6 +3273,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             });
 
+
+
                             // try to find
                             if ($scope.interactions.graphs.device.children.data) {
                                 var devices_key = $scope.interactions.graphs.device.children.data().then(
@@ -3283,7 +3286,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                         deviceInfo.push(_device.device);
                                                     });
                                                 }
-                                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval);
+                                                // do we need fixed interval
+
+                                                if(relationConfig.fixedInterval){
+                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                                }else{
+                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
+                                                }
+
+
                                             },
                                             function(error) {
                                                 console.error(error);
@@ -3298,7 +3309,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 return;
                             }
                         } else {
-                            _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval);
+                            if(relationConfig.fixedInterval){
+                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval,true);
+                            }else{
+                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval,false);
+                            }
                         }
 
 

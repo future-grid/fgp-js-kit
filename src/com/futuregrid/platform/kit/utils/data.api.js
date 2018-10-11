@@ -381,7 +381,7 @@ class dataAccessApi {
      * @param start
      * @param end
      */
-    devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval) {
+    devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval, fixedInterval) {
         var ip = this._$location.host();
         var port = this._$location.port();
         var protocol = this._$location.protocol();
@@ -422,7 +422,8 @@ class dataAccessApi {
                 "devices": devices,
                 "fields": JSON.stringify(fields),
                 "start": start,
-                "end": end
+                "end": end,
+                "frequency" : fixedInterval && fixedInterval == true ? interval : 0
             }
         }).then(
             function(response) {

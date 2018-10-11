@@ -2298,9 +2298,9 @@ class fgpWidgetGraph {
                                     }
                                 }
                             });
-                            var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval) {
+                            var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval, fixedInterval) {
                                 $scope.auto_fields = fields;
-                                dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, expectedInterval).then(function(data) {
+                                dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, expectedInterval, fixedInterval).then(function(data) {
                                     var showData = [];
                                     angular.forEach(data, function(arr, key) {
                                         var deviceData = [].concat(arr);
@@ -2333,10 +2333,10 @@ class fgpWidgetGraph {
                                     console.info(data);
                                 });
                             };
+                            var relationConfig = metadata.data.groups[2];
                             if (deviceInfo.length == 0) {
                                 var rangeLevel = null;
                                 var otherLevels = [];
-                                var relationConfig = metadata.data.groups[2];
                                 if (relationConfig.nameColumn) {
                                     $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
                                 } else {
@@ -2351,6 +2351,8 @@ class fgpWidgetGraph {
                                     }
                                 });
 
+
+
                                 // try to find
                                 if ($scope.interactions.graphs.device.children.data) {
                                     var devices_key = $scope.interactions.graphs.device.children.data().then(
@@ -2362,7 +2364,15 @@ class fgpWidgetGraph {
                                                             deviceInfo.push(_device.device);
                                                         });
                                                     }
-                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval);
+                                                    // do we need fixed interval
+
+                                                    if(relationConfig.fixedInterval){
+                                                        _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                                    }else{
+                                                        _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
+                                                    }
+
+
                                                 },
                                                 function(error) {
                                                     console.error(error);
@@ -2377,7 +2387,11 @@ class fgpWidgetGraph {
                                     return;
                                 }
                             } else {
-                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval);
+                                if(relationConfig.fixedInterval){
+                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval,true);
+                                }else{
+                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval,false);
+                                }
                             }
 
 
