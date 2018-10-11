@@ -1351,6 +1351,7 @@ class fgpWidgetGraph {
                 var lines_timer_ = [];
                 var replay = null;
                 var currentHoverSelection = [];
+                var messageTimer = null;
                 $scope.$watchCollection("highlights.onGraphHover", function(newValue, oldValue) {
                     if (newValue) {
                         if (highlight_timer_) {
@@ -1367,18 +1368,26 @@ class fgpWidgetGraph {
                             $interval.cancel(replay);
                         }
 
-                        if(newValue.length == 0){
+                        if (newValue.length == 0) {
                             $scope.currentChart.clearSelection();
-                        }else{
+                        } else {
                             highlight_timer_ = $timeout(function() {
                                 if ($scope.currentView == 1 && newValue && newValue.length > 0) {
                                     var highlightDevice = [];
+                                    var ghostDevices = [];
                                     angular.forEach(newValue, function(deviceName) {
+                                        var exist = false;
                                         $scope.childrenDevices.forEach((_child, _index) => {
                                             if (_child.name == deviceName) {
                                                 highlightDevice.push(deviceName);
+                                                exist = true;
                                             }
                                         });
+                                        if (!exist) {
+                                            if(ghostDevices.indexOf(deviceName.split("_")[0]) == -1){
+                                                ghostDevices.push(deviceName.split("_")[0]);
+                                            }
+                                        }
                                     });
 
                                     if (lines_timer_.length > 0) {
@@ -1386,6 +1395,23 @@ class fgpWidgetGraph {
                                             $timeout.cancel(_timer);
                                         });
                                     }
+
+                                    if (highlightDevice.length == 0) {
+                                        // show message "not found"
+
+                                        if(ghostDevices.length > 1){
+                                            $scope.alertMessage = "devices [" + ghostDevices.join(",") + "] not found!";
+                                        }else{
+                                            $scope.alertMessage = "device [" + ghostDevices.join(",") + "] not found!";
+                                        }
+                                        if(messageTimer){
+                                            $timeout.cancel(messageTimer);
+                                        }
+                                        messageTimer = $timeout(function() {
+                                            $scope.alertMessage = "";
+                                        }, 5000);
+                                    }
+
                                     // highlight lines one by one in 500
                                     highlightDevice.forEach(function(_deviceName) {
                                         $timeout(function() {
@@ -2366,9 +2392,9 @@ class fgpWidgetGraph {
                                                     }
                                                     // do we need fixed interval
 
-                                                    if(relationConfig.fixedInterval){
+                                                    if (relationConfig.fixedInterval) {
                                                         _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
-                                                    }else{
+                                                    } else {
                                                         _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
                                                     }
 
@@ -2387,10 +2413,10 @@ class fgpWidgetGraph {
                                     return;
                                 }
                             } else {
-                                if(relationConfig.fixedInterval){
-                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval,true);
-                                }else{
-                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval,false);
+                                if (relationConfig.fixedInterval) {
+                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                } else {
+                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
                                 }
                             }
 
