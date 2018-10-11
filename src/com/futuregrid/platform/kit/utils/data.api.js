@@ -423,7 +423,7 @@ class dataAccessApi {
                 "fields": JSON.stringify(fields),
                 "start": start,
                 "end": end,
-                "frequency" : fixedInterval && fixedInterval == true ? interval : 0
+                "frequency" : fixedInterval ?  fixedInterval : 0
             }
         }).then(
             function(response) {

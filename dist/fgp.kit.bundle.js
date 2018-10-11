@@ -623,7 +623,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
             "fields": JSON.stringify(fields),
             "start": start,
             "end": end,
-            "frequency" : fixedInterval && fixedInterval == true ? interval : 0
+            "frequency" : fixedInterval ?  fixedInterval : 0
         }
     }).then(
         function(response) {
@@ -3315,9 +3315,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 // do we need fixed interval
 
                                                 if (relationConfig.fixedInterval) {
-                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, relationConfig.fixedInterval);
                                                 } else {
-                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
+                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, 0);
                                                 }
 
 
@@ -3336,9 +3336,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         } else {
                             if (relationConfig.fixedInterval) {
-                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, relationConfig.fixedInterval);
                             } else {
-                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
+                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, 0);
                             }
                         }
 

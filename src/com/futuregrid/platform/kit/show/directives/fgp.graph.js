@@ -2393,9 +2393,9 @@ class fgpWidgetGraph {
                                                     // do we need fixed interval
 
                                                     if (relationConfig.fixedInterval) {
-                                                        _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                                        _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, relationConfig.fixedInterval);
                                                     } else {
-                                                        _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
+                                                        _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, 0);
                                                     }
 
 
@@ -2414,9 +2414,9 @@ class fgpWidgetGraph {
                                 }
                             } else {
                                 if (relationConfig.fixedInterval) {
-                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, true);
+                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, relationConfig.fixedInterval);
                                 } else {
-                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, false);
+                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, 0);
                                 }
                             }
 
