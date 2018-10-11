@@ -2298,6 +2298,19 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
                             });
 
+                            if (lines_timer_.length > 0) {
+                                lines_timer_.forEach(function(_timer) {
+                                    $timeout.cancel(_timer);
+                                });
+                            }
+                            // highlight lines one by one in 500
+                            highlightDevice.forEach(function(_deviceName) {
+                                $timeout(function() {
+                                    $scope.currentChart.setSelection(false, _deviceName);
+                                }, 0);
+                            });
+
+
                             // replay
                             replay = $interval(function() {
                                 if (lines_timer_.length > 0) {
