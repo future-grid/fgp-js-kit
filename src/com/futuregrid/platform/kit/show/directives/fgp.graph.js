@@ -1350,6 +1350,7 @@ class fgpWidgetGraph {
                 var highlight_timer_ = null;
                 var lines_timer_ = [];
                 var replay = null;
+                var currentHoverSelection = [];
                 $scope.$watchCollection("highlights.onGraphHover", function(newValue, oldValue) {
                     if (newValue) {
                         if (highlight_timer_) {
@@ -1366,49 +1367,53 @@ class fgpWidgetGraph {
                             $interval.cancel(replay);
                         }
 
-                        highlight_timer_ = $timeout(function() {
-                            if ($scope.currentView == 1 && newValue && newValue.length > 0) {
-                                var highlightDevice = [];
-                                angular.forEach(newValue, function(deviceName) {
-                                    $scope.childrenDevices.forEach((_child, _index) => {
-                                        if (_child.name == deviceName) {
-                                            highlightDevice.push(deviceName);
-                                        }
+                        if(newValue.length == 0){
+                            $scope.currentChart.clearSelection();
+                        }else{
+                            highlight_timer_ = $timeout(function() {
+                                if ($scope.currentView == 1 && newValue && newValue.length > 0) {
+                                    var highlightDevice = [];
+                                    angular.forEach(newValue, function(deviceName) {
+                                        $scope.childrenDevices.forEach((_child, _index) => {
+                                            if (_child.name == deviceName) {
+                                                highlightDevice.push(deviceName);
+                                            }
+                                        });
                                     });
-                                });
 
-                                if (lines_timer_.length > 0) {
-                                    lines_timer_.forEach(function(_timer) {
-                                        $timeout.cancel(_timer);
-                                    });
-                                }
-                                // highlight lines one by one in 500
-                                highlightDevice.forEach(function(_deviceName) {
-                                    $timeout(function() {
-                                        $scope.currentChart.setSelection(false, _deviceName);
-                                    }, 0);
-                                });
-
-
-                                // replay
-                                replay = $interval(function() {
                                     if (lines_timer_.length > 0) {
                                         lines_timer_.forEach(function(_timer) {
                                             $timeout.cancel(_timer);
                                         });
                                     }
                                     // highlight lines one by one in 500
-                                    var timerInterval_ = 500;
                                     highlightDevice.forEach(function(_deviceName) {
                                         $timeout(function() {
                                             $scope.currentChart.setSelection(false, _deviceName);
-                                        }, timerInterval_);
-                                        timerInterval_ += 500;
+                                        }, 0);
                                     });
-                                }, 2000);
 
-                            }
-                        });
+
+                                    // replay
+                                    replay = $interval(function() {
+                                        if (lines_timer_.length > 0) {
+                                            lines_timer_.forEach(function(_timer) {
+                                                $timeout.cancel(_timer);
+                                            });
+                                        }
+                                        // highlight lines one by one in 500
+                                        var timerInterval_ = 500;
+                                        highlightDevice.forEach(function(_deviceName) {
+                                            $timeout(function() {
+                                                $scope.currentChart.setSelection(false, _deviceName);
+                                            }, timerInterval_);
+                                            timerInterval_ += 500;
+                                        });
+                                    }, 2000);
+
+                                }
+                            });
+                        }
                     }
                 });
             }
