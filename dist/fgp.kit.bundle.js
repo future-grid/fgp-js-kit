@@ -2229,16 +2229,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.highlights.onExternal = [];
                     // add only one point
                     if ($scope.currentHighLightChildDevice) {
-
-
                         $scope.highlights.onExternal = [];
-
                         var labels = $scope.currentChart.getLabels();
                         var _tempData = [];
                         var _color = null;
                         labels.forEach(function(_l, _index) {
                             if (_l == $scope.currentHighLightChildDevice) {
-                                _color = colors[_index];
+                                // do not send color for click event.
+                                //_color = colors[_index];
                                 $scope.currentChart.file_.forEach(function(_row) {
                                     var tempObj = {};
                                     tempObj[_row[0].getTime()] = _row[_index];
@@ -2246,13 +2244,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
                             }
                         });
-                        $scope.highlights.onExternal.push({
-                            name: $scope.currentHighLightChildDevice,
-                            id: $scope.currentHighLightChildDevice,
-                            data: _tempData,
-                            color: _color
-                        });
-
                         $scope.highlights.onExternal.push({
                             name: $scope.currentHighLightChildDevice.substring(0, 16),
                             id: $scope.currentHighLightChildDevice.substring(0, 16)
@@ -3011,9 +3002,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.autoupdate = false;
                     }
                     $scope.currentIntervalName = "";
+                    $scope.fixedInterval = 0;
                     angular$1.forEach(conf, function(config) {
                         if (config.interval == expectedInterval) {
                             $scope.currentIntervalName = config.name;
+                            $scope.fixedInterval = config.fixedInterval;
                         }
                     });
                     // check the interval(data) no more than the number of expected points
@@ -3035,6 +3028,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             return;
                         }
                     }
+
+                    // get fixedInterval from configuration
+
+
                     // update range-bar
                     if ($scope.rangeSelectorBar) {
                         angular$1.forEach($scope.trees, function(tree) {
@@ -3313,14 +3310,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     });
                                                 }
                                                 // do we need fixed interval
-
-                                                if (relationConfig.fixedInterval) {
-                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, relationConfig.fixedInterval);
-                                                } else {
-                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, 0);
-                                                }
-
-
+                                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, $scope.fixedInterval);
                                             },
                                             function(error) {
                                                 console.error(error);
@@ -3335,14 +3325,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 return;
                             }
                         } else {
-                            if (relationConfig.fixedInterval) {
-                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, relationConfig.fixedInterval);
-                            } else {
-                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, 0);
-                            }
+                            _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, $scope.fixedInterval);
                         }
-
-
                         $scope.fixGraphWithGap();
                     } else {
                         // cal tree
@@ -3554,6 +3538,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 device["trees"] = trees;
                 $scope.childTrees.push(device);
                 var rangeTree = null;
+                //relation
+                var relationConfig = metadata.data.groups[2];
+                // scatter view shows only one collection
+                var collections = relationConfig.collections;
                 angular$1.forEach(trees, function(tree) {
                     if (tree.range) {
                         rangeTree = tree;
@@ -3567,12 +3555,19 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
                     });
                     if (!flag) {
+                        var fixedInterval = 0;
+                        // get fixedInterval
+                        collections.forEach(function(_collection){
+                            if(tree.store == _collection.name && _collection.hasOwnProperty("fixedInterval")){
+                                fixedInterval = _collection.fixedInterval;
+                            }
+                        });
                         $scope.intevals.device.push({
                             name: tree.store,
-                            interval: tree.frequency
+                            interval: tree.frequency,
+                            fixedInterval: fixedInterval
                         });
                     }
-
                 });
 
                 if (rangeTree != null) {
