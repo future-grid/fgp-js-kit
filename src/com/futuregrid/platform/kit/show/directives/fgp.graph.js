@@ -1332,13 +1332,13 @@ class fgpWidgetGraph {
                 }
             };
 
-            var replay = null;
-            
+
             if ($scope.highlights && $scope.highlights.onGraphHover) {
                 var highlight_timer_ = null;
                 var lines_timer_ = [];
                 var currentHoverSelection = [];
                 var messageTimer = null;
+                var replay = null;
                 $scope.$watchCollection("highlights.onGraphHover", function(newValue, oldValue) {
                     if (newValue) {
                         if (highlight_timer_) {
@@ -1427,6 +1427,10 @@ class fgpWidgetGraph {
                                 }
                             });
                         }
+                    }else{
+                        if(replay){
+                            $interval.cancel(replay);
+                        }
                     }
                 });
             }
@@ -1435,12 +1439,7 @@ class fgpWidgetGraph {
             if ($scope.highlights && $scope.highlights.onGraph) {
                 var highlight_timer_ = null;
                 $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
-                    if((newValue && newValue.length == 0) || !newValue){
-                        //
-                        if(replay){
-                            $timeout.cancel(replay);
-                        }
-                    }else{
+                    if(newValue){
                         if (highlight_timer_) {
                             $timeout.cancel(highlight_timer_);
                         }
