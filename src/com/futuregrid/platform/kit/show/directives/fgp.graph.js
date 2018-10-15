@@ -1301,6 +1301,7 @@ class fgpWidgetGraph {
             };
 
             $scope.selectedDevices = [];
+
             $scope.singleClickEventHandler = function() {
                 if (!$scope.selectControlStatus) {
                     if ($scope.highlights && $scope.highlights.onExternal) {
@@ -1327,20 +1328,15 @@ class fgpWidgetGraph {
                                 id: $scope.currentHighLightChildDevice.substring(0, 16)
                             });
                         }
-
-
-
-
-
                     }
                 }
             };
 
-
+            var replay = null;
+            
             if ($scope.highlights && $scope.highlights.onGraphHover) {
                 var highlight_timer_ = null;
                 var lines_timer_ = [];
-                var replay = null;
                 var currentHoverSelection = [];
                 var messageTimer = null;
                 $scope.$watchCollection("highlights.onGraphHover", function(newValue, oldValue) {
@@ -1439,7 +1435,12 @@ class fgpWidgetGraph {
             if ($scope.highlights && $scope.highlights.onGraph) {
                 var highlight_timer_ = null;
                 $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
-                    if (newValue) {
+                    if((newValue && newValue.length == 0) || !newValue){
+                        //
+                        if(replay){
+                            $timeout.cancel(replay);
+                        }
+                    }else{
                         if (highlight_timer_) {
                             $timeout.cancel(highlight_timer_);
                         }
