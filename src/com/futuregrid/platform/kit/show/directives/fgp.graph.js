@@ -1307,16 +1307,14 @@ class fgpWidgetGraph {
                         $scope.highlights.onExternal = [];
                         // add only one point
                         if ($scope.currentHighLightChildDevice) {
-
-
                             $scope.highlights.onExternal = [];
-
                             var labels = $scope.currentChart.getLabels();
                             var _tempData = [];
                             var _color = null;
                             labels.forEach(function(_l, _index) {
                                 if (_l == $scope.currentHighLightChildDevice) {
-                                    _color = colors[_index];
+                                    // do not send color for click event.
+                                    //_color = colors[_index];
                                     $scope.currentChart.file_.forEach(function(_row) {
                                         var tempObj = {};
                                         tempObj[_row[0].getTime()] = _row[_index];
@@ -1324,13 +1322,6 @@ class fgpWidgetGraph {
                                     });
                                 }
                             });
-                            $scope.highlights.onExternal.push({
-                                name: $scope.currentHighLightChildDevice,
-                                id: $scope.currentHighLightChildDevice,
-                                data: _tempData,
-                                color: _color
-                            });
-
                             $scope.highlights.onExternal.push({
                                 name: $scope.currentHighLightChildDevice.substring(0, 16),
                                 id: $scope.currentHighLightChildDevice.substring(0, 16)
