@@ -1355,7 +1355,7 @@ class fgpWidgetGraph {
                             $interval.cancel(replay);
                         }
 
-                        if (newValue.length == 0) {
+                        if (newValue.length == 0 && $scope.currentChart) {
                             $scope.currentChart.clearSelection();
                         } else {
                             highlight_timer_ = $timeout(function() {
