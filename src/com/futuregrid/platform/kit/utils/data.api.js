@@ -445,7 +445,7 @@ class dataAccessApi {
         }).then(
             function(response) {
                 // only return 1 device data
-                var deviceGraphData = $graphDataService.get(deviceName + "/" + store + "/" + id) ? $graphDataService.get(deviceName + "/" + store + "/" + id) : [];
+                var deviceGraphData = [];
                 var newComeResult = response.data[deviceName].data;
                 newComeResult.forEach(function(item) {
                     deviceGraphData.push(item);
@@ -459,7 +459,6 @@ class dataAccessApi {
                     }
                     return 0;
                 });
-                $graphDataService.put(deviceName + "/" + store + "/" + id, deviceGraphData);
                 deferred.resolve(deviceGraphData);
             },
             function(error) {

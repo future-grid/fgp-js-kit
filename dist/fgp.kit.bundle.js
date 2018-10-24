@@ -640,15 +640,8 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
         }
     }).then(
         function(response) {
-            response.data[deviceName].data = []; // dummy data
-            for (var i = 0; i < 24; i++) {
-                response.data[deviceName].data.push({
-                    "timestamp": 1540299600000 + (i * 3600000),
-                    "energy": 100 * (i + 1)
-                });
-            }
             // only return 1 device data
-            var deviceGraphData = $graphDataService.get(deviceName + "/" + store + "/" + id) ? $graphDataService.get(deviceName + "/" + store + "/" + id) : [];
+            var deviceGraphData = [];
             var newComeResult = response.data[deviceName].data;
             newComeResult.forEach(function(item) {
                 deviceGraphData.push(item);
@@ -662,7 +655,6 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
                 }
                 return 0;
             });
-            $graphDataService.put(deviceName + "/" + store + "/" + id, deviceGraphData);
             deferred.resolve(deviceGraphData);
         },
         function(error) {
@@ -3092,7 +3084,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             });
                                         }
                                         //
-                                        if ($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file != null) {
+                                        if ($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file != null && allLines.length > 0) {
                                             var objNeed2Add = [];
                                             angular$1.forEach($scope.rangeConfig.file, function(item) {
                                                 var flag = false;
@@ -3177,7 +3169,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     highlightCircleSize: 2
                                                 }
                                             };
-                                            if (basicInfo && basicInfo.range_show) {
+                                            if (basicInfo && basicInfo.range_show && allLines.length > 0) {
                                                 $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                             }
                                         }
@@ -4575,7 +4567,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         });
                         if ($scope.rangeSelectorBar) {
-                            $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
+                            // $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
                         }
                         $scope.loadingShow = false;
                     } else {

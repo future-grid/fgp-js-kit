@@ -2209,7 +2209,7 @@ class fgpWidgetGraph {
                                                 });
                                             }
                                             //
-                                            if ($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file != null) {
+                                            if ($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file != null && allLines.length > 0) {
                                                 var objNeed2Add = [];
                                                 angular.forEach($scope.rangeConfig.file, function(item) {
                                                     var flag = false;
@@ -2294,7 +2294,7 @@ class fgpWidgetGraph {
                                                         highlightCircleSize: 2
                                                     }
                                                 };
-                                                if (basicInfo && basicInfo.range_show) {
+                                                if (basicInfo && basicInfo.range_show && allLines.length > 0) {
                                                     $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                                 }
                                             }
@@ -3692,7 +3692,7 @@ class fgpWidgetGraph {
                                 }
                             });
                             if ($scope.rangeSelectorBar) {
-                                $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
+                                // $scope.currentChart["xAxisZoomRange"] = $scope.rangeSelectorBar.xAxisExtremes();
                             }
                             $scope.loadingShow = false;
                         } else {
