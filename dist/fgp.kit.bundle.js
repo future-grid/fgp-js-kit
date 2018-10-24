@@ -2859,12 +2859,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     "last": 0,
                                     "range": true
                                 };
-                            }else{
+                            } else {
                                 //
-                                if(rangeLevel.interval < level.interval){
+                                if (rangeLevel.interval < level.interval) {
                                     // put the old ragneLevel into otherLevels
                                     otherLevels.push({
-                                        "store": rangeLevel.store+'',
+                                        "store": rangeLevel.store + '',
                                         "interval": rangeLevel.interval + 0,
                                         "first": 0,
                                         "last": 0,
@@ -2879,7 +2879,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         "range": true
                                     };
 
-                                }else{
+                                } else {
                                     otherLevels.push({
                                         "store": level.name,
                                         "interval": level.interval,
@@ -2899,21 +2899,29 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         var deviceStoreInfo = {};
 
                         deviceStoreInfo["trees"] = [{
-                            "first": {"timestamp":data.start},
+                            "first": {
+                                "timestamp": data.start
+                            },
                             "range": true,
                             "store": rangeLevel.store,
                             "interval": rangeLevel.interval,
-                            "last": {"timestamp":data.end}
+                            "last": {
+                                "timestamp": data.end
+                            }
                         }];
 
                         // other level
                         otherLevels.forEach(function(_level, _index) {
                             deviceStoreInfo["trees"].push({
-                                "first": {"timestamp":data.start},
+                                "first": {
+                                    "timestamp": data.start
+                                },
                                 "range": false,
                                 "store": _level.store,
                                 "interval": _level.interval,
-                                "last": {"timestamp":data.end}
+                                "last": {
+                                    "timestamp": data.end
+                                }
                             });
                         });
 
@@ -3084,8 +3092,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             });
                                         }
                                         //
+                                        var objNeed2Add = [];
                                         if ($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file != null && allLines.length > 0) {
-                                            var objNeed2Add = [];
+
                                             angular$1.forEach($scope.rangeConfig.file, function(item) {
                                                 var flag = false;
                                                 var dataLength = -1;
@@ -3159,16 +3168,20 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             angular$1.forEach(newLines, function(line) {
                                                 line.push(null);
                                             });
-                                            $scope.rangeConfig = {
-                                                'file': newLines,
-                                                'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
-                                                'series': series_range,
-                                                highlightSeriesOpts: {
-                                                    strokeWidth: 1.5,
-                                                    strokeBorderWidth: 1,
-                                                    highlightCircleSize: 2
-                                                }
-                                            };
+
+
+                                            if(newLines && newLines.length > 0){
+                                                $scope.rangeConfig = {
+                                                    'file': newLines,
+                                                    'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
+                                                    'series': series_range,
+                                                    highlightSeriesOpts: {
+                                                        strokeWidth: 1.5,
+                                                        strokeBorderWidth: 1,
+                                                        highlightCircleSize: 2
+                                                    }
+                                                };
+                                            }
                                             if (basicInfo && basicInfo.range_show && allLines.length > 0) {
                                                 $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                             }
