@@ -1371,7 +1371,7 @@ class fgpWidgetGraph {
                                             }
                                         });
                                         if (!exist) {
-                                            if(ghostDevices.indexOf(deviceName.split("_")[0]) == -1){
+                                            if (ghostDevices.indexOf(deviceName.split("_")[0]) == -1) {
                                                 ghostDevices.push(deviceName.split("_")[0]);
                                             }
                                         }
@@ -1386,12 +1386,12 @@ class fgpWidgetGraph {
                                     if (highlightDevice.length == 0) {
                                         // show message "not found"
 
-                                        if(ghostDevices.length > 1){
+                                        if (ghostDevices.length > 1) {
                                             $scope.alertMessage = "devices [" + ghostDevices.join(",") + "] not found!";
-                                        }else{
+                                        } else {
                                             $scope.alertMessage = "device [" + ghostDevices.join(",") + "] not found!";
                                         }
-                                        if(messageTimer){
+                                        if (messageTimer) {
                                             $timeout.cancel(messageTimer);
                                         }
                                         messageTimer = $timeout(function() {
@@ -1427,8 +1427,8 @@ class fgpWidgetGraph {
                                 }
                             });
                         }
-                    }else{
-                        if(replay){
+                    } else {
+                        if (replay) {
                             $interval.cancel(replay);
                         }
                     }
@@ -1439,7 +1439,7 @@ class fgpWidgetGraph {
             if ($scope.highlights && $scope.highlights.onGraph) {
                 var highlight_timer_ = null;
                 $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
-                    if(newValue){
+                    if (newValue) {
                         if (highlight_timer_) {
                             $timeout.cancel(highlight_timer_);
                         }
@@ -1567,7 +1567,8 @@ class fgpWidgetGraph {
                                     }
                                 });
                                 $scope.auto_fields = fields;
-                                dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
+                                //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel, fields)
+                                dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel, fields).then(function(data) {
                                     initChart(data, deviceData.device.name);
                                 }, function(error) {
                                     console.error(error)
@@ -1975,36 +1976,73 @@ class fgpWidgetGraph {
                         var otherLevels = [];
                         angular.forEach(metadata.data.groups[1].collections, function(level) {
                             if (level.rows.length > 0) {
-                                if (rangeLevel != null) {
-                                    otherLevels.push(rangeLevel);
+                                if (!rangeLevel) {
+                                    rangeLevel = {
+                                        "store": level.name,
+                                        "interval": level.interval,
+                                        "first": 0,
+                                        "last": 0,
+                                        "range": true
+                                    };
+                                }else{
+                                    //
+                                    if(rangeLevel.interval < level.interval){
+                                        // put the old ragneLevel into otherLevels
+                                        otherLevels.push({
+                                            "store": rangeLevel.store+'',
+                                            "interval": rangeLevel.interval + 0,
+                                            "first": 0,
+                                            "last": 0,
+                                            "range": false
+                                        });
+                                        // new rangeLevel
+                                        rangeLevel = {
+                                            "store": level.name,
+                                            "interval": level.interval,
+                                            "first": 0,
+                                            "last": 0,
+                                            "range": true
+                                        };
+
+                                    }else{
+                                        otherLevels.push({
+                                            "store": level.name,
+                                            "interval": level.interval,
+                                            "first": 0,
+                                            "last": 0,
+                                            "range": false
+                                        });
+                                    }
                                 }
-                                rangeLevel = level.name;
                             }
                         });
-                        // fields of range level
-                        var fields = [];
-                        var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
-                        angular.forEach(metadata.data.groups[1].collections, function(level) {
-                            if (level.rows.length > 0 && level.name === rangeLevel) {
-                                var lines = level.rows;
-                                if (lines) {
-                                    angular.forEach(lines, function(line) {
-                                        //
-                                        if (line.value) {
-                                            var columns = (line.value).match(patt);
-                                            angular.forEach(columns, function(column) {
-                                                if ((column).startsWith('data.')) {
-                                                    fields.push(column.replace('data.', ''));
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        $scope.auto_fields = fields;
+
                         //send a rest request
-                        dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
+                        //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel)
+                        dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function(data) {
+                            // tree info
+                            var deviceStoreInfo = {};
+
+                            deviceStoreInfo["trees"] = [{
+                                "first": {"timestamp":data.start},
+                                "range": true,
+                                "store": rangeLevel.store,
+                                "interval": rangeLevel.interval,
+                                "last": {"timestamp":data.end}
+                            }];
+
+                            // other level
+                            otherLevels.forEach(function(_level, _index) {
+                                deviceStoreInfo["trees"].push({
+                                    "first": {"timestamp":data.start},
+                                    "range": false,
+                                    "store": _level.store,
+                                    "interval": _level.interval,
+                                    "last": {"timestamp":data.end}
+                                });
+                            });
+
+
                             if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
 
                                 if ($scope['interactions'].graphs.scatter instanceof Array) {
@@ -2019,7 +2057,7 @@ class fgpWidgetGraph {
                                         $scope.currentView = 1;
                                     } else {
                                         $scope.currentView = -1;
-                                        initChart(data, deviceData.device.name);
+                                        initChart(deviceStoreInfo, deviceData.device.name);
                                     }
 
                                 } else if ($scope['interactions'].graphs.scatter == true) {
@@ -2028,11 +2066,11 @@ class fgpWidgetGraph {
                                 } else {
                                     // not found
                                     $scope.currentView = -1;
-                                    initChart(data, deviceData.device.name);
+                                    initChart(deviceStoreInfo, deviceData.device.name);
                                 }
                             } else {
                                 $scope.currentView = -1;
-                                initChart(data, deviceData.device.name);
+                                initChart(deviceStoreInfo, deviceData.device.name);
                             }
                         }, function(error) {
                             console.error(error)
@@ -2136,7 +2174,8 @@ class fgpWidgetGraph {
                                         }
                                     });
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, expectedInterval).then(function(data) {
+                                    //id, host, application, deviceName, deviceType, store, start, end, fields, interval
+                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, tree.store, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, 0).then(function(data) {
                                             // udpate chart
                                             var showData = data;
                                             showData = showData.filter(function(obj) {
@@ -2409,7 +2448,7 @@ class fgpWidgetGraph {
                         } else {
                             // cal tree
                             angular.forEach($scope.trees, function(tree, index) {
-                                if (expectedInterval == tree.frequency) {
+                                if (expectedInterval == tree.interval) {
                                     // send request
                                     var fields = [];
                                     var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
@@ -2436,7 +2475,7 @@ class fgpWidgetGraph {
                                     });
 
                                     $scope.auto_fields = fields;
-                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, tree.frequency).then(function(data) {
+                                    dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, tree.store, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, 0).then(function(data) {
                                         // udpate chart
                                         var showData = data;
                                         showData = showData.filter(function(obj) {
@@ -2521,7 +2560,7 @@ class fgpWidgetGraph {
                     }
                     $scope.intevals.device.push({
                         name: tree.store,
-                        interval: tree.frequency
+                        interval: tree.interval
                     });
                 });
 
@@ -2533,7 +2572,7 @@ class fgpWidgetGraph {
                 var allData = [];
                 // fetchData(allData, rangeTree.tree);    only get first and last
                 // fix the problem of never seen the current data.
-                rangeTree.last.timestamp = rangeTree.last.timestamp + (rangeTree.frequency - 1);
+                rangeTree.last.timestamp = rangeTree.last.timestamp + (rangeTree.interval - 1);
                 allData = allData.concat([rangeTree.first, rangeTree.last]);
 
                 allData = allData.filter(function(obj) {
@@ -2550,22 +2589,6 @@ class fgpWidgetGraph {
                     return;
                 }
 
-                // if the data only has one point. change the data range to bigger
-                if (allData.length == 1) { //  means only one point.
-                    var newData = [];
-                    // add 1 points into both side
-                    var thePoint = allData[0];
-                    var timestamp = thePoint.timestamp;
-                    var currentInterval = $scope.intevals.device[0].interval;
-                    newData.push({
-                        timestamp: timestamp - currentInterval
-                    });
-                    Array.prototype.push.apply(newData, allData);
-                    newData.push({
-                        timestamp: timestamp + currentInterval
-                    });
-                    allData = newData;
-                }
                 $scope.ordinalRangeData = allData;
                 // put the data into range tree cache
                 if (rangeTree) {
@@ -2635,8 +2658,8 @@ class fgpWidgetGraph {
                         if (!flag) {
                             var fixedInterval = 0;
                             // get fixedInterval
-                            collections.forEach(function(_collection){
-                                if(tree.store == _collection.name && _collection.hasOwnProperty("fixedInterval")){
+                            collections.forEach(function(_collection) {
+                                if (tree.store == _collection.name && _collection.hasOwnProperty("fixedInterval")) {
                                     fixedInterval = _collection.fixedInterval;
                                 }
                             });

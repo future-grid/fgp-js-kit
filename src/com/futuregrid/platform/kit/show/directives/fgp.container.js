@@ -89,10 +89,11 @@ class fgpWidgetContainer {
                     /**
                      * get device information
                      */
-                    dataService.deviceInfo($rootScope.host, JSON.parse($scope.data.source.device).name, null, $rootScope.applicationName).then(function (data) {
+                    dataService.deviceInfo($rootScope.host, JSON.parse($scope.data.source.device).name, null, JSON.parse($scope.data.source.device).type, $scope.applicationName).then(function(data) {
                         // send device info to all widget
-                        $timeout(function () {
-                            $rootScope.$broadcast('deviceInfoEvent', {device: data, from: element_id});
+                        $timeout(function() {
+                            data["from"] = element_id;
+                            newScope.$broadcast('deviceInfoEvent', data);
                         });
                     });
                 }

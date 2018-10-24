@@ -15,7 +15,7 @@ var paths = {
     javascriptRoot: ["src/**/*.js","!src/**/plugins/**/*.js"],
     stylesheetRoot: "src/**/*.less",
     distRoot: "dist",
-    distUI: "/Users/haiyangwang/Development/workspace/united-energy/united-energy/ue-ui/bower_components/fgp-js-kit/dist/"
+    distUI: "/Users/haiyangwang/Development/workspace/lv-health/fgp-smud-ui/bower_components/fgp-js-kit/dist/"
 };
 
 var moduleName = "fgp.kit";

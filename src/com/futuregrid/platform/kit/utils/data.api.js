@@ -29,26 +29,20 @@ class dataAccessApi {
      * @param applicationName
      * @returns {*}
      */
-    deviceInfo(host, deviceName, deviceKey, applicationName) {
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
+    deviceInfo(host, deviceName, deviceKey, deviceType, application) {
+
+        if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+            console.error("host url/applicaiton is empty~");
+            return false;
         }
 
         var deferred = this._$q.defer();
-        var url = host + "/rest/api/";
-
-        if (applicationName) {
-            url += "app/" + applicationName;
-        }
+        var url = host + "/" + application + "/" + deviceType;
 
         if (deviceName) {
-            url += '/devices/' + deviceName
+            url += '/name/' + deviceName + '?hasExtensions=true'
         } else if (deviceKey) {
-            url += 'devices?key=' + deviceKey
+            url += '/key/' + deviceKey + '?hasExtensions=true';
         }
 
         var httpServices = this._$http;
@@ -56,72 +50,50 @@ class dataAccessApi {
 
         httpServices({
             method: 'GET',
-            url: url,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            url: url
         }).success(function(data) {
-            var url = host + "/rest/api/";
-            if (applicationName) {
-                url += "app/" + applicationName + "/devices/extension-types";
-            } else {
-                url += "devices/extension-types";
+            if (deviceName) {
+                url = host + "/" + application + "/" + deviceType + "/name/" + deviceName;
+            } else if (deviceKey) {
+                url = host + "/" + application + "/" + deviceType + "/key/" + deviceKey;
             }
-            //get all extension types
-            httpServices({
-                method: 'GET',
-                url: url,
-                params: {
-                    'device_type': data.type
-                },
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).success(function(types) {
-                if (!types || types.length == 0) {
-                    deferred.resolve(data);
-                } else {
-                    var extensionRequests = [];
-                    var url = host + "/rest/api/";
-                    if (applicationName) {
-                        url += "app/" + applicationName + "/devices/extensions";
-                    } else {
-                        url += "devices/extensions";
+            if (data.extensions) {
+                var _extensions = [];
+                data.extensions.forEach((_extension) => {
+                    _extensions.push(_extension.name);
+                });
+                // call extension service
+                //get all extension types
+                httpServices({
+                    method: 'POST',
+                    url: url,
+                    data: {
+                        'extensions': [].concat(_extensions)
+                    },
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
-                    angular.forEach(types, function(type) {
-                        // extension types
-                        extensionRequests.push(
-                            httpServices({
-                                method: 'GET',
-                                params: {
-                                    'device_name': deviceName,
-                                    'extension_type': type.name
-                                },
-                                url: url,
-                                headers: {
-                                    'Content-Type': 'application/json'
+                }).success(function(extensions) {
+                    if (!extensions) {
+                        deferred.resolve(data);
+                    } else {
+                        // all extensions
+                        Object.keys(extensions).forEach((key, _index) => {
+                            data.extensions.forEach((_ex) => {
+                                if (_ex.name == key) {
+                                    angular.extend(_ex, extensions[key]);
                                 }
-                            }).catch(function(info) {
-                                console.warn(info);
-                            })
-                        );
-                    });
-
-                    qServices.all(extensionRequests).then(function(result) {
-                        result.forEach(function(extensionItem) {
-                            if (extensionItem && extensionItem.data) {
-                                data[extensionItem.data.type.name] = extensionItem.data;
-                            }
+                            });
                         });
                         deferred.resolve(data);
-                    }, function(errors) {
-                        deferred.reject(error);
-                    });
-                }
-            }).error(function(error) {
-                deferred.reject(error);
-            });
-
+                    }
+                }).error(function(error) {
+                    deferred.reject(error);
+                });
+            } else {
+                // return device info and stop here.
+                deferred.resolve(data);
+            }
         }).error(function(error) {
             deferred.reject(error);
         });
@@ -136,21 +108,14 @@ class dataAccessApi {
      * @param storeSchema
      * @returns {Promise}
      */
-    deviceInitInfo(host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
+    deviceInitInfo(host, application, deviceName, deviceType, rangeLevel) {
+        if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+            console.error("host url/applicaiton is empty~");
+            return false;
         }
 
         var deferred = this._$q.defer();
-        this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-            params: {
-                'otherLevels': otherLevels,
-                'fields': [].concat(fields)
-            },
+        this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
             // cache: this.deviceStores
         }).then(
             function(response) {
@@ -423,7 +388,7 @@ class dataAccessApi {
                 "fields": JSON.stringify(fields),
                 "start": start,
                 "end": end,
-                "frequency" : fixedInterval ?  fixedInterval : 0
+                "frequency": fixedInterval ? fixedInterval : 0
             }
         }).then(
             function(response) {
@@ -447,14 +412,11 @@ class dataAccessApi {
     }
 
 
-    deviceStoreData(id, host, application, deviceKey, storeSchema, store, tree, start, end, fields, interval) {
+    deviceStoreData(id, host, application, deviceName, deviceType, store, start, end, fields, interval) {
 
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
+        if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+            console.error("host url/applicaiton is empty~");
+            return false;
         }
 
         var $graphDataService = this._$graphDataService;
@@ -466,50 +428,45 @@ class dataAccessApi {
         if (end instanceof Date) {
             end = end.getTime();
         }
-        var needLoad = true;
-        if (!needLoad) {
-            // return data
-            deferred.resolve($graphDataService.get(deviceKey + "/" + store + "/" + id));
-        } else {
-            // send request to back-end
-            this._$http({
-                method: 'GET',
-                url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&fields=' + JSON.stringify(fields) + '&start=' + start + '&end=' + end
-            }).then(
-                function(response) {
-                    // only return 1 device data
-                    var deviceGraphData = $graphDataService.get(deviceKey + "/" + store + "/" + id) ? $graphDataService.get(deviceKey + "/" + store + "/" + id) : [];
-                    var newComeResult = response.data[deviceKey].data;
-                    newComeResult.forEach(function(item) {
-                        var flag = false;
-                        for (var i = 0; i < deviceGraphData.length; i++) {
-                            if (deviceGraphData[i].timestamp == item.timestamp) {
-                                deviceGraphData[i] = item;
-                                flag = true;
-                            }
-                        }
-                        if (!flag) {
-                            // add
-                            deviceGraphData.push(item);
-                        }
-                    });
-                    // order by timestamp
-                    deviceGraphData.sort(function(a, b) {
-                        if (a.timestamp > b.timestamp) {
-                            return 1;
-                        } else if (a.timestamp < b.timestamp) {
-                            return -1;
-                        }
-                        return 0;
-                    });
-                    $graphDataService.put(deviceKey + "/" + store + "/" + id, deviceGraphData);
-                    deferred.resolve(deviceGraphData);
-                },
-                function(response) {
-                    deferred.reject(response.data);
-                }
-            );
-        }
+        // send request to back-end    http://localhost:8082/smud/meter/meter_hour
+        this._$http({
+            method: 'POST',
+            url: host + "/" + application + "/" + deviceType + "/" + store,
+            data: {
+                "start": start,
+                "end": end,
+                "fields": fields,
+                "devices": [deviceName],
+                "frequency": interval
+            },
+            header: {
+                "content-type": "application/json"
+            }
+        }).then(
+            function(response) {
+                // only return 1 device data
+                var deviceGraphData = $graphDataService.get(deviceName + "/" + store + "/" + id) ? $graphDataService.get(deviceName + "/" + store + "/" + id) : [];
+                var newComeResult = response.data[deviceName].data;
+                newComeResult.forEach(function(item) {
+                    deviceGraphData.push(item);
+                });
+                // order by timestamp
+                deviceGraphData.sort(function(a, b) {
+                    if (a.timestamp > b.timestamp) {
+                        return 1;
+                    } else if (a.timestamp < b.timestamp) {
+                        return -1;
+                    }
+                    return 0;
+                });
+                $graphDataService.put(deviceName + "/" + store + "/" + id, deviceGraphData);
+                deferred.resolve(deviceGraphData);
+            },
+            function(error) {
+                deferred.reject(response.data);
+            }
+        );
+
 
         return deferred.promise;
     }
@@ -522,7 +479,7 @@ class dataAccessApi {
             var _tempColors = [];
             // generate 500 colors
             for (var i = 0; i < 500; i++) {
-                _tempColors.push(defaultColors[Math.floor(Math.random()*(10))]);
+                _tempColors.push(defaultColors[Math.floor(Math.random() * (10))]);
             }
             this['colors'] = defaultColors.concat(_tempColors);
         }

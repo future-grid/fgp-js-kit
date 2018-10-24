@@ -19,15 +19,16 @@ Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
  */
 var fgpStage = function fgpStage() {
     this.scope = {
-        applicationName: "=",
+        applicationName: "@",
         deviceName: "=",
-        server: "=",
+        deviceType: "@",
+        server: "@",
         configuration: '=',
         scatterColors: "=",
         standalone: "=",
         interactions: "=",
         drill: "=",
-        childrenDrill:"=",
+        childrenDrill: "=",
         highlights: "=",
         eventsHandler: "="
     };
@@ -120,9 +121,6 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
             newScope["childrenDrill"] = $scope.childrenDrill;
             newScope["highlights"] = $scope.highlights;
             newScope["eventsHandler"] = $scope.eventsHandler;
-
-
-
             newScope.$on('bindChildRepeatEvent', function(evt, msg) {
                 angular$1.forEach($scope.configuration, function(item) {
                     if (item.id == msg.id) {
@@ -191,13 +189,11 @@ fgpStage.prototype.controller = function controller ($scope, $element, $timeout,
 
 
     var sendDeviceData = function(newScope) {
-        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function(data) {
+        dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.deviceType, $scope.applicationName).then(function(data) {
             // send device info to all widget
             $timeout(function() {
-                newScope.$broadcast('deviceInfoEvent', {
-                    device: data,
-                    from: 'application'
-                });
+                data["from"] = 'application';
+                newScope.$broadcast('deviceInfoEvent', data);
             });
         });
     };
@@ -229,26 +225,20 @@ var dataAccessApi = function dataAccessApi($http, $q, $cacheFactory, $interval, 
  * @param applicationName
  * @returns {*}
  */
-dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, deviceKey, applicationName) {
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
+dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, deviceKey, deviceType, application) {
+
+    if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+        console.error("host url/applicaiton is empty~");
+        return false;
     }
 
     var deferred = this._$q.defer();
-    var url = host + "/rest/api/";
-
-    if (applicationName) {
-        url += "app/" + applicationName;
-    }
+    var url = host + "/" + application + "/" + deviceType;
 
     if (deviceName) {
-        url += '/devices/' + deviceName;
+        url += '/name/' + deviceName + '?hasExtensions=true';
     } else if (deviceKey) {
-        url += 'devices?key=' + deviceKey;
+        url += '/key/' + deviceKey + '?hasExtensions=true';
     }
 
     var httpServices = this._$http;
@@ -256,72 +246,50 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
 
     httpServices({
         method: 'GET',
-        url: url,
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        url: url
     }).success(function(data) {
-        var url = host + "/rest/api/";
-        if (applicationName) {
-            url += "app/" + applicationName + "/devices/extension-types";
-        } else {
-            url += "devices/extension-types";
+        if (deviceName) {
+            url = host + "/" + application + "/" + deviceType + "/name/" + deviceName;
+        } else if (deviceKey) {
+            url = host + "/" + application + "/" + deviceType + "/key/" + deviceKey;
         }
-        //get all extension types
-        httpServices({
-            method: 'GET',
-            url: url,
-            params: {
-                'device_type': data.type
-            },
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).success(function(types) {
-            if (!types || types.length == 0) {
-                deferred.resolve(data);
-            } else {
-                var extensionRequests = [];
-                var url = host + "/rest/api/";
-                if (applicationName) {
-                    url += "app/" + applicationName + "/devices/extensions";
-                } else {
-                    url += "devices/extensions";
+        if (data.extensions) {
+            var _extensions = [];
+            data.extensions.forEach(function (_extension) {
+                _extensions.push(_extension.name);
+            });
+            // call extension service
+            //get all extension types
+            httpServices({
+                method: 'POST',
+                url: url,
+                data: {
+                    'extensions': [].concat(_extensions)
+                },
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-                angular$1.forEach(types, function(type) {
-                    // extension types
-                    extensionRequests.push(
-                        httpServices({
-                            method: 'GET',
-                            params: {
-                                'device_name': deviceName,
-                                'extension_type': type.name
-                            },
-                            url: url,
-                            headers: {
-                                'Content-Type': 'application/json'
+            }).success(function(extensions) {
+                if (!extensions) {
+                    deferred.resolve(data);
+                } else {
+                    // all extensions
+                    Object.keys(extensions).forEach(function (key, _index) {
+                        data.extensions.forEach(function (_ex) {
+                            if (_ex.name == key) {
+                                angular$1.extend(_ex, extensions[key]);
                             }
-                        }).catch(function(info) {
-                            console.warn(info);
-                        })
-                    );
-                });
-
-                qServices.all(extensionRequests).then(function(result) {
-                    result.forEach(function(extensionItem) {
-                        if (extensionItem && extensionItem.data) {
-                            data[extensionItem.data.type.name] = extensionItem.data;
-                        }
+                        });
                     });
                     deferred.resolve(data);
-                }, function(errors) {
-                    deferred.reject(error);
-                });
-            }
-        }).error(function(error) {
-            deferred.reject(error);
-        });
-
+                }
+            }).error(function(error) {
+                deferred.reject(error);
+            });
+        } else {
+            // return device info and stop here.
+            deferred.resolve(data);
+        }
     }).error(function(error) {
         deferred.reject(error);
     });
@@ -336,21 +304,14 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
  * @param storeSchema
  * @returns {Promise}
  */
-dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, application, deviceKey, storeSchema, rangeLevel, otherLevels, fields) {
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
+dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, application, deviceName, deviceType, rangeLevel) {
+    if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+        console.error("host url/applicaiton is empty~");
+        return false;
     }
 
     var deferred = this._$q.defer();
-    this._$http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-        params: {
-            'otherLevels': otherLevels,
-            'fields': [].concat(fields)
-        },
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
         // cache: this.deviceStores
     }).then(
         function(response) {
@@ -623,7 +584,7 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
             "fields": JSON.stringify(fields),
             "start": start,
             "end": end,
-            "frequency" : fixedInterval ?  fixedInterval : 0
+            "frequency": fixedInterval ? fixedInterval : 0
         }
     }).then(
         function(response) {
@@ -647,14 +608,11 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
 };
 
 
-dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, application, deviceKey, storeSchema, store, tree, start, end, fields, interval) {
+dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, application, deviceName, deviceType, store, start, end, fields, interval) {
 
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
+    if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+        console.error("host url/applicaiton is empty~");
+        return false;
     }
 
     var $graphDataService = this._$graphDataService;
@@ -666,50 +624,52 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
     if (end instanceof Date) {
         end = end.getTime();
     }
-    var needLoad = true;
-    if (!needLoad) {
-        // return data
-        deferred.resolve($graphDataService.get(deviceKey + "/" + store + "/" + id));
-    } else {
-        // send request to back-end
-        this._$http({
-            method: 'GET',
-            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store + '?devices=["' + deviceKey + '"]&fields=' + JSON.stringify(fields) + '&start=' + start + '&end=' + end
-        }).then(
-            function(response) {
-                // only return 1 device data
-                var deviceGraphData = $graphDataService.get(deviceKey + "/" + store + "/" + id) ? $graphDataService.get(deviceKey + "/" + store + "/" + id) : [];
-                var newComeResult = response.data[deviceKey].data;
-                newComeResult.forEach(function(item) {
-                    var flag = false;
-                    for (var i = 0; i < deviceGraphData.length; i++) {
-                        if (deviceGraphData[i].timestamp == item.timestamp) {
-                            deviceGraphData[i] = item;
-                            flag = true;
-                        }
-                    }
-                    if (!flag) {
-                        // add
-                        deviceGraphData.push(item);
-                    }
+    // send request to back-endhttp://localhost:8082/smud/meter/meter_hour
+    this._$http({
+        method: 'POST',
+        url: host + "/" + application + "/" + deviceType + "/" + store,
+        data: {
+            "start": start,
+            "end": end,
+            "fields": fields,
+            "devices": [deviceName],
+            "frequency": interval
+        },
+        header: {
+            "content-type": "application/json"
+        }
+    }).then(
+        function(response) {
+            response.data[deviceName].data = []; // dummy data
+            for (var i = 0; i < 24; i++) {
+                response.data[deviceName].data.push({
+                    "timestamp": 1540299600000 + (i * 3600000),
+                    "energy": 100 * (i + 1)
                 });
-                // order by timestamp
-                deviceGraphData.sort(function(a, b) {
-                    if (a.timestamp > b.timestamp) {
-                        return 1;
-                    } else if (a.timestamp < b.timestamp) {
-                        return -1;
-                    }
-                    return 0;
-                });
-                $graphDataService.put(deviceKey + "/" + store + "/" + id, deviceGraphData);
-                deferred.resolve(deviceGraphData);
-            },
-            function(response) {
-                deferred.reject(response.data);
             }
-        );
-    }
+            // only return 1 device data
+            var deviceGraphData = $graphDataService.get(deviceName + "/" + store + "/" + id) ? $graphDataService.get(deviceName + "/" + store + "/" + id) : [];
+            var newComeResult = response.data[deviceName].data;
+            newComeResult.forEach(function(item) {
+                deviceGraphData.push(item);
+            });
+            // order by timestamp
+            deviceGraphData.sort(function(a, b) {
+                if (a.timestamp > b.timestamp) {
+                    return 1;
+                } else if (a.timestamp < b.timestamp) {
+                    return -1;
+                }
+                return 0;
+            });
+            $graphDataService.put(deviceName + "/" + store + "/" + id, deviceGraphData);
+            deferred.resolve(deviceGraphData);
+        },
+        function(error) {
+            deferred.reject(response.data);
+        }
+    );
+
 
     return deferred.promise;
 };
@@ -722,7 +682,7 @@ dataAccessApi.prototype.defaultColors = function defaultColors () {
         var _tempColors = [];
         // generate 500 colors
         for (var i = 0; i < 500; i++) {
-            _tempColors.push(defaultColors[Math.floor(Math.random()*(10))]);
+            _tempColors.push(defaultColors[Math.floor(Math.random() * (10))]);
         }
         this['colors'] = defaultColors.concat(_tempColors);
     }
@@ -904,10 +864,11 @@ fgpWidgetContainer.prototype.controller = function controller ($scope, $element,
                 /**
                  * get device information
                  */
-                dataService.deviceInfo($rootScope.host, JSON.parse($scope.data.source.device).name, null, $rootScope.applicationName).then(function (data) {
+                dataService.deviceInfo($rootScope.host, JSON.parse($scope.data.source.device).name, null, JSON.parse($scope.data.source.device).type, $scope.applicationName).then(function(data) {
                     // send device info to all widget
-                    $timeout(function () {
-                        $rootScope.$broadcast('deviceInfoEvent', {device: data, from: element_id});
+                    $timeout(function() {
+                        data["from"] = element_id;
+                        newScope.$broadcast('deviceInfoEvent', data);
                     });
                 });
             }
@@ -2293,7 +2254,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         }
                                     });
                                     if (!exist) {
-                                        if(ghostDevices.indexOf(deviceName.split("_")[0]) == -1){
+                                        if (ghostDevices.indexOf(deviceName.split("_")[0]) == -1) {
                                             ghostDevices.push(deviceName.split("_")[0]);
                                         }
                                     }
@@ -2308,12 +2269,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 if (highlightDevice.length == 0) {
                                     // show message "not found"
 
-                                    if(ghostDevices.length > 1){
+                                    if (ghostDevices.length > 1) {
                                         $scope.alertMessage = "devices [" + ghostDevices.join(",") + "] not found!";
-                                    }else{
+                                    } else {
                                         $scope.alertMessage = "device [" + ghostDevices.join(",") + "] not found!";
                                     }
-                                    if(messageTimer){
+                                    if (messageTimer) {
                                         $timeout.cancel(messageTimer);
                                     }
                                     messageTimer = $timeout(function() {
@@ -2349,8 +2310,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                         });
                     }
-                }else{
-                    if(replay){
+                } else {
+                    if (replay) {
                         $interval.cancel(replay);
                     }
                 }
@@ -2361,7 +2322,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         if ($scope.highlights && $scope.highlights.onGraph) {
             var highlight_timer_ = null;
             $scope.$watchCollection("highlights.onGraph", function(newValue, oldValue) {
-                if(newValue){
+                if (newValue) {
                     if (highlight_timer_) {
                         $timeout.cancel(highlight_timer_);
                     }
@@ -2489,7 +2450,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             });
                             $scope.auto_fields = fields;
-                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
+                            //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel, fields)
+                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel, fields).then(function(data) {
                                 initChart(data, deviceData.device.name);
                             }, function(error) {
                                 console.error(error);
@@ -2897,36 +2859,73 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     var otherLevels = [];
                     angular$1.forEach(metadata.data.groups[1].collections, function(level) {
                         if (level.rows.length > 0) {
-                            if (rangeLevel != null) {
-                                otherLevels.push(rangeLevel);
+                            if (!rangeLevel) {
+                                rangeLevel = {
+                                    "store": level.name,
+                                    "interval": level.interval,
+                                    "first": 0,
+                                    "last": 0,
+                                    "range": true
+                                };
+                            }else{
+                                //
+                                if(rangeLevel.interval < level.interval){
+                                    // put the old ragneLevel into otherLevels
+                                    otherLevels.push({
+                                        "store": rangeLevel.store+'',
+                                        "interval": rangeLevel.interval + 0,
+                                        "first": 0,
+                                        "last": 0,
+                                        "range": false
+                                    });
+                                    // new rangeLevel
+                                    rangeLevel = {
+                                        "store": level.name,
+                                        "interval": level.interval,
+                                        "first": 0,
+                                        "last": 0,
+                                        "range": true
+                                    };
+
+                                }else{
+                                    otherLevels.push({
+                                        "store": level.name,
+                                        "interval": level.interval,
+                                        "first": 0,
+                                        "last": 0,
+                                        "range": false
+                                    });
+                                }
                             }
-                            rangeLevel = level.name;
                         }
                     });
-                    // fields of range level
-                    var fields = [];
-                    var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
-                    angular$1.forEach(metadata.data.groups[1].collections, function(level) {
-                        if (level.rows.length > 0 && level.name === rangeLevel) {
-                            var lines = level.rows;
-                            if (lines) {
-                                angular$1.forEach(lines, function(line) {
-                                    //
-                                    if (line.value) {
-                                        var columns = (line.value).match(patt);
-                                        angular$1.forEach(columns, function(column) {
-                                            if ((column).startsWith('data.')) {
-                                                fields.push(column.replace('data.', ''));
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                    });
-                    $scope.auto_fields = fields;
+
                     //send a rest request
-                    dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, rangeLevel, otherLevels, fields).then(function(data) {
+                    //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel)
+                    dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function(data) {
+                        // tree info
+                        var deviceStoreInfo = {};
+
+                        deviceStoreInfo["trees"] = [{
+                            "first": {"timestamp":data.start},
+                            "range": true,
+                            "store": rangeLevel.store,
+                            "interval": rangeLevel.interval,
+                            "last": {"timestamp":data.end}
+                        }];
+
+                        // other level
+                        otherLevels.forEach(function(_level, _index) {
+                            deviceStoreInfo["trees"].push({
+                                "first": {"timestamp":data.start},
+                                "range": false,
+                                "store": _level.store,
+                                "interval": _level.interval,
+                                "last": {"timestamp":data.end}
+                            });
+                        });
+
+
                         if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
 
                             if ($scope['interactions'].graphs.scatter instanceof Array) {
@@ -2941,7 +2940,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     $scope.currentView = 1;
                                 } else {
                                     $scope.currentView = -1;
-                                    initChart(data, deviceData.device.name);
+                                    initChart(deviceStoreInfo, deviceData.device.name);
                                 }
 
                             } else if ($scope['interactions'].graphs.scatter == true) {
@@ -2950,11 +2949,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             } else {
                                 // not found
                                 $scope.currentView = -1;
-                                initChart(data, deviceData.device.name);
+                                initChart(deviceStoreInfo, deviceData.device.name);
                             }
                         } else {
                             $scope.currentView = -1;
-                            initChart(data, deviceData.device.name);
+                            initChart(deviceStoreInfo, deviceData.device.name);
                         }
                     }, function(error) {
                         console.error(error);
@@ -3058,7 +3057,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     }
                                 });
                                 $scope.auto_fields = fields;
-                                dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, expectedInterval).then(function(data) {
+                                //id, host, application, deviceName, deviceType, store, start, end, fields, interval
+                                dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, tree.store, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, 0).then(function(data) {
                                         // udpate chart
                                         var showData = data;
                                         showData = showData.filter(function(obj) {
@@ -3331,7 +3331,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     } else {
                         // cal tree
                         angular$1.forEach($scope.trees, function(tree, index) {
-                            if (expectedInterval == tree.frequency) {
+                            if (expectedInterval == tree.interval) {
                                 // send request
                                 var fields = [];
                                 var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
@@ -3358,7 +3358,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
 
                                 $scope.auto_fields = fields;
-                                dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, tree.store, tree.tree, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, tree.frequency).then(function(data) {
+                                dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, tree.store, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, 0).then(function(data) {
                                     // udpate chart
                                     var showData = data;
                                     showData = showData.filter(function(obj) {
@@ -3443,7 +3443,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 }
                 $scope.intevals.device.push({
                     name: tree.store,
-                    interval: tree.frequency
+                    interval: tree.interval
                 });
             });
 
@@ -3455,7 +3455,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var allData = [];
             // fetchData(allData, rangeTree.tree);only get first and last
             // fix the problem of never seen the current data.
-            rangeTree.last.timestamp = rangeTree.last.timestamp + (rangeTree.frequency - 1);
+            rangeTree.last.timestamp = rangeTree.last.timestamp + (rangeTree.interval - 1);
             allData = allData.concat([rangeTree.first, rangeTree.last]);
 
             allData = allData.filter(function(obj) {
@@ -3472,22 +3472,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 return;
             }
 
-            // if the data only has one point. change the data range to bigger
-            if (allData.length == 1) { //  means only one point.
-                var newData = [];
-                // add 1 points into both side
-                var thePoint = allData[0];
-                var timestamp = thePoint.timestamp;
-                var currentInterval = $scope.intevals.device[0].interval;
-                newData.push({
-                    timestamp: timestamp - currentInterval
-                });
-                Array.prototype.push.apply(newData, allData);
-                newData.push({
-                    timestamp: timestamp + currentInterval
-                });
-                allData = newData;
-            }
             $scope.ordinalRangeData = allData;
             // put the data into range tree cache
             if (rangeTree) {
@@ -3557,8 +3541,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     if (!flag) {
                         var fixedInterval = 0;
                         // get fixedInterval
-                        collections.forEach(function(_collection){
-                            if(tree.store == _collection.name && _collection.hasOwnProperty("fixedInterval")){
+                        collections.forEach(function(_collection) {
+                            if (tree.store == _collection.name && _collection.hasOwnProperty("fixedInterval")) {
                                 fixedInterval = _collection.fixedInterval;
                             }
                         });

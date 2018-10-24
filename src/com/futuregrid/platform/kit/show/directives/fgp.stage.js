@@ -7,15 +7,16 @@ class fgpStage {
 
     constructor() {
         this.scope = {
-            applicationName: "=",
+            applicationName: "@",
             deviceName: "=",
-            server: "=",
+            deviceType: "@",
+            server: "@",
             configuration: '=',
             scatterColors: "=",
             standalone: "=",
             interactions: "=",
             drill: "=",
-            childrenDrill:"=",
+            childrenDrill: "=",
             highlights: "=",
             eventsHandler: "="
         };
@@ -108,9 +109,6 @@ class fgpStage {
                 newScope["childrenDrill"] = $scope.childrenDrill;
                 newScope["highlights"] = $scope.highlights;
                 newScope["eventsHandler"] = $scope.eventsHandler;
-
-
-
                 newScope.$on('bindChildRepeatEvent', function(evt, msg) {
                     angular.forEach($scope.configuration, function(item) {
                         if (item.id == msg.id) {
@@ -179,13 +177,11 @@ class fgpStage {
 
 
         var sendDeviceData = function(newScope) {
-            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.applicationName).then(function(data) {
+            dataService.deviceInfo($scope.server, $scope.deviceName, null, $scope.deviceType, $scope.applicationName).then(function(data) {
                 // send device info to all widget
                 $timeout(function() {
-                    newScope.$broadcast('deviceInfoEvent', {
-                        device: data,
-                        from: 'application'
-                    });
+                    data["from"] = 'application'
+                    newScope.$broadcast('deviceInfoEvent', data);
                 });
             });
         };
