@@ -325,42 +325,6 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
 };
 
 
-/**
- *
- * @param application
- * @param deviceKey
- * @param storeSchema
- * @returns {Promise}
- */
-dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo (host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels, fields) {
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
-    }
-    var deferred = this._$q.defer();
-    this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-        params: {
-            relationType: relationType,
-            relationDeviceType: relationDeviceType,
-            otherLevels: otherLevels,
-            fields: [].concat(fields),
-            isSame: true
-        },
-        // cache: this.deviceStores
-    }).then(
-        function(response) {
-            deferred.resolve(response.data);
-        },
-        function(response) {
-            deferred.reject(response.data);
-        }
-    );
-    return deferred.promise;
-};
-
 
 /**
  *
@@ -369,32 +333,57 @@ dataAccessApi.prototype.childrenDeviceInitInfo = function childrenDeviceInitInfo
  * @param storeSchema
  * @returns {Promise}
  */
-dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionInitInfo (host, application, deviceKey, storeSchema, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels, fields) {
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
+dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionInitInfo (host, application, deviceName, deviceType, relationType, relationDeviceType, extensionType) {
+
+    if (!host || "" === host || !application || "" === application || !relationDeviceType || "" === relationDeviceType) {
+        console.error("host url/applicaiton is empty~");
+        return false;
     }
     var deferred = this._$q.defer();
-    this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
-        params: {
-            relationType: relationType,
-            relationDeviceType: relationDeviceType,
-            otherLevels: otherLevels,
-            fields: [].concat(fields),
-            isSame: true
-        },
-        // cache: this.deviceStores
-    }).then(
-        function(response) {
-            deferred.resolve(response.data);
-        },
-        function(response) {
-            deferred.reject(response.data);
-        }
-    );
+
+    var __q = this._$q;
+    var __http = this._$http;
+
+    // first get children devices
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + deviceName + '/relation/' + relationType).then(function successCallback(resp) {
+
+        var promises = [];
+        angular$1.forEach(resp.data, function(_device) {
+            if (_device && _device.name) {
+
+                var deferred = __q.defer();
+                __http({
+                    method: 'POST',
+                    url: host + '/' + application + '/' + _device.type + '/name/' + _device.name,
+                    data: {
+                        'extensions': [].concat([extensionType])
+                    },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).success(function(extension) {
+                    deferred.resolve({
+                        "name": _device.name,
+                        "extension": extension[extensionType],
+                        "device": _device
+                    });
+                }).error(function(error) {
+                    deferred.reject(error);
+                });
+                promises.push(deferred.promise);
+            }
+        });
+
+        // waiting for all request come back
+        __q.all(promises).then(function successCallback(_result) {
+            deferred.resolve(_result);
+        }, function errorCallback(_data) {
+            deferred.reject(error);
+        });
+
+    }, function errorCallback(error) {
+        deferred.reject(error);
+    });
     return deferred.promise;
 };
 
@@ -405,35 +394,40 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
  * @param storeSchema
  * @returns {Promise}
  */
-dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInitInfo (host, application, devicesKey, storeSchema, extensionType, rangeLevel, otherLevels, fields) {
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
+dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInitInfo (host, application, devices, storeSchema, extensionType) {
+    if (!host || "" === host || !application || "" === application || !extensionType || "" === extensionType) {
+        console.error("host url/applicaiton is empty~");
+        return false;
     }
+
     var result = {};
     var promises = [];
     var __http = this._$http;
-    angular$1.forEach(devicesKey, function(deviceKey) {
-        if (deviceKey != null) {
-            var promise = __http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
-                params: {
-                    otherLevels: otherLevels,
-                    fields: [].concat(fields),
-                    isSame: true
+    var __q = this._$q;
+
+
+    angular$1.forEach(devices, function(_name) {
+        if (_name && "" != _name) {
+            var deferred = __q.defer();
+            __http({
+                method: 'POST',
+                url: host + '/' + application + '/' + deviceType + '/name/' + _name,
+                data: {
+                    'extensions': [].concat([extensionType])
                 },
-                // cache: this.deviceStores
-            }).then(
-                function(response) {
-                    return response.data;
-                },
-                function(response) {
-                    console.error(response.data);
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-            );
-            promises.push(promise);
+            }).success(function(extension) {
+                deferred.resolve({
+                    "name": _device.name,
+                    "extension": extension[extensionType],
+                    "device": _device
+                });
+            }).error(function(error) {
+                deferred.reject(error);
+            });
+            promises.push(deferred.promise);
         }
     });
     // call $q.all on the other side
@@ -441,131 +435,13 @@ dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInit
 };
 
 
+dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, application, devices, deviceType, store, start, end, fields, interval) {
 
-dataAccessApi.prototype.fillChildrenTree = function fillChildrenTree (buckets, tree, showData) {
-
-    if (tree.children[0] != null) {
-        fillChildrenTree(buckets, tree.children[0], showData);
-    }
-
-    if (tree.children[1] != null) {
-        fillChildrenTree(buckets, tree.children[1], showData);
-    }
-
-    if (tree.children[0] == null && tree.children[1] == null) {
-
-        angular$1.forEach(buckets, function(value, key) {
-            if (key == tree.id && value != null) {
-                tree.data = value;
-                tree['size'] = value.length;
-
-                var flag = false;
-                angular$1.forEach(showData, function(data) {
-                    if (data.id == tree.id) {
-                        data.data = tree.data;
-                        tree['size'] = value.length;
-                        flag = true;
-                    }
-                });
-
-                if (!flag) {
-                    console.info("error:" + key);
-                }
-            }
-        });
-    }
-};
-
-
-dataAccessApi.prototype.fillTree = function fillTree (buckets, tree, showData) {
-    if (tree.children[0] != null) {
-        fillTree(buckets, tree.children[0], showData);
-    }
-
-    if (tree.children[1] != null) {
-        fillTree(buckets, tree.children[1], showData);
-    }
-
-    if (tree.children[0] == null && tree.children[1] == null) {
-        angular$1.forEach(buckets, function(value, key) {
-            if (key == tree.id) {
-                tree.data = value;
-                tree['size'] = value.size;
-                var flag = false;
-                angular$1.forEach(showData, function(data) {
-                    if (data.id == tree.id) {
-                        data.data = tree.data;
-                        data['size'] = tree.size;
-                        flag = true;
-                    }
-                });
-                if (!flag) {
-                    console.info("error:" + key);
-                }
-            }
-        });
-    }
-
-};
-
-dataAccessApi.prototype.calTree = function calTree (buckets, tree, start, end) {
-    if (tree.children[0] != null) {
-        calTree(buckets, tree.children[0], start, end);
-    }
-
-    if (tree.children[1] != null) {
-        calTree(buckets, tree.children[1], start, end);
-    }
-
-    if (tree.children[0] == null && tree.children[1] == null) {
-        // is overlap?
-        if (((start >= tree.start) && start < tree.end) ||
-            ((start > tree.start) && start <= tree.end) ||
-            ((tree.start >= start) && tree.start < end) ||
-            ((tree.start > start) && tree.start <= end)) {
-            if (buckets.filter(function(elem) {
-                    return elem.id == tree.id
-                }).length == 0) {
-                buckets.push(tree);
-            }
-        }
-    }
-};
-
-
-/**
- *
- * @param application
- * @param deviceInfo deviceKey and tree
- * @param storeSchema
- * @param store
- * @param start
- * @param end
- */
-dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval, fixedInterval) {
-    var ip = this._$location.host();
-    var port = this._$location.port();
-    var protocol = this._$location.protocol();
-    if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-        // change it to real sever host + port
-        host = protocol + "://" + ip + ":" + port;
-    }
-
-    var start_point = new Date().getTime();
-    if (!deviceInfo || deviceInfo.length == 0) {
+    if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+        console.error("host url/applicaiton is empty~");
         return false;
     }
 
-    var devices = "[";
-
-    deviceInfo.forEach(function(device, index) {
-        if (index < deviceInfo.length - 1) {
-            devices += "\"" + device.name + "\",";
-        } else {
-            devices += "\"" + device.name + "\"]";
-        }
-    });
-    //
     var $graphDataService = this._$graphDataService;
     // new way to get the data without tree index.
     var deferred = this._$q.defer();
@@ -575,37 +451,37 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
     if (end instanceof Date) {
         end = end.getTime();
     }
-    // send request to back-end // TODO: change it to post
+    // send request to back-endhttp://localhost:8082/smud/meter/meter_hour
     this._$http({
         method: 'POST',
-        url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store,
+        url: host + "/" + application + "/" + deviceType + "/" + store,
         data: {
-            "devices": devices,
-            "fields": JSON.stringify(fields),
             "start": start,
             "end": end,
-            "frequency": fixedInterval ? fixedInterval : 0
+            "fields": fields,
+            "devices": [].concat(devices),
+            "frequency": interval
+        },
+        header: {
+            "content-type": "application/json"
         }
     }).then(
         function(response) {
-            var result = {};
-            var data = response.data;
-            for (key in data) {
-                var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store + "/" + id) : [];
-                var newComeResult = data[key].data;
-                // TODO: make all the lines in same x-axis timeseries
-                result[key] = newComeResult;
-            }
-            var end_point = new Date().getTime();
-            console.info((end_point - start_point) / 1000 + "s");
-            deferred.resolve(result);
+            // only return 1 device data
+            var devicesGraphData = [].concat(response.data);
+            deferred.resolve(devicesGraphData);
         },
-        function(response) {
-            deferred.reject(response.data);
+        function(error) {
+            deferred.reject(error);
         }
     );
+
+
     return deferred.promise;
 };
+
+
+
 
 
 dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, application, deviceName, deviceType, store, start, end, fields, interval) {
@@ -658,7 +534,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
             deferred.resolve(deviceGraphData);
         },
         function(error) {
-            deferred.reject(response.data);
+            deferred.reject(error);
         }
     );
 
@@ -934,7 +810,7 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
             '</div>' +
             '</div>';
 
-        var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\'" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i><span>download data </span></a><div id="buttons_area" style=""></div><a ng-show="false" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><span>Select On Graph</span><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: -5px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
+        var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\'" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i><span>download data </span></a><div id="buttons_area" style=""></div><a ng-show="false" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><span>Select On Graph</span><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | date : \'dd/MM/yyyy HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
         return html;
     }
@@ -2403,16 +2279,52 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     if (nObj == -1) {
                         $scope.autoupdate = true;
                         $scope.hp = false;
+
                         var rangeLevel = null;
                         var otherLevels = [];
                         angular$1.forEach(metadata.data.groups[1].collections, function(level) {
                             if (level.rows.length > 0) {
-                                if (rangeLevel != null) {
-                                    otherLevels.push(rangeLevel);
+                                if (!rangeLevel) {
+                                    rangeLevel = {
+                                        "store": level.name,
+                                        "interval": level.interval,
+                                        "first": 0,
+                                        "last": 0,
+                                        "range": true
+                                    };
+                                } else {
+                                    //
+                                    if (rangeLevel.interval < level.interval) {
+                                        // put the old ragneLevel into otherLevels
+                                        otherLevels.push({
+                                            "store": rangeLevel.store + '',
+                                            "interval": rangeLevel.interval + 0,
+                                            "first": 0,
+                                            "last": 0,
+                                            "range": false
+                                        });
+                                        // new rangeLevel
+                                        rangeLevel = {
+                                            "store": level.name,
+                                            "interval": level.interval,
+                                            "first": 0,
+                                            "last": 0,
+                                            "range": true
+                                        };
+
+                                    } else {
+                                        otherLevels.push({
+                                            "store": level.name,
+                                            "interval": level.interval,
+                                            "first": 0,
+                                            "last": 0,
+                                            "range": false
+                                        });
+                                    }
                                 }
-                                rangeLevel = level.name;
                             }
                         });
+
                         if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
                             if ($scope.deviceTitle) {
                                 $scope.$emit('changeContainerTitleEvent', {
@@ -2420,31 +2332,37 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     "title": $scope.deviceTitle
                                 });
                             }
-
-                            // show device view
-                            var fields = [];
-                            var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
-                            angular$1.forEach(metadata.data.groups[1].collections, function(level) {
-                                if (level.rows.length > 0 && level.name === rangeLevel) {
-                                    var lines = level.rows;
-                                    if (lines) {
-                                        angular$1.forEach(lines, function(line) {
-                                            if (line.value) {
-                                                var columns = (line.value).match(patt);
-                                                angular$1.forEach(columns, function(column) {
-                                                    if (column.startsWith('data.')) {
-                                                        fields.push(column.replace('data.', ''));
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                            $scope.auto_fields = fields;
                             //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel, fields)
-                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel, fields).then(function(data) {
-                                initChart(data, deviceData.device.name);
+                            dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function(data) {
+                                var deviceStoreInfo = {};
+
+                                deviceStoreInfo["trees"] = [{
+                                    "first": {
+                                        "timestamp": data.start
+                                    },
+                                    "range": true,
+                                    "store": rangeLevel.store,
+                                    "interval": rangeLevel.interval,
+                                    "last": {
+                                        "timestamp": data.end
+                                    }
+                                }];
+
+                                // other level
+                                otherLevels.forEach(function(_level, _index) {
+                                    deviceStoreInfo["trees"].push({
+                                        "first": {
+                                            "timestamp": data.start
+                                        },
+                                        "range": false,
+                                        "store": _level.store,
+                                        "interval": _level.interval,
+                                        "last": {
+                                            "timestamp": data.end
+                                        }
+                                    });
+                                });
+                                initChart(deviceStoreInfo, deviceData.device.name);
                             }, function(error) {
                                 console.error(error);
                             });
@@ -2499,20 +2417,42 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 });
 
                                                 metadata.data.groups[2] = _config;
-                                                var rangeLevel = null;
+                                                var rangeLevel;
                                                 var otherLevels = [];
-                                                var relationConfig = _config;
+                                                var relationConfig = metadata.data.groups[2];
                                                 if (relationConfig.nameColumn) {
                                                     $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
                                                 } else {
                                                     $scope.childrenDeviceNameColumn = "name";
                                                 }
-                                                angular$1.forEach(_config.collections, function(level) {
+                                                angular$1.forEach(metadata.data.groups[2].collections, function(level) {
                                                     if (level.rows.length > 0) {
-                                                        if (rangeLevel != null) {
-                                                            otherLevels.push(rangeLevel);
+                                                        if (!rangeLevel) {
+                                                            //
+                                                            rangeLevel = {
+                                                                "store": level.name,
+                                                                "frequency": level.interval,
+                                                                "range": true
+                                                            };
+                                                        } else if (rangeLevel.frequency < level.interval) {
+                                                            otherLevels.push({
+                                                                "store": rangeLevel.store,
+                                                                "frequency": rangeLevel.frequency,
+                                                                "range": false
+                                                            });
+                                                            rangeLevel = {
+                                                                "store": level.name,
+                                                                "frequency": level.interval,
+                                                                "range": true
+                                                            };
+                                                        } else {
+                                                            otherLevels.push({
+                                                                "store": rangeLevel.store,
+                                                                "frequency": rangeLevel.frequency,
+                                                                "range": false
+                                                            });
                                                         }
-                                                        rangeLevel = level.name;
+
                                                     }
                                                 });
                                                 if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
@@ -2537,8 +2477,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     });
                                                     $scope.auto_fields = fields;
                                                     // show children view
-                                                    dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function(data) {
+                                                    //host, application, deviceName, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels
+                                                    dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group_extension, rangeLevel, otherLevels).then(function(data) {
                                                         if (data != null && data.length > 0) {
+                                                            data.forEach(function(_item){
+                                                                _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                            });
                                                             initChildrenChart(data);
                                                             // interactionHandler(); // do not need to update interactions
                                                         } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children) {
@@ -2546,8 +2490,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                             if ($scope.interactions.graphs.device.children.data) {
                                                                 var devices_key = $scope.interactions.graphs.device.children.data().then(
                                                                     function(data) {
-                                                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type)).then(
                                                                             function(data) {
+                                                                                data.forEach(function(_item){
+                                                                                    _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                                                });
                                                                                 initChildrenChart(data);
                                                                                 interactionHandler();
                                                                             },
@@ -2586,12 +2533,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
 
-
-
-
-
-
-                            var rangeLevel = null;
+                            var rangeLevel;
                             var otherLevels = [];
                             var relationConfig = metadata.data.groups[2];
                             if (relationConfig.nameColumn) {
@@ -2601,46 +2543,56 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                             angular$1.forEach(metadata.data.groups[2].collections, function(level) {
                                 if (level.rows.length > 0) {
-                                    if (rangeLevel != null) {
-                                        otherLevels.push(rangeLevel);
+                                    if (!rangeLevel) {
+                                        //
+                                        rangeLevel = {
+                                            "store": level.name,
+                                            "frequency": level.interval,
+                                            "range": true
+                                        };
+                                    } else if (rangeLevel.frequency < level.interval) {
+                                        otherLevels.push({
+                                            "store": rangeLevel.store,
+                                            "frequency": rangeLevel.frequency,
+                                            "range": false
+                                        });
+                                        rangeLevel = {
+                                            "store": level.name,
+                                            "frequency": level.interval,
+                                            "range": true
+                                        };
+                                    } else {
+                                        otherLevels.push({
+                                            "store": rangeLevel.store,
+                                            "frequency": rangeLevel.frequency,
+                                            "range": false
+                                        });
                                     }
-                                    rangeLevel = level.name;
+
                                 }
                             });
                             if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
-                                var fields = [];
-                                var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
-                                angular$1.forEach(metadata.data.groups[2].collections, function(level) {
-                                    if (level.rows.length > 0 && level.name === rangeLevel) {
-                                        var lines = level.rows;
-                                        if (lines) {
-                                            angular$1.forEach(lines, function(line) {
-                                                if (line.value) {
-                                                    var columns = (line.value).match(patt);
-                                                    angular$1.forEach(columns, function(column) {
-                                                        if (column.startsWith('data.')) {
-                                                            fields.push(column.replace('data.', ''));
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
-                                $scope.auto_fields = fields;
                                 // show children view
-                                dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, metadata.data.source.store, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group, rangeLevel, otherLevels, fields).then(function(data) {
+                                dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group_extension).then(function(data) {
                                     if (data != null && data.length > 0) {
+                                        data.forEach(function(_item){
+                                            _item["trees"] = [rangeLevel].concat(otherLevels);
+                                        });
                                         initChildrenChart(data);
                                         interactionHandler();
                                     } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children) {
                                         // no relationship in fgp platform just take it from interactions Configuration  extension_type
                                         if ($scope.interactions.graphs.device.children.data) {
                                             var devices_key = $scope.interactions.graphs.device.children.data().then(
-                                                function(data) {
-                                                    $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                function(_children) {
+
+                                                    //TODO: these children devices not comes from fgp platform
+                                                    $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, _children, $scope.interactions.graphs.device.children.extension_type)).then(
                                                         function(data) {
-                                                            initChildrenChart(data);
+                                                            data.forEach(function(_item){
+                                                                _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                            });
+                                                            initChildrenChart(data.data);
                                                             interactionHandler();
                                                         },
                                                         function(error) {
@@ -3170,7 +3122,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             });
 
 
-                                            if(newLines && newLines.length > 0){
+                                            if (newLines && newLines.length > 0) {
                                                 $scope.rangeConfig = {
                                                     'file': newLines,
                                                     'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
@@ -3220,7 +3172,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     currentStore = tree.store;
                                     deviceInfo.push({
                                         name: device.name,
-                                        tree: tree.tree
+                                        tree: tree
                                     });
                                     device["show"] = true;
                                     $scope.childrenDevices.push(device);
@@ -3250,13 +3202,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                         var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval, fixedInterval) {
                             $scope.auto_fields = fields;
-                            dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceInfo, metadata.data.source.store, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, expectedInterval, fixedInterval).then(function(data) {
+                            var devices_name = [];
+                            deviceInfo.forEach(function (_d){
+                                devices_name.push(_d.name);
+                            });
+                            //id, host, application, devices, deviceType, store, start, end, fields, interval
+                            dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, devices_name, metadata.data.source.relation_group, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, fixedInterval).then(function(data) {
                                 var showData = [];
-                                angular$1.forEach(data, function(arr, key) {
-                                    var deviceData = [].concat(arr);
-                                    showData.push({
-                                        device: key,
-                                        data: deviceData
+                                data.forEach(function (_item){
+                                    deviceInfo.forEach(function (_device){
+                                        if(_item.hasOwnProperty(_device.name)){
+                                            //
+                                            showData.push({
+                                                device: _device.name,
+                                                data: _item[_device.name].data
+                                            });
+                                        }
                                     });
                                 });
                                 // order childrenDevices by showData
@@ -3558,25 +3519,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                     }
                 });
-
-                if (rangeTree != null) {
-                    var deviceObj = devicesInfo[device.name] = {};
-                    // get all data
-                    var allData = [rangeTree.first, {
-                        timestamp: moment().endOf('day').toDate().getTime()
-                    }];
-                    allData = allData.filter(function(obj) {
-                        return obj != null;
-                    });
-                    allData.sort(function(a, b) {
-                        return a.timestamp > b.timestamp ? 1 : -1;
-                    });
-                    //
-                    deviceObj["range"] = rangeTree;
-                    deviceObj["data"] = allData;
-                } else {
-                    console.info(device.name + " has none data.");
-                }
+                devicesInfo[device.name] = {"range":rangeTree};
             });
             updateChildrenChart(metadata, devicesInfo);
         };

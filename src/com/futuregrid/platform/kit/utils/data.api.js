@@ -129,42 +129,6 @@ class dataAccessApi {
     }
 
 
-    /**
-     *
-     * @param application
-     * @param deviceKey
-     * @param storeSchema
-     * @returns {Promise}
-     */
-    childrenDeviceInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, rangeLevel, otherLevels, fields) {
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
-        }
-        var deferred = this._$q.defer();
-        this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel, {
-            params: {
-                relationType: relationType,
-                relationDeviceType: relationDeviceType,
-                otherLevels: otherLevels,
-                fields: [].concat(fields),
-                isSame: true
-            },
-            // cache: this.deviceStores
-        }).then(
-            function(response) {
-                deferred.resolve(response.data);
-            },
-            function(response) {
-                deferred.reject(response.data);
-            }
-        );
-        return deferred.promise;
-    }
-
 
     /**
      *
@@ -173,32 +137,57 @@ class dataAccessApi {
      * @param storeSchema
      * @returns {Promise}
      */
-    childrenExtensionInitInfo(host, application, deviceKey, storeSchema, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels, fields) {
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
+    childrenExtensionInitInfo(host, application, deviceName, deviceType, relationType, relationDeviceType, extensionType) {
+
+        if (!host || "" === host || !application || "" === application || !relationDeviceType || "" === relationDeviceType) {
+            console.error("host url/applicaiton is empty~");
+            return false;
         }
         var deferred = this._$q.defer();
-        this._$http.get(host + '/rest/api/app/' + application + '/store/index/children/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
-            params: {
-                relationType: relationType,
-                relationDeviceType: relationDeviceType,
-                otherLevels: otherLevels,
-                fields: [].concat(fields),
-                isSame: true
-            },
-            // cache: this.deviceStores
-        }).then(
-            function(response) {
-                deferred.resolve(response.data);
-            },
-            function(response) {
-                deferred.reject(response.data);
-            }
-        );
+
+        var __q = this._$q;
+        var __http = this._$http;
+
+        // first get children devices
+        this._$http.get(host + '/' + application + '/' + deviceType + '/' + deviceName + '/relation/' + relationType).then(function successCallback(resp) {
+
+            var promises = [];
+            angular.forEach(resp.data, function(_device) {
+                if (_device && _device.name) {
+
+                    var deferred = __q.defer();
+                    __http({
+                        method: 'POST',
+                        url: host + '/' + application + '/' + _device.type + '/name/' + _device.name,
+                        data: {
+                            'extensions': [].concat([extensionType])
+                        },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).success(function(extension) {
+                        deferred.resolve({
+                            "name": _device.name,
+                            "extension": extension[extensionType],
+                            "device": _device
+                        });
+                    }).error(function(error) {
+                        deferred.reject(error);
+                    });
+                    promises.push(deferred.promise);
+                }
+            });
+
+            // waiting for all request come back
+            __q.all(promises).then(function successCallback(_result) {
+                deferred.resolve(_result);
+            }, function errorCallback(_data) {
+                deferred.reject(error);
+            });
+
+        }, function errorCallback(error) {
+            deferred.reject(error);
+        });
         return deferred.promise;
     }
 
@@ -209,35 +198,40 @@ class dataAccessApi {
      * @param storeSchema
      * @returns {Promise}
      */
-    devicesExtensionInitInfo(host, application, devicesKey, storeSchema, extensionType, rangeLevel, otherLevels, fields) {
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
+    devicesExtensionInitInfo(host, application, devices, storeSchema, extensionType) {
+        if (!host || "" === host || !application || "" === application || !extensionType || "" === extensionType) {
+            console.error("host url/applicaiton is empty~");
+            return false;
         }
+
         var result = {};
         var promises = [];
         var __http = this._$http;
-        angular.forEach(devicesKey, function(deviceKey) {
-            if (deviceKey != null) {
-                var promise = __http.get(host + '/rest/api/app/' + application + '/store/index/' + deviceKey + '/' + storeSchema + '/' + rangeLevel + '/' + extensionType, {
-                    params: {
-                        otherLevels: otherLevels,
-                        fields: [].concat(fields),
-                        isSame: true
+        var __q = this._$q;
+
+
+        angular.forEach(devices, function(_name) {
+            if (_name && "" != _name) {
+                var deferred = __q.defer();
+                __http({
+                    method: 'POST',
+                    url: host + '/' + application + '/' + deviceType + '/name/' + _name,
+                    data: {
+                        'extensions': [].concat([extensionType])
                     },
-                    // cache: this.deviceStores
-                }).then(
-                    function(response) {
-                        return response.data;
-                    },
-                    function(response) {
-                        console.error(response.data);
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
-                );
-                promises.push(promise);
+                }).success(function(extension) {
+                    deferred.resolve({
+                        "name": _device.name,
+                        "extension": extension[extensionType],
+                        "device": _device
+                    });
+                }).error(function(error) {
+                    deferred.reject(error);
+                });
+                promises.push(deferred.promise);
             }
         });
         // call $q.all on the other side
@@ -245,131 +239,13 @@ class dataAccessApi {
     }
 
 
+    devicesStoreData(id, host, application, devices, deviceType, store, start, end, fields, interval) {
 
-    fillChildrenTree(buckets, tree, showData) {
-
-        if (tree.children[0] != null) {
-            fillChildrenTree(buckets, tree.children[0], showData);
-        }
-
-        if (tree.children[1] != null) {
-            fillChildrenTree(buckets, tree.children[1], showData);
-        }
-
-        if (tree.children[0] == null && tree.children[1] == null) {
-
-            angular.forEach(buckets, function(value, key) {
-                if (key == tree.id && value != null) {
-                    tree.data = value;
-                    tree['size'] = value.length;
-
-                    var flag = false;
-                    angular.forEach(showData, function(data) {
-                        if (data.id == tree.id) {
-                            data.data = tree.data;
-                            tree['size'] = value.length;
-                            flag = true;
-                        }
-                    });
-
-                    if (!flag) {
-                        console.info("error:" + key);
-                    }
-                }
-            });
-        }
-    }
-
-
-    fillTree(buckets, tree, showData) {
-        if (tree.children[0] != null) {
-            fillTree(buckets, tree.children[0], showData);
-        }
-
-        if (tree.children[1] != null) {
-            fillTree(buckets, tree.children[1], showData);
-        }
-
-        if (tree.children[0] == null && tree.children[1] == null) {
-            angular.forEach(buckets, function(value, key) {
-                if (key == tree.id) {
-                    tree.data = value;
-                    tree['size'] = value.size;
-                    var flag = false;
-                    angular.forEach(showData, function(data) {
-                        if (data.id == tree.id) {
-                            data.data = tree.data;
-                            data['size'] = tree.size;
-                            flag = true;
-                        }
-                    });
-                    if (!flag) {
-                        console.info("error:" + key);
-                    }
-                }
-            });
-        }
-
-    }
-
-    calTree(buckets, tree, start, end) {
-        if (tree.children[0] != null) {
-            calTree(buckets, tree.children[0], start, end);
-        }
-
-        if (tree.children[1] != null) {
-            calTree(buckets, tree.children[1], start, end);
-        }
-
-        if (tree.children[0] == null && tree.children[1] == null) {
-            // is overlap?
-            if (((start >= tree.start) && start < tree.end) ||
-                ((start > tree.start) && start <= tree.end) ||
-                ((tree.start >= start) && tree.start < end) ||
-                ((tree.start > start) && tree.start <= end)) {
-                if (buckets.filter(function(elem) {
-                        return elem.id == tree.id
-                    }).length == 0) {
-                    buckets.push(tree);
-                }
-            }
-        }
-    }
-
-
-    /**
-     *
-     * @param application
-     * @param deviceInfo deviceKey and tree
-     * @param storeSchema
-     * @param store
-     * @param start
-     * @param end
-     */
-    devicesStoreData(id, host, application, deviceInfo, storeSchema, store, start, end, fields, interval, fixedInterval) {
-        var ip = this._$location.host();
-        var port = this._$location.port();
-        var protocol = this._$location.protocol();
-        if (!host || host.indexOf("http://localhost:8081") != -1 || host == "") {
-            // change it to real sever host + port
-            host = protocol + "://" + ip + ":" + port;
-        }
-
-        var start_point = new Date().getTime();
-        if (!deviceInfo || deviceInfo.length == 0) {
+        if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
+            console.error("host url/applicaiton is empty~");
             return false;
         }
 
-        var devices = "[";
-
-        deviceInfo.forEach(function(device, index) {
-            if (index < deviceInfo.length - 1) {
-                devices += "\"" + device.name + "\",";
-            } else {
-                devices += "\"" + device.name + "\"]";
-            }
-        });
-        //
         var $graphDataService = this._$graphDataService;
         // new way to get the data without tree index.
         var deferred = this._$q.defer();
@@ -379,37 +255,37 @@ class dataAccessApi {
         if (end instanceof Date) {
             end = end.getTime();
         }
-        // send request to back-end // TODO: change it to post
+        // send request to back-end    http://localhost:8082/smud/meter/meter_hour
         this._$http({
             method: 'POST',
-            url: host + '/rest/api/app/' + application + '/store/devices/store/data/' + storeSchema + '/' + store,
+            url: host + "/" + application + "/" + deviceType + "/" + store,
             data: {
-                "devices": devices,
-                "fields": JSON.stringify(fields),
                 "start": start,
                 "end": end,
-                "frequency": fixedInterval ? fixedInterval : 0
+                "fields": fields,
+                "devices": [].concat(devices),
+                "frequency": interval
+            },
+            header: {
+                "content-type": "application/json"
             }
         }).then(
             function(response) {
-                var result = {};
-                var data = response.data;
-                for (key in data) {
-                    var deviceGraphData = $graphDataService.get(key + "/" + store + "/" + id) ? $graphDataService.get(key + "/" + store + "/" + id) : [];
-                    var newComeResult = data[key].data;
-                    // TODO: make all the lines in same x-axis timeseries
-                    result[key] = newComeResult;
-                }
-                var end_point = new Date().getTime();
-                console.info((end_point - start_point) / 1000 + "s");
-                deferred.resolve(result);
+                // only return 1 device data
+                var devicesGraphData = [].concat(response.data);
+                deferred.resolve(devicesGraphData);
             },
-            function(response) {
-                deferred.reject(response.data);
+            function(error) {
+                deferred.reject(error);
             }
         );
+
+
         return deferred.promise;
     }
+
+
+
 
 
     deviceStoreData(id, host, application, deviceName, deviceType, store, start, end, fields, interval) {
@@ -462,7 +338,7 @@ class dataAccessApi {
                 deferred.resolve(deviceGraphData);
             },
             function(error) {
-                deferred.reject(response.data);
+                deferred.reject(error);
             }
         );
 
