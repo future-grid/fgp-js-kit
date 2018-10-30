@@ -2662,6 +2662,9 @@ class fgpWidgetGraph {
                     });
                 });
 
+                $scope.intevals.device.sort(function(a, b){
+                    return  b.interval - a.interval;
+                });
 
                 // init chart with range data
                 var store = rangeTree.store;
