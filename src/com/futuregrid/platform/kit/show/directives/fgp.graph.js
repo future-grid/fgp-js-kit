@@ -1731,6 +1731,9 @@ class fgpWidgetGraph {
                                                             if (data != null && data.length > 0) {
                                                                 data.forEach(function(_item){
                                                                     _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                                    _item["trees"].sort(function(a,b){
+                                                                        return b.frequency - a.frequency;
+                                                                    });
                                                                 });
                                                                 initChildrenChart(data);
                                                                 // interactionHandler(); // do not need to update interactions
@@ -1743,6 +1746,9 @@ class fgpWidgetGraph {
                                                                                 function(data) {
                                                                                     data.forEach(function(_item){
                                                                                         _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                                                        _item["trees"].sort(function(a,b){
+                                                                                            return b.frequency - a.frequency;
+                                                                                        });
                                                                                     });
                                                                                     initChildrenChart(data);
                                                                                     interactionHandler();
@@ -1826,6 +1832,9 @@ class fgpWidgetGraph {
                                         if (data != null && data.length > 0) {
                                             data.forEach(function(_item){
                                                 _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                _item["trees"].sort(function(a, b){
+                                                    return b.frequency - a.frequency;
+                                                });
                                             });
                                             initChildrenChart(data);
                                             interactionHandler();

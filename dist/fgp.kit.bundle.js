@@ -346,40 +346,52 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
 
     // first get children devices
     this._$http.get(host + '/' + application + '/' + deviceType + '/' + deviceName + '/relation/' + relationType).then(function successCallback(resp) {
-
-        var promises = [];
-        angular$1.forEach(resp.data, function(_device) {
-            if (_device && _device.name) {
-
-                var deferred = __q.defer();
-                __http({
-                    method: 'POST',
-                    url: host + '/' + application + '/' + _device.type + '/name/' + _device.name,
-                    data: {
-                        'extensions': [].concat([extensionType])
-                    },
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }).success(function(extension) {
-                    deferred.resolve({
-                        "name": _device.name,
-                        "extension": extension[extensionType],
-                        "device": _device
-                    });
-                }).error(function(error) {
-                    deferred.reject(error);
+        if(!extensionType || "" === extensionType){
+            var result = [];
+            angular$1.forEach(resp.data, function(_device) {
+                result.push({
+                    "name": _device.name,
+                    "device": _device
                 });
-                promises.push(deferred.promise);
-            }
-        });
+            });
+            deferred.resolve(result);
+        }else{
+            var promises = [];
+            angular$1.forEach(resp.data, function(_device) {
+                if (_device && _device.name) {
 
-        // waiting for all request come back
-        __q.all(promises).then(function successCallback(_result) {
-            deferred.resolve(_result);
-        }, function errorCallback(_data) {
-            deferred.reject(error);
-        });
+                    var deferred = __q.defer();
+                    __http({
+                        method: 'POST',
+                        url: host + '/' + application + '/' + _device.type + '/name/' + _device.name,
+                        data: {
+                            'extensions': [].concat([extensionType])
+                        },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).success(function(extension) {
+                        deferred.resolve({
+                            "name": _device.name,
+                            "extension": extension[extensionType],
+                            "device": _device
+                        });
+                    }).error(function(error) {
+                        deferred.reject(error);
+                    });
+                    promises.push(deferred.promise);
+                }
+            });
+
+            // waiting for all request come back
+            __q.all(promises).then(function successCallback(_result) {
+                deferred.resolve(_result);
+            }, function errorCallback(_data) {
+                deferred.reject(error);
+            });
+        }
+
+
 
     }, function errorCallback(error) {
         deferred.reject(error);
@@ -2482,6 +2494,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                         if (data != null && data.length > 0) {
                                                             data.forEach(function(_item){
                                                                 _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                                _item["trees"].sort(function(a,b){
+                                                                    return b.frequency - a.frequency;
+                                                                });
                                                             });
                                                             initChildrenChart(data);
                                                             // interactionHandler(); // do not need to update interactions
@@ -2494,6 +2509,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                                             function(data) {
                                                                                 data.forEach(function(_item){
                                                                                     _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                                                    _item["trees"].sort(function(a,b){
+                                                                                        return b.frequency - a.frequency;
+                                                                                    });
                                                                                 });
                                                                                 initChildrenChart(data);
                                                                                 interactionHandler();
@@ -2577,6 +2595,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     if (data != null && data.length > 0) {
                                         data.forEach(function(_item){
                                             _item["trees"] = [rangeLevel].concat(otherLevels);
+                                            _item["trees"].sort(function(a, b){
+                                                return b.frequency - a.frequency;
+                                            });
                                         });
                                         initChildrenChart(data);
                                         interactionHandler();
