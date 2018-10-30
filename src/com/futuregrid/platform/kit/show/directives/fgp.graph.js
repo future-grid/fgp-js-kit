@@ -2358,14 +2358,17 @@ class fgpWidgetGraph {
                                                         $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                                     }
                                                 } else {
-                                                    $scope.rangeSelectorBar.updateOptions({
-                                                        'file': allLines,
-                                                        highlightSeriesOpts: {
-                                                            strokeWidth: 1.5,
-                                                            strokeBorderWidth: 1,
-                                                            highlightCircleSize: 2
-                                                        }
-                                                    });
+                                                    if(allLines && allLines.length>0){
+                                                        $scope.rangeSelectorBar.updateOptions({
+                                                            'file': allLines,
+                                                            highlightSeriesOpts: {
+                                                                strokeWidth: 1.5,
+                                                                strokeBorderWidth: 1,
+                                                                highlightCircleSize: 2
+                                                            }
+                                                        });
+                                                    }
+
                                                 }
 
                                             } else {
