@@ -218,6 +218,25 @@ var dataAccessApi = function dataAccessApi($http, $q, $cacheFactory, $interval, 
 };
 
 
+
+dataAccessApi.prototype.mergeArraySimple = function mergeArraySimple (array1, array2) {
+    var result_array = [];
+    var arr = array1.concat(array2);
+    var len = arr.length;
+    var assoc = {};
+
+    while (len--) {
+        var item = arr[len];
+
+        if (!assoc[item]) {
+            result_array.unshift(item);
+            assoc[item] = true;
+        }
+    }
+    return result_array;
+};
+
+
 /**
  * sync using JQuery
  * @param deviceName
@@ -346,7 +365,7 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
 
     // first get children devices
     this._$http.get(host + '/' + application + '/' + deviceType + '/' + deviceName + '/relation/' + relationType).then(function successCallback(resp) {
-        if(!extensionType || "" === extensionType){
+        if (!extensionType || "" === extensionType) {
             var result = [];
             angular$1.forEach(resp.data, function(_device) {
                 result.push({
@@ -355,7 +374,7 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
                 });
             });
             deferred.resolve(result);
-        }else{
+        } else {
             var promises = [];
             angular$1.forEach(resp.data, function(_device) {
                 if (_device && _device.name) {
@@ -2492,9 +2511,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     //host, application, deviceName, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels
                                                     dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group_extension, rangeLevel, otherLevels).then(function(data) {
                                                         if (data != null && data.length > 0) {
-                                                            data.forEach(function(_item){
+                                                            data.forEach(function(_item) {
                                                                 _item["trees"] = [rangeLevel].concat(otherLevels);
-                                                                _item["trees"].sort(function(a,b){
+                                                                _item["trees"].sort(function(a, b) {
                                                                     return b.frequency - a.frequency;
                                                                 });
                                                             });
@@ -2507,9 +2526,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                                     function(data) {
                                                                         $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type)).then(
                                                                             function(data) {
-                                                                                data.forEach(function(_item){
+                                                                                data.forEach(function(_item) {
                                                                                     _item["trees"] = [rangeLevel].concat(otherLevels);
-                                                                                    _item["trees"].sort(function(a,b){
+                                                                                    _item["trees"].sort(function(a, b) {
                                                                                         return b.frequency - a.frequency;
                                                                                     });
                                                                                 });
@@ -2593,9 +2612,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 // show children view
                                 dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, metadata.data.source.relation, metadata.data.source.relation_group, metadata.data.source.relation_group_extension).then(function(data) {
                                     if (data != null && data.length > 0) {
-                                        data.forEach(function(_item){
+                                        data.forEach(function(_item) {
                                             _item["trees"] = [rangeLevel].concat(otherLevels);
-                                            _item["trees"].sort(function(a, b){
+                                            _item["trees"].sort(function(a, b) {
                                                 return b.frequency - a.frequency;
                                             });
                                         });
@@ -2610,7 +2629,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     //TODO: these children devices not comes from fgp platform
                                                     $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, _children, $scope.interactions.graphs.device.children.extension_type)).then(
                                                         function(data) {
-                                                            data.forEach(function(_item){
+                                                            data.forEach(function(_item) {
                                                                 _item["trees"] = [rangeLevel].concat(otherLevels);
                                                             });
                                                             initChildrenChart(data.data);
@@ -3029,6 +3048,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         }
                                     }
                                 });
+
+                                //get rid of duplicates
+                                fields = fields.filter(function(item, pos) {
+                                    return fields.indexOf(item) == pos;
+                                });
+
+
+
                                 $scope.auto_fields = fields;
                                 //id, host, application, deviceName, deviceType, store, start, end, fields, interval
                                 dataService.deviceStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, tree.store, new Date(newValue.begin).getTime(), new Date(newValue.end).getTime(), fields, 0).then(function(data) {
@@ -3049,9 +3076,17 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             }
                                         };
                                         var rangeBarLabels = [];
-                                        for (var i = 0; i < fields.length; i++) {
-                                            rangeBarLabels.push(fields[i]);
-                                            var f = new Function("data", "with(data) { if(data." + fields[i] + "!=null)return data." + fields[i] + ";return null;}");
+
+
+                                        if($scope.currentChart){
+                                            rangeBarLabels = $scope.currentChart.getLabels();
+                                        }
+
+                                        //get rangeBar data formulas
+                                        var collection_ = $scope.rangeCollectionConfig;
+
+                                        angular$1.forEach(collection_.rows, function(row) {
+                                            var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
                                             // add value
                                             var counter = 0;
                                             angular$1.forEach(allLines, function(realLine) {
@@ -3063,7 +3098,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 }
                                                 counter++;
                                             });
-                                        }
+                                        });
+
+
                                         //
                                         var objNeed2Add = [];
                                         if ($scope.rangeConfig && $scope.rangeConfig.file && $scope.rangeConfig.file != null && allLines.length > 0) {
@@ -3109,7 +3146,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                 $scope.rangeSeries = series_range;
                                                 $scope.rangeConfig = {
                                                     'file': allLines,
-                                                    'labels': ['x'].concat(rangeBarLabels),
+                                                    'labels': rangeBarLabels,
                                                     'series': series_range,
                                                     highlightSeriesOpts: {
                                                         strokeWidth: 1.5,
@@ -3121,7 +3158,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                                 }
                                             } else {
-                                                if(allLines && allLines.length>0){
+                                                if (allLines && allLines.length > 0) {
+                                                    $scope.rangeConfig['file'] = allLines;
                                                     $scope.rangeSelectorBar.updateOptions({
                                                         'file': allLines,
                                                         highlightSeriesOpts: {
@@ -3149,7 +3187,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             if (newLines && newLines.length > 0) {
                                                 $scope.rangeConfig = {
                                                     'file': newLines,
-                                                    'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
+                                                    'labels': rangeBarLabels,
                                                     'series': series_range,
                                                     highlightSeriesOpts: {
                                                         strokeWidth: 1.5,
@@ -3224,18 +3262,24 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
                         });
+
+                        fields = fields.filter(function(item, pos) {
+                            return fields.indexOf(item) == pos;
+                        });
+
+
                         var _init = function(deviceInfo, currentStore, begin, end, fields, expectedInterval, fixedInterval) {
                             $scope.auto_fields = fields;
                             var devices_name = [];
-                            deviceInfo.forEach(function (_d){
+                            deviceInfo.forEach(function (_d) {
                                 devices_name.push(_d.name);
                             });
                             //id, host, application, devices, deviceType, store, start, end, fields, interval
                             dataService.devicesStoreData($scope.graphId, $rootScope.host, $rootScope.applicationName, devices_name, metadata.data.source.relation_group, currentStore, new Date(begin).getTime(), new Date(end).getTime(), fields, fixedInterval).then(function(data) {
                                 var showData = [];
-                                data.forEach(function (_item){
-                                    deviceInfo.forEach(function (_device){
-                                        if(_item.hasOwnProperty(_device.name)){
+                                data.forEach(function (_item) {
+                                    deviceInfo.forEach(function (_device) {
+                                        if (_item.hasOwnProperty(_device.name)) {
                                             //
                                             showData.push({
                                                 device: _device.name,
@@ -3437,8 +3481,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 });
             });
 
-            $scope.intevals.device.sort(function(a, b){
-                return  b.interval - a.interval;
+            $scope.intevals.device.sort(function(a, b) {
+                return b.interval - a.interval;
             });
 
             // init chart with range data
@@ -3546,7 +3590,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                     }
                 });
-                devicesInfo[device.name] = {"range":rangeTree};
+                devicesInfo[device.name] = {
+                    "range": rangeTree
+                };
             });
             updateChildrenChart(metadata, devicesInfo);
         };
@@ -4801,6 +4847,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     });
 
                     $scope.rangeSeriesNumber = collection.rows.length;
+                    $scope.rangeCollectionConfig = collection;
                     var showY2axis = false;
                     angular$1.forEach(collection.rows, function(row) {
                         labels.push(row.label);

@@ -22,6 +22,25 @@ class dataAccessApi {
     }
 
 
+
+    mergeArraySimple(array1, array2) {
+        var result_array = [];
+        var arr = array1.concat(array2);
+        var len = arr.length;
+        var assoc = {};
+
+        while (len--) {
+            var item = arr[len];
+
+            if (!assoc[item]) {
+                result_array.unshift(item);
+                assoc[item] = true;
+            }
+        }
+        return result_array;
+    }
+
+
     /**
      * sync using JQuery
      * @param deviceName
@@ -150,7 +169,7 @@ class dataAccessApi {
 
         // first get children devices
         this._$http.get(host + '/' + application + '/' + deviceType + '/' + deviceName + '/relation/' + relationType).then(function successCallback(resp) {
-            if(!extensionType || "" === extensionType){
+            if (!extensionType || "" === extensionType) {
                 var result = [];
                 angular.forEach(resp.data, function(_device) {
                     result.push({
@@ -159,7 +178,7 @@ class dataAccessApi {
                     });
                 });
                 deferred.resolve(result);
-            }else{
+            } else {
                 var promises = [];
                 angular.forEach(resp.data, function(_device) {
                     if (_device && _device.name) {
