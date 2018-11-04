@@ -10,7 +10,7 @@ class fgpStage {
             applicationName: "@",
             deviceName: "=",
             deviceType: "@",
-            server: "@",
+            server: "=",
             configuration: '=',
             scatterColors: "=",
             standalone: "=",

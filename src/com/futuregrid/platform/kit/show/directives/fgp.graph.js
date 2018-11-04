@@ -1587,13 +1587,13 @@ class fgpWidgetGraph {
 
                                     deviceStoreInfo["trees"] = [{
                                         "first": {
-                                            "timestamp": data.start
+                                            "timestamp": data.first.timestamp
                                         },
                                         "range": true,
                                         "store": rangeLevel.store,
                                         "interval": rangeLevel.interval,
                                         "last": {
-                                            "timestamp": data.end
+                                            "timestamp": data.last.timestamp
                                         }
                                     }];
 
@@ -1601,13 +1601,13 @@ class fgpWidgetGraph {
                                     otherLevels.forEach(function(_level, _index) {
                                         deviceStoreInfo["trees"].push({
                                             "first": {
-                                                "timestamp": data.start
+                                                "timestamp": data.first.timestamp
                                             },
                                             "range": false,
                                             "store": _level.store,
                                             "interval": _level.interval,
                                             "last": {
-                                                "timestamp": data.end
+                                                "timestamp": data.last.timestamp
                                             }
                                         });
                                     });
@@ -2110,13 +2110,13 @@ class fgpWidgetGraph {
 
                             deviceStoreInfo["trees"] = [{
                                 "first": {
-                                    "timestamp": data.start
+                                    "timestamp": data.first.timestamp
                                 },
                                 "range": true,
                                 "store": rangeLevel.store,
                                 "interval": rangeLevel.interval,
                                 "last": {
-                                    "timestamp": data.end
+                                    "timestamp": data.last.timestamp
                                 }
                             }];
 
@@ -2124,13 +2124,13 @@ class fgpWidgetGraph {
                             otherLevels.forEach(function(_level, _index) {
                                 deviceStoreInfo["trees"].push({
                                     "first": {
-                                        "timestamp": data.start
+                                        "timestamp": data.first.timestamp
                                     },
                                     "range": false,
                                     "store": _level.store,
                                     "interval": _level.interval,
                                     "last": {
-                                        "timestamp": data.end
+                                        "timestamp": data.last.timestamp
                                     }
                                 });
                             });
@@ -2296,7 +2296,7 @@ class fgpWidgetGraph {
                                             var rangeBarLabels = [];
 
 
-                                            if($scope.currentChart){
+                                            if ($scope.currentChart) {
                                                 rangeBarLabels = $scope.currentChart.getLabels();
                                             }
 
@@ -2397,12 +2397,12 @@ class fgpWidgetGraph {
                                                 $scope.rangeSeries = series_range;
                                                 var newLines = [];
                                                 angular.copy(allLines, newLines);
-                                                angular.forEach(newLines, function(line) {
-                                                    line.push(null);
+
+                                                newLines.forEach(function(_line) {
+                                                    _line.push(null);
                                                 });
-
-
                                                 if (newLines && newLines.length > 0) {
+
                                                     $scope.rangeConfig = {
                                                         'file': newLines,
                                                         'labels': rangeBarLabels,
@@ -2413,9 +2413,25 @@ class fgpWidgetGraph {
                                                             highlightCircleSize: 2
                                                         }
                                                     };
+
+                                                    var rangebar_label = ['x'];
+                                                    for (var i = 0; i < newLines[0].length - 2; i++) {
+                                                        rangebar_label.push("l"+i);
+                                                    }
+                                                    rangebar_label.push("span_y2");
+
                                                 }
                                                 if (basicInfo && basicInfo.range_show && allLines.length > 0) {
-                                                    $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                                                    $scope.rangeSelectorBar.updateOptions({
+                                                        'file': newLines,
+                                                        'labels': rangebar_label,
+                                                        'series': series_range,
+                                                        highlightSeriesOpts: {
+                                                            strokeWidth: 1.5,
+                                                            strokeBorderWidth: 1,
+                                                            highlightCircleSize: 2
+                                                        }
+                                                    });
                                                 }
                                             }
                                         },
