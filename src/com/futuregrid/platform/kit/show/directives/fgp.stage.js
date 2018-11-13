@@ -7,7 +7,7 @@ class fgpStage {
 
     constructor() {
         this.scope = {
-            applicationName: "@",
+            applicationName: "=",
             deviceName: "=",
             deviceType: "@",
             server: "=",

@@ -19,7 +19,7 @@ Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
  */
 var fgpStage = function fgpStage() {
     this.scope = {
-        applicationName: "@",
+        applicationName: "=",
         deviceName: "=",
         deviceType: "@",
         server: "=",
@@ -3198,7 +3198,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                                 var rangebar_label = ['x'];
                                                 for (var i = 0; i < newLines[0].length - 2; i++) {
-                                                    rangebar_label.push("l"+i);
+                                                    rangebar_label.push("l" + i);
                                                 }
                                                 rangebar_label.push("span_y2");
 
@@ -4012,7 +4012,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
             var counter = 0;
-            var showY2axis = null;
             angular$1.forEach(allData, function(device) {
                 counter++;
                 if (device.data.length > 0) {
@@ -4024,12 +4023,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 series[collection.rows[0].label] = {
                                     'axis': 'y1',
                                 };
-                            } else {
-                                series[collection.rows[0].label] = {
-                                    'axis': 'y2'
-                                };
-                                showY2axis = true;
-                                $scope.showY2Btns = true;
                             }
                             var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                             var filterF = null;
@@ -4146,302 +4139,233 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         });
                     });
 
-                    if (showY2axis) {
-                        $scope.currentChartOptions = {
-                            'connectSeparatedPoints': connectSeparatedPoints,
-                            'pointSize': 2,
-                            'legend': 'never',
-                            'labelsKMB': true,
-                            highlightCircleSize: 2,
-                            strokeBorderWidth: 0,
-                            highlightSeriesOpts: {
-                                strokeWidth: 1.5,
-                                strokeBorderWidth: 1,
-                                highlightCircleSize: 2
+                    var newLines = [];
+                    $scope.showY2Btns = false;
+                    angular$1.copy(chartData, newLines);
+                    angular$1.forEach(newLines, function(line) {
+                        line.push(null);
+                    });
+                    series["span_y2"] = {
+                        axis: 'y2'
+                    };
+                    $scope.currentChartOptions = {
+                        'connectSeparatedPoints': connectSeparatedPoints,
+                        'pointSize': 2,
+                        'legend': 'never',
+                        'labelsKMB': true,
+                        'file': newLines,
+                        labelsSeparateLines: false,
+                        'labels': ['x'].concat(labels).concat(["span_y2"]),
+                        'ylabel': leftAndRight.left,
+                        highlightSeriesOpts: {
+                            strokeWidth: 1.5,
+                            strokeBorderWidth: 1,
+                            highlightCircleSize: 2
+                        },
+                        'y2label': "",
+                        'series': series,
+                        'colors': colors,
+                        'axes': {
+                            'y': {
+                                valueRange: [yRange.min, yRange.max],
+                                axisLabelWidth: 80
                             },
-                            labelsSeparateLines: false,
-                            'file': chartData,
-                            'labels': ['x'].concat(labels),
-                            'ylabel': leftAndRight.left,
-                            'y2label': leftAndRight.right,
-                            'series': series,
-                            'colors': colors,
-                            'axes': {
-                                'y': {
-                                    valueRange: [yRange.min, yRange.max],
-                                    axisLabelWidth: 80
-                                }
-                            }
-                        };
-                        var _tempVisibility = [];
-                        $scope.currentChart.getOption('visibility').forEach(function(v, _index) {
-                            if ($scope.currentVisibility_[_index]) {
-                                _tempVisibility[_index] = $scope.currentVisibility_[_index];
-                            } else {
-                                if ($scope.memoryVisibility[_index]) {
-                                    _tempVisibility[_index] = $scope.memoryVisibility[_index];
-                                } else {
-                                    _tempVisibility[_index] = v;
-                                }
-                            }
-                            if ($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")) {
-                                $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
-                            }
-                        });
-
-                        $scope.downloadData = {
-                            "labels": ['datetime'].concat(labels),
-                            "data": chartData
-                        };
-
-                        $scope.currentVisibility_ = [];
-                        $scope.memoryVisibility = [];
-                        $scope.currentChart.updateOptions({
-                            'connectSeparatedPoints': connectSeparatedPoints,
-                            'pointSize': 2,
-                            'legend': 'never',
-                            'labelsKMB': true,
-                            'visibility': _tempVisibility,
-                            highlightCircleSize: 2,
-                            strokeBorderWidth: 0,
-                            highlightSeriesOpts: {
-                                strokeWidth: 1.5,
-                                strokeBorderWidth: 1,
-                                highlightCircleSize: 2
-                            },
-                            labelsSeparateLines: false,
-                            'file': chartData,
-                            'labels': ['x'].concat(labels),
-                            'ylabel': leftAndRight.left,
-                            'y2label': leftAndRight.right,
-                            'series': series,
-                            'colors': colors,
-                            'axes': {
-                                'y': {
-                                    valueRange: [yRange.min, yRange.max],
-                                    axisLabelWidth: 80
-                                }
-                            }
-                            // showRangeSelector: true
-                        });
-                    } else {
-                        var newLines = [];
-                        $scope.showY2Btns = false;
-                        angular$1.copy(chartData, newLines);
-                        angular$1.forEach(newLines, function(line) {
-                            line.push(null);
-                        });
-                        series["span_y2"] = {
-                            axis: 'y2'
-                        };
-                        $scope.currentChartOptions = {
-                            'connectSeparatedPoints': connectSeparatedPoints,
-                            'pointSize': 2,
-                            'legend': 'never',
-                            'labelsKMB': true,
-                            'file': newLines,
-                            labelsSeparateLines: false,
-                            'labels': ['x'].concat(labels).concat(["span_y2"]),
-                            'ylabel': leftAndRight.left,
-                            highlightSeriesOpts: {
-                                strokeWidth: 1.5,
-                                strokeBorderWidth: 1,
-                                highlightCircleSize: 2
-                            },
-                            'y2label': "",
-                            'series': series,
-                            'colors': colors,
-                            'axes': {
-                                'y': {
-                                    valueRange: [yRange.min, yRange.max],
-                                    axisLabelWidth: 80
+                            "y2": {
+                                axisLabelFormatter: function(d) {
+                                    return '';
                                 },
-                                "y2": {
-                                    axisLabelFormatter: function(d) {
-                                        return '';
-                                    },
-                                    axisLabelWidth: 80
-                                }
+                                axisLabelWidth: 80
                             }
-                            // showRangeSelector: true
-                        };
+                        }
+                        // showRangeSelector: true
+                    };
 
 
-                        var _tempVisibility = [];
-                        $scope.currentChart.getOption('visibility').forEach(function(v, _index) {
-                            if ($scope.currentVisibility_[_index]) {
-                                _tempVisibility[_index] = $scope.currentVisibility_[_index];
+                    var _tempVisibility = [];
+                    $scope.currentChart.getOption('visibility').forEach(function(v, _index) {
+                        if ($scope.currentVisibility_[_index]) {
+                            _tempVisibility[_index] = $scope.currentVisibility_[_index];
+                        } else {
+                            if ($scope.memoryVisibility[_index]) {
+                                _tempVisibility[_index] = $scope.memoryVisibility[_index];
                             } else {
-                                if ($scope.memoryVisibility[_index]) {
-                                    _tempVisibility[_index] = $scope.memoryVisibility[_index];
-                                } else {
-                                    _tempVisibility[_index] = v;
-                                }
+                                _tempVisibility[_index] = v;
                             }
-                            if ($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")) {
-                                $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                        }
+                        if ($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")) {
+                            $scope.childrenDevices[_index]["show"] = _tempVisibility[_index];
+                        }
+                    });
+
+                    $scope.downloadData = {
+                        "labels": ['datetime'].concat(labels).concat(["span_y2"]),
+                        "data": newLines
+                    };
+                    $scope.currentVisibility_ = [];
+                    $scope.memoryVisibility = [];
+
+                    var _tempConfig = {
+                        'connectSeparatedPoints': connectSeparatedPoints,
+                        'pointSize': 2,
+                        'legend': 'never',
+                        'labelsKMB': true,
+                        'file': newLines,
+                        labelsSeparateLines: false,
+                        'labels': ['x'].concat(labels).concat(["span_y2"]),
+                        'ylabel': leftAndRight.left,
+                        highlightCircleSize: 2,
+                        strokeBorderWidth: 0,
+                        highlightSeriesOpts: {
+                            strokeWidth: 1.5,
+                            strokeBorderWidth: 1,
+                            highlightCircleSize: 2
+                        },
+                        highlightCallback: function(e, x, pts, row, seriesName) {
+                            if ($scope.currentView == -1) {
+                                // device view is using default legend
+                                return false;
                             }
-                        });
-
-                        $scope.downloadData = {
-                            "labels": ['datetime'].concat(labels).concat(["span_y2"]),
-                            "data": newLines
-                        };
-                        $scope.currentVisibility_ = [];
-                        $scope.memoryVisibility = [];
-                        $scope.currentChart.updateOptions({
-                            'connectSeparatedPoints': connectSeparatedPoints,
-                            'pointSize': 2,
-                            'legend': 'never',
-                            'labelsKMB': true,
-                            'file': newLines,
-                            'visibility': _tempVisibility,
-                            labelsSeparateLines: false,
-                            'labels': ['x'].concat(labels).concat(["span_y2"]),
-                            'ylabel': leftAndRight.left,
-                            highlightCircleSize: 2,
-                            strokeBorderWidth: 0,
-                            highlightSeriesOpts: {
-                                strokeWidth: 1.5,
-                                strokeBorderWidth: 1,
-                                highlightCircleSize: 2
-                            },
-                            highlightCallback: function(e, x, pts, row, seriesName) {
-                                if ($scope.currentView == -1) {
-                                    // device view is using default legend
-                                    return false;
+                            // set current child device and will do show one
+                            $scope.currentHighLightChildDevice = seriesName;
+                            var maxWidth = e.target.offsetWidth;
+                            var sn = "";
+                            angular$1.forEach(series, function(value, name, item) {
+                                if (value.axis === "y1") {
+                                    sn = name;
                                 }
-                                // set current child device and will do show one
-                                $scope.currentHighLightChildDevice = seriesName;
-                                var maxWidth = e.target.offsetWidth;
-                                var sn = "";
-                                angular$1.forEach(series, function(value, name, item) {
-                                    if (value.axis === "y1") {
-                                        sn = name;
-                                    }
-                                });
-                                var point_show = {
-                                    x: 0,
-                                    y: 0
-                                };
-                                // get device name columns
-                                var relationConfig = metadata.data.groups[2];
-                                angular$1.forEach(pts, function(item, index) {
-                                    if (item.name === seriesName) {
-                                        $scope.legendText = seriesName;
-                                        var colorIndex = -1;
-                                        //get index from childrenDevices
-                                        angular$1.forEach($scope.childrenDevices, function(device, _index) {
-                                            if (device.name == seriesName) {
-                                                colorIndex = _index;
-                                            }
-                                        });
+                            });
+                            var point_show = {
+                                x: 0,
+                                y: 0
+                            };
+                            // get device name columns
+                            var relationConfig = metadata.data.groups[2];
+                            angular$1.forEach(pts, function(item, index) {
+                                if (item.name === seriesName) {
+                                    $scope.legendText = seriesName;
+                                    var colorIndex = -1;
+                                    //get index from childrenDevices
+                                    angular$1.forEach($scope.childrenDevices, function(device, _index) {
+                                        if (device.name == seriesName) {
+                                            colorIndex = _index;
+                                        }
+                                    });
 
-                                        $scope.childrenColors.forEach(function(_item) {
-                                            if (_item.name == seriesName) {
-                                                $scope.legendColor = _item.color;
-                                            }
-                                        });
-                                        // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                        $scope.legendText_device = seriesName;
-                                        $scope.legendText_device_name = "";
-                                        // if the nameSd exist
-                                        if ($scope.childTrees && $scope.childTrees.length > 0) {
-                                            angular$1.forEach($scope.childTrees, function(item) {
-                                                //
-                                                if (item.name == seriesName) {
-                                                    if (item[relationConfig.nameColumn]) {
-                                                        $scope.legendText_device_name = item[relationConfig.nameColumn];
-                                                    }
+                                    $scope.childrenColors.forEach(function(_item) {
+                                        if (_item.name == seriesName) {
+                                            $scope.legendColor = _item.color;
+                                        }
+                                    });
+                                    // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                                    $scope.legendText_device = seriesName;
+                                    $scope.legendText_device_name = "";
+                                    // if the nameSd exist
+                                    if ($scope.childTrees && $scope.childTrees.length > 0) {
+                                        angular$1.forEach($scope.childTrees, function(item) {
+                                            //
+                                            if (item.name == seriesName) {
+                                                if (item[relationConfig.nameColumn]) {
+                                                    $scope.legendText_device_name = item[relationConfig.nameColumn];
                                                 }
+                                            }
+                                        });
+                                    }
+                                    if ($scope.legendText_device_name == "") {
+                                        //
+                                        $scope.legendText_device_name = seriesName;
+                                    }
+
+                                    if (moment.tz.guess()) {
+                                        $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
+                                    } else {
+                                        $scope.legendText_datetime = moment(item.xval).format('DD/MM/YYYY HH:mm:ss');
+                                    }
+                                    $scope.legendText_column = sn;
+                                    $scope.legendText_value = item.yval;
+                                    angular$1.forEach(pts, function(point) {
+                                        if (point.name === seriesName) {
+                                            point_show.y = point.canvasy + 30;
+                                            point_show.x = point.canvasx + 30;
+                                        }
+                                    });
+                                }
+                            });
+                            var legendbox = angular$1.element("#legendbox" + element_id);
+
+                            $scope.$apply(function() {
+                                $scope.legendTop = point_show.y;
+                                if (maxWidth < (point_show.x + 200)) {
+                                    $scope.legendLeft = point_show.x - 200;
+                                } else {
+                                    $scope.legendLeft = point_show.x;
+                                }
+
+                                // send data to outside
+                                if ($scope.highlights && $scope.highlights.onExternal) {
+                                    $scope.highlights.onExternal = [];
+
+                                    var labels = $scope.currentChart.getLabels();
+                                    var _tempData = [];
+                                    var _color = null;
+                                    labels.forEach(function(_l, _index) {
+                                        if (_l == $scope.currentHighLightChildDevice) {
+                                            _color = colors[_index];
+                                            $scope.currentChart.file_.forEach(function(_row) {
+                                                var tempObj = {};
+                                                tempObj[_row[0].getTime()] = _row[_index];
+                                                _tempData.push(tempObj);
                                             });
                                         }
-                                        if ($scope.legendText_device_name == "") {
-                                            //
-                                            $scope.legendText_device_name = seriesName;
-                                        }
-
-                                        if (moment.tz.guess()) {
-                                            $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format('DD/MM/YYYY HH:mm:ss');
-                                        } else {
-                                            $scope.legendText_datetime = moment(item.xval).format('DD/MM/YYYY HH:mm:ss');
-                                        }
-                                        $scope.legendText_column = sn;
-                                        $scope.legendText_value = item.yval;
-                                        angular$1.forEach(pts, function(point) {
-                                            if (point.name === seriesName) {
-                                                point_show.y = point.canvasy + 30;
-                                                point_show.x = point.canvasx + 30;
-                                            }
-                                        });
-                                    }
-                                });
-                                var legendbox = angular$1.element("#legendbox" + element_id);
-
-                                $scope.$apply(function() {
-                                    $scope.legendTop = point_show.y;
-                                    if (maxWidth < (point_show.x + 200)) {
-                                        $scope.legendLeft = point_show.x - 200;
-                                    } else {
-                                        $scope.legendLeft = point_show.x;
-                                    }
-
-                                    // send data to outside
-                                    if ($scope.highlights && $scope.highlights.onExternal) {
-                                        $scope.highlights.onExternal = [];
-
-                                        var labels = $scope.currentChart.getLabels();
-                                        var _tempData = [];
-                                        var _color = null;
-                                        labels.forEach(function(_l, _index) {
-                                            if (_l == $scope.currentHighLightChildDevice) {
-                                                _color = colors[_index];
-                                                $scope.currentChart.file_.forEach(function(_row) {
-                                                    var tempObj = {};
-                                                    tempObj[_row[0].getTime()] = _row[_index];
-                                                    _tempData.push(tempObj);
-                                                });
-                                            }
-                                        });
-                                        $scope.highlights.onExternal.push({
-                                            name: $scope.currentHighLightChildDevice,
-                                            id: $scope.currentHighLightChildDevice,
-                                            data: _tempData,
-                                            color: _color
-                                        });
-                                    }
-
-
-                                });
-
-                            },
-
-                            unhighlightCallback: function(e) {
-                                $scope.$apply(function() {
-                                    $scope.legendText = null;
-                                    $scope.legendText_device = null;
-                                    $scope.legendText_datetime = null;
-                                    $scope.legendText_column = null;
-                                    $scope.legendText_value = null;
-                                });
-                            },
-                            'y2label': "",
-                            'series': series,
-                            'colors': colors,
-                            'axes': {
-                                'y': {
-                                    valueRange: [yRange.min, yRange.max],
-                                    axisLabelWidth: 80
-                                },
-                                "y2": {
-                                    axisLabelFormatter: function(d) {
-                                        return '';
-                                    },
-                                    axisLabelWidth: 80
+                                    });
+                                    $scope.highlights.onExternal.push({
+                                        name: $scope.currentHighLightChildDevice,
+                                        id: $scope.currentHighLightChildDevice,
+                                        data: _tempData,
+                                        color: _color
+                                    });
                                 }
+
+
+                            });
+
+                        },
+
+                        unhighlightCallback: function(e) {
+                            $scope.$apply(function() {
+                                $scope.legendText = null;
+                                $scope.legendText_device = null;
+                                $scope.legendText_datetime = null;
+                                $scope.legendText_column = null;
+                                $scope.legendText_value = null;
+                            });
+                        },
+                        'y2label': "",
+                        'series': series,
+                        'colors': colors,
+                        'axes': {
+                            'y': {
+                                valueRange: [yRange.min, yRange.max],
+                                axisLabelWidth: 80
+                            },
+                            "y2": {
+                                axisLabelFormatter: function(d) {
+                                    return '';
+                                },
+                                axisLabelWidth: 80
                             }
-                            // showRangeSelector: true
-                        });
+                        }
+                        // showRangeSelector: true
+                    };
+                    if (newLines && newLines.length > 0) {
+                        if(labels.length > _tempVisibility.length){
+                            // don't
+                            console.info("first time");
+                        }else{
+                            _tempConfig['visibility'] = _tempVisibility;
+                        }
+
+                        console.info("grapsh visibility:" + $scope.currentChart.getOption('visibility').length, "cal visibility:" + _tempVisibility.length);
+                        $scope.currentChart.updateOptions(_tempConfig);
                     }
                     // reset l & r axes window
                     var axesRight = $scope.currentChart.axes_[1];
