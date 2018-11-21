@@ -3040,7 +3040,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             return;
                         }
                     }
-
+                    //
+                    if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.datetimeWindowCallback){
+                        if(typeof $scope.interactions.graphs.datetimeWindowCallback  == "function"){
+                            $scope.interactions.graphs.datetimeWindowCallback(newValue);
+                        }else{
+                            $scope.interactions.graphs.datetimeWindowCallback = newValue;
+                        }
+                    }
                     // get fixedInterval from configuration
 
 
