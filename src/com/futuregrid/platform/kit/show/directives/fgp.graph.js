@@ -1101,7 +1101,7 @@ class fgpWidgetGraph {
                                     v[_index] = false;
                                 }
                             });
-                           
+
                             // update visibility once
                             $timeout(function () {
                                 var oldVisibility = $scope.currentChart.getOption('visibility');
@@ -1955,7 +1955,7 @@ class fgpWidgetGraph {
                     $scope.fixInterval = false;
                 });
 
-                
+
                 var interactionHandler = function () {
                     // interactions for scatter view
                     if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
@@ -2526,14 +2526,26 @@ class fgpWidgetGraph {
 
                         $scope.loadingShow = true;
                         // check separated points config
-                        if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                        if ($scope.basicInfo && $scope.basicInfo.points) {
+                          if($scope.basicInfo.points.connected){
                             $scope.currentChart.updateOptions({
                                 connectSeparatedPoints: true
                             });
-                        } else {
-                            $scope.currentChart.updateOptions({
-                                connectSeparatedPoints: false
-                            });
+                          } else{
+                            if($scope.currentView === 1){
+                              $scope.currentChart.updateOptions({
+                                  connectSeparatedPoints: false,
+                                  drawPoints: true,
+                                  strokeWidth: 0
+                              });
+                            } else {
+                              $scope.currentChart.updateOptions({
+                                  connectSeparatedPoints: false,
+                                  drawPoints: false,
+                                  strokeWidth: 1.5
+                              });
+                            }
+                          }
                         }
 
                         if ($scope.currentView == 1) {
@@ -3501,7 +3513,12 @@ class fgpWidgetGraph {
                         };
                         $scope.currentVisibility_ = [];
                         $scope.memoryVisibility = [];
-
+                        var stroke_width = 1.5;
+                        if ($scope.basicInfo && $scope.basicInfo.points && !$scope.basicInfo.points.connected) {
+                          if($scope.currentView === 1){
+                            stroke_width = 0;
+                          }
+                        }
                         var _tempConfig = {
                             'connectSeparatedPoints': connectSeparatedPoints,
                             'pointSize': 2,
@@ -3514,7 +3531,7 @@ class fgpWidgetGraph {
                             highlightCircleSize: 2,
                             strokeBorderWidth: 0,
                             highlightSeriesOpts: {
-                                strokeWidth: 1.5,
+                                strokeWidth: stroke_width,
                                 strokeBorderWidth: 1,
                                 highlightCircleSize: 2
                             },
