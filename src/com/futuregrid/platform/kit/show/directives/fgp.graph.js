@@ -954,6 +954,7 @@ class fgpWidgetGraph {
     controller($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams, graphDataService, $compile, $q) {
         var element_id = $element.attr("id");
         $scope.elementId = element_id;
+        $scope.maxVisibilitySize = 0;
 
         $scope['defaultColors'] = dataService.defaultColors();
         var metadata = null;
@@ -1094,10 +1095,10 @@ class fgpWidgetGraph {
                             var v = [];
 
                             var graphSeries = $scope.currentChart.getLabels();
-                            graphSeries.forEach(function(_series, _index){
-                                if(_func(_series)){
+                            graphSeries.forEach(function (_series, _index) {
+                                if (_func(_series)) {
                                     v[_index] = true;
-                                }else{
+                                } else {
                                     v[_index] = false;
                                 }
                             });

@@ -1736,6 +1736,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams, graphDataService, $compile, $q) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
+    $scope.maxVisibilitySize = 0;
 
     $scope['defaultColors'] = dataService.defaultColors();
     var metadata = null;
@@ -1876,14 +1877,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         var v = [];
 
                         var graphSeries = $scope.currentChart.getLabels();
-                        graphSeries.forEach(function(_series, _index){
-                            if(_func(_series)){
+                        graphSeries.forEach(function (_series, _index) {
+                            if (_func(_series)) {
                                 v[_index] = true;
-                            }else{
+                            } else {
                                 v[_index] = false;
                             }
                         });
-                           
+
                         // update visibility once
                         $timeout(function () {
                             var oldVisibility = $scope.currentChart.getOption('visibility');
@@ -2737,7 +2738,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 $scope.fixInterval = false;
             });
 
-                
+
             var interactionHandler = function () {
                 // interactions for scatter view
                 if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
@@ -3308,14 +3309,26 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                     $scope.loadingShow = true;
                     // check separated points config
-                    if ($scope.basicInfo && $scope.basicInfo.points && $scope.basicInfo.points.connected) {
+                    if ($scope.basicInfo && $scope.basicInfo.points) {
+                      if($scope.basicInfo.points.connected){
                         $scope.currentChart.updateOptions({
                             connectSeparatedPoints: true
                         });
-                    } else {
-                        $scope.currentChart.updateOptions({
-                            connectSeparatedPoints: false
-                        });
+                      } else{
+                        if($scope.currentView === 1){
+                          $scope.currentChart.updateOptions({
+                              connectSeparatedPoints: false,
+                              drawPoints: true,
+                              strokeWidth: 0
+                          });
+                        } else {
+                          $scope.currentChart.updateOptions({
+                              connectSeparatedPoints: false,
+                              drawPoints: false,
+                              strokeWidth: 1.5
+                          });
+                        }
+                      }
                     }
 
                     if ($scope.currentView == 1) {
@@ -4283,7 +4296,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     };
                     $scope.currentVisibility_ = [];
                     $scope.memoryVisibility = [];
-
+                    var stroke_width = 1.5;
+                    if ($scope.basicInfo && $scope.basicInfo.points && !$scope.basicInfo.points.connected) {
+                      if($scope.currentView === 1){
+                        stroke_width = 0;
+                      }
+                    }
                     var _tempConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'pointSize': 2,
@@ -4296,7 +4314,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         highlightCircleSize: 2,
                         strokeBorderWidth: 0,
                         highlightSeriesOpts: {
-                            strokeWidth: 1.5,
+                            strokeWidth: stroke_width,
                             strokeBorderWidth: 1,
                             highlightCircleSize: 2
                         },
