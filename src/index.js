@@ -29,15 +29,24 @@ angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('data
             return input;
         }
     }).filter('df', function () {
-        return function (date, format) {
+        return function (date, format, tz) {
             if (!moment) {
                 console.log('Error: momentJS is not loaded as a global');
                 return '!momentJS';
             }
             if (!format) {
-                return moment(date).format();
+                if(!tz){
+                    return moment(date).tz(moment.tz.guess()).format();
+                }else{
+                    return moment(date).tz(tz).format();
+                }
+                
             } else {
-                return moment(date).format(format); //in absence of format parameter, return the relative time from the given date
+                if(!tz){
+                    return moment(date).tz(moment.tz.guess()).format(format); //in absence of format parameter, return the relative time from the given date
+                }else{
+                    return moment(date).tz(tz).format(format);
+                }
             }
         }
     })

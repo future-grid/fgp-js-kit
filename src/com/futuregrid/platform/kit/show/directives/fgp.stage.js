@@ -19,7 +19,7 @@ class fgpStage {
             childrenDrill: "=",
             highlights: "=",
             eventsHandler: "=",
-            dateFormatter: "@"
+            dateFormatter: "="
         };
         this.replace = true;
         this.restrict = 'A';

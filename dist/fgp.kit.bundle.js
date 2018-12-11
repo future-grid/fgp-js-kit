@@ -31,7 +31,7 @@ var fgpStage = function fgpStage() {
         childrenDrill: "=",
         highlights: "=",
         eventsHandler: "=",
-        dateFormatter: "@"
+        dateFormatter: "="
     };
     this.replace = true;
     this.restrict = 'A';
@@ -796,7 +796,7 @@ var fgpWidgetGraph = function fgpWidgetGraph($timeout, dataService, $rootScope, 
         drill: "=",
         highlights: "=",
         eventsHandler: "=",
-        dateFormatter: "="
+        dateFormatter: "=" // has 2 attributes  pattern & timezone
     };
     this.$timeout = $timeout;
     this._dataService = dataService;
@@ -847,7 +847,7 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
             '</div>' +
             '</div>';
 
-        var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\'" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i><span>download data </span></a><div id="buttons_area" style=""></div><a ng-show="false" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><span>Select On Graph</span><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + ' ' + dom_series_list_device + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | df : dateFormatter ? dateFormatter : \'DD/MM/YYYY HH:mm:ss\'}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | df : dateFormatter ? dateFormatter : \'DD/MM/YYYY HH:mm:ss\'}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
+        var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\'" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i><span>Scatter View</span></a><a class="tooltips btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i><span>download data </span></a><div id="buttons_area" style=""></div><a ng-show="false" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><span>Auto Update</span><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="tooltips btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><span>Select On Graph</span><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + ' ' + dom_series_list_device + '</div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div><div style="float: right; margin-right: 10px;">Timezone:{{dateFormatter.timezone}}</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
         return html;
     }
@@ -1345,12 +1345,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                     'labelsKMB': true,
                     valueRange: [0, 1],
                     axisLabelWidth: 80
-                },
-                x: {
-                    // datetime format
-                    valueFormatter: function (y) {
-                        return moment(y).format('DD/MM/YYYY HH:mm:ss'); //Hide legend label
-                    }
                 }
             },
             pointClickCallback: function (e, p) {
@@ -1460,12 +1454,6 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
                         'labelsKMB': true,
                         valueRange: [0, 1],
                         axisLabelWidth: 80
-                    },
-                    x: {
-                        // datetime format
-                        valueFormatter: function (y) {
-                            return moment(y).format('DD/MM/YYYY HH:mm:ss'); //Hide legend label
-                        }
                     }
                 },
                 interactionModel: {}
@@ -3313,25 +3301,25 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.loadingShow = true;
                     // check separated points config
                     if ($scope.basicInfo && $scope.basicInfo.points) {
-                      if($scope.basicInfo.points.connected){
-                        $scope.currentChart.updateOptions({
-                            connectSeparatedPoints: true
-                        });
-                      } else{
-                        if($scope.currentView === 1){
-                          $scope.currentChart.updateOptions({
-                              connectSeparatedPoints: false,
-                              drawPoints: true,
-                              strokeWidth: 0
-                          });
+                        if ($scope.basicInfo.points.connected) {
+                            $scope.currentChart.updateOptions({
+                                connectSeparatedPoints: true
+                            });
                         } else {
-                          $scope.currentChart.updateOptions({
-                              connectSeparatedPoints: false,
-                              drawPoints: false,
-                              strokeWidth: 1.5
-                          });
+                            if ($scope.currentView === 1) {
+                                $scope.currentChart.updateOptions({
+                                    connectSeparatedPoints: false,
+                                    drawPoints: true,
+                                    strokeWidth: 0
+                                });
+                            } else {
+                                $scope.currentChart.updateOptions({
+                                    connectSeparatedPoints: false,
+                                    drawPoints: false,
+                                    strokeWidth: 1.5
+                                });
+                            }
                         }
-                      }
                     }
 
                     if ($scope.currentView == 1) {
@@ -4301,14 +4289,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     $scope.memoryVisibility = [];
                     var stroke_width = 1.5;
                     if ($scope.basicInfo && $scope.basicInfo.points && !$scope.basicInfo.points.connected) {
-                      if($scope.currentView === 1){
-                        stroke_width = 0;
-                      }
+                        if ($scope.currentView === 1) {
+                            stroke_width = 0;
+                        }
                     }
                     var _tempConfig = {
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'pointSize': 2,
-                        'legend': 'never',
+                        'legend': 'highlight',
                         'labelsKMB': true,
                         'file': newLines,
                         labelsSeparateLines: false,
@@ -4327,79 +4315,72 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 return false;
                             }
                             // set current child device and will do show one
-                            $scope.currentHighLightChildDevice = seriesName;
-                            var maxWidth = e.target.offsetWidth;
-                            var sn = "";
-                            angular$1.forEach(series, function (value, name, item) {
-                                if (value.axis === "y1") {
-                                    sn = name;
-                                }
-                            });
-                            var point_show = {
-                                x: 0,
-                                y: 0
-                            };
-                            // get device name columns
-                            var relationConfig = metadata.data.groups[2];
-                            angular$1.forEach(pts, function (item, index) {
-                                if (item.name === seriesName) {
-                                    $scope.legendText = seriesName;
-                                    var colorIndex = -1;
-                                    //get index from childrenDevices
-                                    angular$1.forEach($scope.childrenDevices, function (device, _index) {
-                                        if (device.name == seriesName) {
-                                            colorIndex = _index;
-                                        }
-                                    });
+                            // $scope.currentHighLightChildDevice = seriesName;
+                            // var maxWidth = e.target.offsetWidth;
+                            // var sn = "";
+                            // angular.forEach(series, function (value, name, item) {
+                            // if (value.axis === "y1") {
+                            //     sn = name;
+                            // }
+                            // });
+                            // var point_show = {
+                            // x: 0,
+                            // y: 0
+                            // };
+                            // // get device name columns
+                            // var relationConfig = metadata.data.groups[2];
+                            // angular.forEach(pts, function (item, index) {
+                            // if (item.name === seriesName) {
+                            //     $scope.legendText = seriesName;
+                            //     var colorIndex = -1;
+                            //     //get index from childrenDevices
+                            //     angular.forEach($scope.childrenDevices, function (device, _index) {
+                            //         if (device.name == seriesName) {
+                            //             colorIndex = _index;
+                            //         }
+                            //     });
 
-                                    $scope.childrenColors.forEach(function (_item) {
-                                        if (_item.name == seriesName) {
-                                            $scope.legendColor = _item.color;
-                                        }
-                                    });
-                                    // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                    $scope.legendText_device = seriesName;
-                                    $scope.legendText_device_name = "";
-                                    // if the nameSd exist
-                                    if ($scope.childTrees && $scope.childTrees.length > 0) {
-                                        angular$1.forEach($scope.childTrees, function (item) {
-                                            //
-                                            if (item.name == seriesName) {
-                                                if (item[relationConfig.nameColumn]) {
-                                                    $scope.legendText_device_name = item[relationConfig.nameColumn];
-                                                }
-                                            }
-                                        });
-                                    }
-                                    if ($scope.legendText_device_name == "") {
-                                        //
-                                        $scope.legendText_device_name = seriesName;
-                                    }
+                            //     $scope.childrenColors.forEach(function (_item) {
+                            //         if (_item.name == seriesName) {
+                            //             $scope.legendColor = _item.color;
+                            //         }
+                            //     });
+                            //     // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
+                            //     $scope.legendText_device = seriesName;
+                            //     $scope.legendText_device_name = "";
+                            //     // if the nameSd exist
+                            //     if ($scope.childTrees && $scope.childTrees.length > 0) {
+                            //         angular.forEach($scope.childTrees, function (item) {
+                            //             //
+                            //             if (item.name == seriesName) {
+                            //                 if (item[relationConfig.nameColumn]) {
+                            //                     $scope.legendText_device_name = item[relationConfig.nameColumn];
+                            //                 }
+                            //             }
+                            //         });
+                            //     }
+                            //     if ($scope.legendText_device_name == "") {
+                            //         //
+                            //         $scope.legendText_device_name = seriesName;
+                            //     }
 
-                                    if (moment.tz.guess()) {
-                                        $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format($scope.dateFormatter ? $scope.dateFormatter : 'DD/MM/YYYY HH:mm:ss');
-                                    } else {
-                                        $scope.legendText_datetime = moment(item.xval).format($scope.dateFormatter ? $scope.dateFormatter : 'DD/MM/YYYY HH:mm:ss');
-                                    }
-                                    $scope.legendText_column = sn;
-                                    $scope.legendText_value = item.yval;
-                                    angular$1.forEach(pts, function (point) {
-                                        if (point.name === seriesName) {
-                                            point_show.y = point.canvasy + 50;
-                                            point_show.x = point.canvasx + 50;
-                                        }
-                                    });
-                                }
-                            });
-                            var legendbox = angular$1.element("#legendbox" + element_id);
+                            //     if ($scope.dateFormatter.timezone) {
+                            //         $scope.legendText_datetime = moment(item.xval).tz($scope.dateFormatter.timezone).format($scope.dateFormatter ? $scope.dateFormatter.pattern : '');
+                            //     } else {
+                            //         $scope.legendText_datetime = moment(item.xval).format($scope.dateFormatter.pattern ? $scope.dateFormatter.pattern : '');
+                            //     }
+                            //     $scope.legendText_column = sn;
+                            //     $scope.legendText_value = item.yval;
+                            //     angular.forEach(pts, function (point) {
+                            //         if (point.name === seriesName) {
+                            //             point_show.y = point.canvasy + 50;
+                            //             point_show.x = point.canvasx + 50;
+                            //         }
+                            //     });
+                            // }
+                            // });
 
                             $scope.$apply(function () {
-                                $scope.legendTop = point_show.y;
-                                if (maxWidth < (point_show.x + 200)) {
-                                    $scope.legendLeft = point_show.x - 200;
-                                } else {
-                                    $scope.legendLeft = point_show.x;
-                                }
 
                                 // send data to outside
                                 if ($scope.highlights && $scope.highlights.onExternal) {
@@ -4427,23 +4408,67 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
 
 
+                                // $scope.legendTop = point_show.y;
+                                // if (maxWidth < (point_show.x + 200)) {
+                                // $scope.legendLeft = point_show.x - 200;
+                                // } else {
+                                // $scope.legendLeft = point_show.x;
+                                // }
+
                             });
 
                         },
 
                         unhighlightCallback: function (e) {
-                            $scope.$apply(function () {
-                                $scope.legendText = null;
-                                $scope.legendText_device = null;
-                                $scope.legendText_datetime = null;
-                                $scope.legendText_column = null;
-                                $scope.legendText_value = null;
-                            });
+                            // $scope.$apply(function () {
+                            // $scope.legendText = null;
+                            // $scope.legendText_device = null;
+                            // $scope.legendText_datetime = null;
+                            // $scope.legendText_column = null;
+                            // $scope.legendText_value = null;
+                            // });
                         },
                         'y2label': "",
                         'series': series,
                         'colors': colors,
                         'axes': {
+                            'x': {
+                                valueFormatter: function (ms) {
+                                    var result = moment(ms);
+
+                                    if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
+                                        result = result.tz($scope.dateFormatter.timezone);
+                                    }else{
+                                        result = result.tz(moment.tz.guess());
+                                    }
+
+                                    if ($scope.dateFormatter && $scope.dateFormatter.pattern) {
+                                        return result.format($scope.dateFormatter.pattern);
+                                    } else {
+                                        return result.format();
+                                    }
+                                },
+                                axisLabelFormatter: function (ms, granularity, opts) {
+                                    //
+                                    var result = moment(ms);
+                                    if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
+                                        result = result.tz($scope.dateFormatter.timezone);
+                                    }
+                                    if (granularity >= Dygraph.DECADAL) {
+                                        return '' + result.year();
+                                    } else if (granularity >= Dygraph.MONTHLY) {
+                                        return Dygraph.SHORT_MONTH_NAMES_[result.month()] + '&#160;' + result.year();
+                                    } else {
+                                        var frac = result.hours() * 3600 + result.minutes() * 60 + result.seconds() + 1e-3 * result.milliseconds();
+                                        if (frac === 0 || granularity >= Dygraph.DAILY) {
+                                            // e.g. '21 Jan' (%d%b)
+                                            return Dygraph.zeropad(result.date()) + '&#160;' + Dygraph.SHORT_MONTH_NAMES_[result.month()];
+                                        } else {
+                                            return Dygraph.hmsString_(result.hours(), result.minutes(), result.seconds());
+                                        }
+                                    }
+                                }
+                            },
                             'y': {
                                 valueRange: [yRange.min, yRange.max],
                                 axisLabelWidth: 80
@@ -4528,6 +4553,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var initScale = null;
             if (deviceConfig.initScale) {
                 initScale = deviceConfig.initScale; // {left:{level:"",range:[num1,num2]},right:{}}
+            }
+
+            var legendStyle = "follow";
+            if (deviceConfig.legend && "" != deviceConfig.legend) {
+                legendStyle = deviceConfig.legend;
             }
 
             var allLines = [];
@@ -4652,8 +4682,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 2,
-                                    // 'legend': 'follow',
-                                    'legend': 'never',
+                                    'legend': legendStyle ? legendStyle : "follow",
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: {
                                         strokeWidth: 1.5,
@@ -4693,9 +4722,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 2,
-                                    // 'legend': 'follow',
-                                    'legend': 'never',
-                                    // 'visibility': _tempVisibility,
+                                    'legend': legendStyle ? legendStyle : "follow",
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: {
                                         strokeWidth: 1.5,
@@ -4709,6 +4736,43 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'y2label': leftAndRight.right,
                                     'series': series,
                                     'axes': {
+                                        'x': {
+                                            valueFormatter: function (ms) {
+                                                var result = moment(ms);
+
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
+                                                    result = result.tz($scope.dateFormatter.timezone);
+                                                }else{
+                                                    result = result.tz(moment.tz.guess());
+                                                }
+
+                                                if ($scope.dateFormatter && $scope.dateFormatter.pattern) {
+                                                    return result.format($scope.dateFormatter.pattern);
+                                                } else {
+                                                    return result.format();
+                                                }
+                                            },
+                                            axisLabelFormatter: function (ms, granularity, opts) {
+                                                //
+                                                var result = moment(ms);
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
+                                                    result = result.tz($scope.dateFormatter.timezone);
+                                                }
+                                                if (granularity >= Dygraph.DECADAL) {
+                                                    return '' + result.year();
+                                                } else if (granularity >= Dygraph.MONTHLY) {
+                                                    return Dygraph.SHORT_MONTH_NAMES_[result.month()] + '&#160;' + result.year();
+                                                } else {
+                                                    var frac = result.hours() * 3600 + result.minutes() * 60 + result.seconds() + 1e-3 * result.milliseconds();
+                                                    if (frac === 0 || granularity >= Dygraph.DAILY) {
+                                                        // e.g. '21 Jan' (%d%b)
+                                                        return Dygraph.zeropad(result.date()) + '&#160;' + Dygraph.SHORT_MONTH_NAMES_[result.month()];
+                                                    } else {
+                                                        return Dygraph.hmsString_(result.hours(), result.minutes(), result.seconds());
+                                                    }
+                                                }
+                                            }
+                                        },
                                         'y': {
                                             valueRange: [yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
@@ -4719,63 +4783,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             axisLabelWidth: 80
                                         }
                                     },
-                                    'colors': colors,
-                                    highlightCallback: function (e, x, pts, row, seriesName) {
-                                        var point_show = {
-                                            x: 0,
-                                            y: 0
-                                        };
-                                        var maxWidth = e.target.offsetWidth;
-                                        angular$1.forEach(pts, function (item, index) {
-                                            if (item.name === seriesName) {
-                                                $scope.legendText = seriesName;
-                                                var colorIndex = -1;
-                                                //get index from childrenDevices
-                                                angular$1.forEach(labels, function (_label, _index) {
-                                                    if (_label == seriesName) {
-                                                        colorIndex = _index;
-                                                    }
-                                                });
-                                                $scope.legendColor = colors[colorIndex];
-                                                // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                                $scope.legendText_device = seriesName;
-                                                $scope.legendText_device_name = null;
-
-                                                if (moment.tz.guess()) {
-                                                    $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format($scope.dateFormatter ? $scope.dateFormatter : 'DD/MM/YYYY HH:mm:ss');
-                                                } else {
-                                                    $scope.legendText_datetime = moment(item.xval).format($scope.dateFormatter ? $scope.dateFormatter : 'DD/MM/YYYY HH:mm:ss');
-                                                }
-                                                $scope.legendText_column = seriesName;
-                                                $scope.legendText_value = item.yval;
-                                                angular$1.forEach(pts, function (point) {
-                                                    if (point.name === seriesName) {
-                                                        point_show.y = point.canvasy + 50;
-                                                        point_show.x = point.canvasx + 50;
-                                                    }
-                                                });
-                                            }
-                                        });
-
-                                        $scope.$apply(function () {
-                                            $scope.legendTop = point_show.y;
-                                            if (maxWidth < (point_show.x + 200)) {
-                                                $scope.legendLeft = point_show.x - 200;
-                                            } else {
-                                                $scope.legendLeft = point_show.x;
-                                            }
-                                        });
-
-                                    },
-                                    unhighlightCallback: function (e) {
-                                        $scope.$apply(function () {
-                                            $scope.legendText = null;
-                                            $scope.legendText_device = null;
-                                            $scope.legendText_datetime = null;
-                                            $scope.legendText_column = null;
-                                            $scope.legendText_value = null;
-                                        });
-                                    },
+                                    'colors': colors
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
 
                                 });
@@ -4795,8 +4803,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 2,
-                                    // 'legend': 'follow',
-                                    'legend': 'never',
+                                    'legend': legendStyle ? legendStyle : "follow",
                                     labelsSeparateLines: true,
                                     highlightSeriesOpts: {
                                         strokeWidth: 1.5,
@@ -4836,7 +4843,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'connectSeparatedPoints': connectSeparatedPoints,
                                     'drawGapEdgePoints': true,
                                     'pointSize': 2,
-                                    'legend': 'never',
+                                    'legend': legendStyle ? legendStyle : "follow",
                                     labelsSeparateLines: true,
                                     // 'visibility': _tempVisibility,
                                     highlightSeriesOpts: {
@@ -4851,6 +4858,42 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'y2label': "",
                                     'series': series,
                                     'axes': {
+                                        'x': {
+                                            valueFormatter: function (ms) {
+                                                var result = moment(ms);
+
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
+                                                    result = result.tz($scope.dateFormatter.timezone);
+                                                }else{
+                                                    result = result.tz(moment.tz.guess());
+                                                }
+
+                                                if ($scope.dateFormatter && $scope.dateFormatter.pattern) {
+                                                    return result.format($scope.dateFormatter.pattern);
+                                                } else {
+                                                    return result.format();
+                                                }
+                                            },
+                                            axisLabelFormatter: function (ms, granularity, opts) {
+                                                var result = moment(ms);
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
+                                                    result = result.tz($scope.dateFormatter.timezone);
+                                                }
+                                                if (granularity >= Dygraph.DECADAL) {
+                                                    return '' + result.year();
+                                                } else if (granularity >= Dygraph.MONTHLY) {
+                                                    return Dygraph.SHORT_MONTH_NAMES_[result.month()] + '&#160;' + result.year();
+                                                } else {
+                                                    var frac = result.hours() * 3600 + result.minutes() * 60 + result.seconds() + 1e-3 * result.milliseconds();
+                                                    if (frac === 0 || granularity >= Dygraph.DAILY) {
+                                                        // e.g. '21 Jan' (%d%b)
+                                                        return Dygraph.zeropad(result.date()) + '&#160;' + Dygraph.SHORT_MONTH_NAMES_[result.month()];
+                                                    } else {
+                                                        return Dygraph.hmsString_(result.hours(), result.minutes(), result.seconds());
+                                                    }
+                                                }
+                                            }
+                                        },
                                         'y': {
                                             valueRange: [yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
@@ -4862,62 +4905,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             axisLabelWidth: 80
                                         }
                                     },
-                                    'colors': colors,
-                                    highlightCallback: function (e, x, pts, row, seriesName) {
-                                        var point_show = {
-                                            x: 0,
-                                            y: 0
-                                        };
-                                        var maxWidth = e.target.offsetWidth;
-                                        angular$1.forEach(pts, function (item, index) {
-                                            if (item.name === seriesName) {
-                                                $scope.legendText = seriesName;
-                                                var colorIndex = -1;
-                                                //get index from childrenDevices
-                                                angular$1.forEach(labels, function (_label, _index) {
-                                                    if (_label == seriesName) {
-                                                        colorIndex = _index;
-                                                    }
-                                                });
-                                                $scope.legendColor = colors[colorIndex];
-                                                // $scope.legendText = seriesName +"["+moment(item.xval).format('l HH:mm:ss')+", "+sn+":"+ item.yval+"]";
-                                                $scope.legendText_device = seriesName;
-                                                $scope.legendText_device_name = null;
-
-                                                if (moment.tz.guess()) {
-                                                    $scope.legendText_datetime = moment(item.xval).tz(moment.tz.guess()).format($scope.dateFormatter ? $scope.dateFormatter : 'DD/MM/YYYY HH:mm:ss');
-                                                } else {
-                                                    $scope.legendText_datetime = moment(item.xval).format($scope.dateFormatter ? $scope.dateFormatter : 'DD/MM/YYYY HH:mm:ss');
-                                                }
-                                                $scope.legendText_column = seriesName;
-                                                $scope.legendText_value = item.yval;
-                                                angular$1.forEach(pts, function (point) {
-                                                    if (point.name === seriesName) {
-                                                        point_show.y = point.canvasy + 50;
-                                                        point_show.x = point.canvasx + 50;
-                                                    }
-                                                });
-                                            }
-                                        });
-
-                                        $scope.$apply(function () {
-                                            $scope.legendTop = point_show.y;
-                                            if (maxWidth < (point_show.x + 200)) {
-                                                $scope.legendLeft = point_show.x - 200;
-                                            } else {
-                                                $scope.legendLeft = point_show.x;
-                                            }
-                                        });
-                                    },
-                                    unhighlightCallback: function (e) {
-                                        $scope.$apply(function () {
-                                            $scope.legendText = null;
-                                            $scope.legendText_device = null;
-                                            $scope.legendText_datetime = null;
-                                            $scope.legendText_column = null;
-                                            $scope.legendText_value = null;
-                                        });
-                                    },
+                                    'colors': colors
                                     // 'valueRange': [yRange.min - (Math.abs(yRange.min) * 0.1), yRange.max + (Math.abs(yRange.max) * 0.1)]
                                 });
                             }
@@ -6990,15 +6978,24 @@ angular$1.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('da
             return input;
         }
     }).filter('df', function () {
-        return function (date, format) {
+        return function (date, format, tz) {
             if (!moment) {
                 console.log('Error: momentJS is not loaded as a global');
                 return '!momentJS';
             }
             if (!format) {
-                return moment(date).format();
+                if(!tz){
+                    return moment(date).tz(moment.tz.guess()).format();
+                }else{
+                    return moment(date).tz(tz).format();
+                }
+                
             } else {
-                return moment(date).format(format); //in absence of format parameter, return the relative time from the given date
+                if(!tz){
+                    return moment(date).tz(moment.tz.guess()).format(format); //in absence of format parameter, return the relative time from the given date
+                }else{
+                    return moment(date).tz(tz).format(format);
+                }
             }
         }
     })

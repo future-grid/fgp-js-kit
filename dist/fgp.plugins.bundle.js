@@ -5811,6 +5811,19 @@ Dygraph.Plugins.Legend = function() {
             this.legend_div_.style.display = "none";
             return;
         }
+        if (legendMode === "highlight") {
+            var area = e.dygraph.plotter_.area;
+            var labelsDivWidth = this.legend_div_.offsetWidth;
+            var yAxisLabelWidth = e.dygraph.getOptionForAxis("axisLabelWidth", "y");
+            var leftLegend = points[0].x * area.w + 50;
+            var topLegend = points[0].y * area.h - 50;
+            if (leftLegend + labelsDivWidth + 1 > area.w) {
+                leftLegend = leftLegend - 2 * 50 - labelsDivWidth - (yAxisLabelWidth - area.x);
+            }
+            e.dygraph.graphDiv.appendChild(this.legend_div_);
+            this.legend_div_.style.left = yAxisLabelWidth + leftLegend + "px";
+            this.legend_div_.style.top = topLegend + "px";
+        }
         if (legendMode === "follow") {
             var area = e.dygraph.plotter_.area;
             var labelsDivWidth = this.legend_div_.offsetWidth;
@@ -5887,17 +5900,35 @@ Dygraph.Plugins.Legend = function() {
         var showZeros = g.getOption("labelsShowZeroValues");
         sepLines = g.getOption("labelsSeparateLines");
         var highlightSeries = g.getHighlightSeries();
-        for (i = 0; i < sel_points.length; i++) {
-            var pt = sel_points[i];
-            if (pt.yval === 0 && !showZeros) continue;
-            if (!Dygraph.isOK(pt.canvasy)) continue;
-            if (sepLines) html += "<br/>";
-            var series = g.getPropertiesForSeries(pt.name);
-            var yOptView = yOptViews[series.axis - 1];
-            var fmtFunc = yOptView("valueFormatter");
-            var yval = fmtFunc.call(g, pt.yval, yOptView, pt.name, g, row, labels.indexOf(pt.name));
-            var cls = pt.name == highlightSeries ? " class='highlight'" : "";
-            html += "<span" + cls + ">" + " <b><span style='color: " + series.color + ";'>" + escapeHTML(pt.name) + "</span></b>:&#160;" + yval + "</span>";
+        var legendMode = g.getOption("legend");
+        if (legendMode === "highlight") {
+            for (i = 0; i < sel_points.length; i++) {
+                var pt = sel_points[i];
+                if (pt.name == highlightSeries) {
+                    if (pt.yval === 0 && !showZeros) continue;
+                    if (!Dygraph.isOK(pt.canvasy)) continue;
+                    if (sepLines) html += "<br/>";
+                    var series = g.getPropertiesForSeries(pt.name);
+                    var yOptView = yOptViews[series.axis - 1];
+                    var fmtFunc = yOptView("valueFormatter");
+                    var yval = fmtFunc.call(g, pt.yval, yOptView, pt.name, g, row, labels.indexOf(pt.name));
+                    var cls = pt.name == highlightSeries ? " class='highlight'" : "";
+                    html += "<span" + cls + ">" + " <b><span style='color: " + series.color + ";'>" + escapeHTML(pt.name) + "</span></b>:&#160;" + yval + "</span>";
+                }
+            }
+        } else {
+            for (i = 0; i < sel_points.length; i++) {
+                var pt = sel_points[i];
+                if (pt.yval === 0 && !showZeros) continue;
+                if (!Dygraph.isOK(pt.canvasy)) continue;
+                if (sepLines) html += "<br/>";
+                var series = g.getPropertiesForSeries(pt.name);
+                var yOptView = yOptViews[series.axis - 1];
+                var fmtFunc = yOptView("valueFormatter");
+                var yval = fmtFunc.call(g, pt.yval, yOptView, pt.name, g, row, labels.indexOf(pt.name));
+                var cls = pt.name == highlightSeries ? " class='highlight'" : "";
+                html += "<span" + cls + ">" + " <b><span style='color: " + series.color + ";'>" + escapeHTML(pt.name) + "</span></b>:&#160;" + yval + "</span>";
+            }
         }
         return html;
     };

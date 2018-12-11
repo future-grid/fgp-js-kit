@@ -9205,7 +9205,6 @@ var generateLegendDashHTML;
 legend.prototype.activate = function(g) {
   var div;
   var divWidth = g.getOption('labelsDivWidth');
-
   var userLabelsDiv = g.getOption('labelsDiv');
   if (userLabelsDiv && null !== userLabelsDiv) {
     if (typeof(userLabelsDiv) == "string" || userLabelsDiv instanceof String) {
@@ -9284,6 +9283,30 @@ legend.prototype.select = function(e) {
     this.legend_div_.style.display = 'none';
     return;
   }
+
+
+    if(legendMode === 'highlight'){
+      var area = e.dygraph.plotter_.area;
+      var labelsDivWidth = this.legend_div_.offsetWidth;
+      var yAxisLabelWidth = e.dygraph.getOptionForAxis('axisLabelWidth', 'y');
+      // determine floating [left, top] coordinates of the legend div
+      // within the plotter_ area
+      // offset 50 px to the right and down from the first selection point
+      // 50 px is guess based on mouse cursor size
+      var leftLegend = points[0].x * area.w + 50;
+      var topLegend  = points[0].y * area.h - 50;
+
+      // if legend floats to end of the chart area, it flips to the other
+      // side of the selection point
+      if ((leftLegend + labelsDivWidth + 1) > area.w) {
+          leftLegend = leftLegend - 2 * 50 - labelsDivWidth - (yAxisLabelWidth - area.x);
+      }
+
+      e.dygraph.graphDiv.appendChild(this.legend_div_);
+      this.legend_div_.style.left = yAxisLabelWidth + leftLegend + "px";
+      this.legend_div_.style.top = topLegend + "px";
+    }
+
 
   // if (legendMode === 'follow') {
   //   // create floating legend div
@@ -9444,22 +9467,46 @@ legend.generateLegendHTML = function(g, x, sel_points, oneEmWidth, row) {
   var showZeros = g.getOption("labelsShowZeroValues");
   sepLines = g.getOption("labelsSeparateLines");
   var highlightSeries = g.getHighlightSeries();
-  for (i = 0; i < sel_points.length; i++) {
-    var pt = sel_points[i];
-    if (pt.yval === 0 && !showZeros) continue;
-    if (!Dygraph.isOK(pt.canvasy)) continue;
-    if (sepLines) html += "<br/>";
 
-    var series = g.getPropertiesForSeries(pt.name);
-    var yOptView = yOptViews[series.axis - 1];
-    var fmtFunc = yOptView('valueFormatter');
-    var yval = fmtFunc.call(g, pt.yval, yOptView, pt.name, g, row, labels.indexOf(pt.name));
-
-    var cls = (pt.name == highlightSeries) ? " class='highlight'" : "";
-
-    // TODO(danvk): use a template string here and make it an attribute.
-    html += "<span" + cls + ">" + " <b><span style='color: " + series.color + ";'>" +
+  var legendMode = g.getOption('legend');
+  if (legendMode === 'highlight') {
+    for (i = 0; i < sel_points.length; i++) {
+      var pt = sel_points[i];
+      if(pt.name == highlightSeries){
+        if (pt.yval === 0 && !showZeros) continue;
+        if (!Dygraph.isOK(pt.canvasy)) continue;
+        if (sepLines) html += "<br/>";
+    
+        var series = g.getPropertiesForSeries(pt.name);
+        var yOptView = yOptViews[series.axis - 1];
+        var fmtFunc = yOptView('valueFormatter');
+        var yval = fmtFunc.call(g, pt.yval, yOptView, pt.name, g, row, labels.indexOf(pt.name));
+    
+        var cls = (pt.name == highlightSeries) ? " class='highlight'" : "";
+    
+        // TODO(danvk): use a template string here and make it an attribute.
+        html += "<span" + cls + ">" + " <b><span style='color: " + series.color + ";'>" +  
         escapeHTML(pt.name) + "</span></b>:&#160;" + yval + "</span>";
+      }
+    }
+  }else{
+    for (i = 0; i < sel_points.length; i++) {
+      var pt = sel_points[i];
+      if (pt.yval === 0 && !showZeros) continue;
+      if (!Dygraph.isOK(pt.canvasy)) continue;
+      if (sepLines) html += "<br/>";
+  
+      var series = g.getPropertiesForSeries(pt.name);
+      var yOptView = yOptViews[series.axis - 1];
+      var fmtFunc = yOptView('valueFormatter');
+      var yval = fmtFunc.call(g, pt.yval, yOptView, pt.name, g, row, labels.indexOf(pt.name));
+  
+      var cls = (pt.name == highlightSeries) ? " class='highlight'" : "";
+  
+      // TODO(danvk): use a template string here and make it an attribute.
+      html += "<span" + cls + ">" + " <b><span style='color: " + series.color + ";'>" +  
+      escapeHTML(pt.name) + "</span></b>:&#160;" + yval + "</span>";
+    }
   }
   return html;
 };
