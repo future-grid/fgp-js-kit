@@ -1736,6 +1736,7 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
 fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $window, $interval, $timeout, $filter, $location, dataService, $rootScope, $stateParams, graphDataService, $compile, $q) {
     var element_id = $element.attr("id");
     $scope.elementId = element_id;
+    $scope.maxVisibilitySize = 0;
 
     $scope['defaultColors'] = dataService.defaultColors();
     var metadata = null;
@@ -1876,10 +1877,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         var v = [];
 
                         var graphSeries = $scope.currentChart.getLabels();
-                        graphSeries.forEach(function(_series, _index){
-                            if(_func(_series)){
+                        graphSeries.forEach(function (_series, _index) {
+                            if (_func(_series)) {
                                 v[_index] = true;
-                            }else{
+                            } else {
                                 v[_index] = false;
                             }
                         });
