@@ -18,7 +18,8 @@ class fgpStage {
             drill: "=",
             childrenDrill: "=",
             highlights: "=",
-            eventsHandler: "="
+            eventsHandler: "=",
+            dateFormatter: "@"
         };
         this.replace = true;
         this.restrict = 'A';
@@ -109,6 +110,7 @@ class fgpStage {
                 newScope["childrenDrill"] = $scope.childrenDrill;
                 newScope["highlights"] = $scope.highlights;
                 newScope["eventsHandler"] = $scope.eventsHandler;
+                newScope["dateFormatter"] = $scope.dateFormatter;
                 newScope.$on('bindChildRepeatEvent', function(evt, msg) {
                     angular.forEach($scope.configuration, function(item) {
                         if (item.id == msg.id) {

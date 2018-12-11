@@ -21,23 +21,35 @@ import fgpWidgetAppContainer from "./com/futuregrid/platform/kit/show/directives
 import fgpWidgetChartTable from "./com/futuregrid/platform/kit/show/directives/fgp.chart.table.js";
 // angular module
 angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('dataService', dataApi.buildFactory)
-    .filter('removeSlash', function() {
-        return function(input) {
+    .filter('removeSlash', function () {
+        return function (input) {
             if (input.startsWith("/")) {
                 return input.substring(1, input.length);
             }
             return input;
         }
+    }).filter('df', function () {
+        return function (date, format) {
+            if (!moment) {
+                console.log('Error: momentJS is not loaded as a global');
+                return '!momentJS';
+            }
+            if (!format) {
+                return moment(date).format();
+            } else {
+                return moment(date).format(format); //in absence of format parameter, return the relative time from the given date
+            }
+        }
     })
-    .factory('$graphstorage', ['$window', function($window) {
+    .factory('$graphstorage', ['$window', function ($window) {
         return {
-            setTree: function(key, value) {
+            setTree: function (key, value) {
                 $window.localStorage[key] = JSON.stringify(value);
             },
-            getTree: function(key) {
+            getTree: function (key) {
                 return JSON.parse($window.localStorage[key]) || false;
             },
-            addTree: function(key, value) {
+            addTree: function (key, value) {
                 if ($window.localStorage[key]) {
                     var trees = JSON.parse($window.localStorage[key]);
                     trees.push(value);
@@ -46,7 +58,7 @@ angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('data
                     this.setTree(key, [value]);
                 }
             },
-            clear: function() {
+            clear: function () {
                 $window.localStorage.clear();
             }
         }
@@ -66,36 +78,36 @@ angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('data
     .directive('widgetIcon', fgpWidgetIcon.buildFactory)
     .directive('widgetAppContainer', fgpWidgetAppContainer.buildFactory)
     .directive('widgetChartTable', fgpWidgetChartTable.buildFactory)
-    .directive('emitLastRepeaterElement', [function() {
-        return function(scope) {
+    .directive('emitLastRepeaterElement', [function () {
+        return function (scope) {
             if (scope.$last) {
                 scope.$emit('LastRepeaterElement');
             }
         };
-    }]).config(function(CacheFactoryProvider) {
+    }]).config(function (CacheFactoryProvider) {
         angular.extend(CacheFactoryProvider.defaults, {
             maxAge: 30 * 60 * 1000, // half an hour
             deleteOnExpire: 'aggressive',
         });
-    }).service('graphDataService', function(CacheFactory) {
+    }).service('graphDataService', function (CacheFactory) {
         var graphCache = null;
         if (!CacheFactory.get('graphCache')) {
-            graphCache = CacheFactory('graphCache',{
+            graphCache = CacheFactory('graphCache', {
                 maxAge: 30 * 60 * 1000, // half an hour
                 deleteOnExpire: 'aggressive'
             });
         }
         return {
-            get: function(name) {
-                return graphCache.get('/graph/'+name);
+            get: function (name) {
+                return graphCache.get('/graph/' + name);
             },
-            put: function(name, data) {
-                return graphCache.put('/graph/'+name, data);
+            put: function (name, data) {
+                return graphCache.put('/graph/' + name, data);
             }
         };
     })
-    .filter('tableformatter', ['$filter', function($filter) {
-        return function(input, obj, field, formatter) {
+    .filter('tableformatter', ['$filter', function ($filter) {
+        return function (input, obj, field, formatter) {
             if (formatter) {
                 if (obj[field]) {
                     if ("date" == formatter) {
