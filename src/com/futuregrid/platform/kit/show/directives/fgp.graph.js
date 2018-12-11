@@ -3531,7 +3531,7 @@ class fgpWidgetGraph {
                                     return false;
                                 }
                                 // set current child device and will do show one
-                                // $scope.currentHighLightChildDevice = seriesName;
+                                $scope.currentHighLightChildDevice = seriesName;
                                 // var maxWidth = e.target.offsetWidth;
                                 // var sn = "";
                                 // angular.forEach(series, function (value, name, item) {
@@ -3543,7 +3543,7 @@ class fgpWidgetGraph {
                                 //     x: 0,
                                 //     y: 0
                                 // };
-                                // // get device name columns
+                                // get device name columns
                                 // var relationConfig = metadata.data.groups[2];
                                 // angular.forEach(pts, function (item, index) {
                                 //     if (item.name === seriesName) {
