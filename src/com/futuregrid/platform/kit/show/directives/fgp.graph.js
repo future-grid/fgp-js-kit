@@ -857,16 +857,16 @@ class fgpWidgetGraph {
                 }
                 var status = false;
                 // add mouse up event to range select
-                element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mouseup', function (event) {
-                    status = false;
-                    timeOut(function () {
-                        var finalDateRagne = scope.currentChart.xAxisRange();
-                        scope.chartDateTime = {
-                            begin: finalDateRagne[0],
-                            end: finalDateRagne[1]
-                        };
-                    });
-                });
+                // element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mouseup', function (event) {
+                //     status = false;
+                //     timeOut(function () {
+                //         var finalDateRagne = scope.currentChart.xAxisRange();
+                //         scope.chartDateTime = {
+                //             begin: finalDateRagne[0],
+                //             end: finalDateRagne[1]
+                //         };
+                //     });
+                // });
                 scope.$on('mouseUpMessage', function ($scope, e) {
                     if ("mouseup" === e.type && status) {
                         status = false;
@@ -923,6 +923,16 @@ class fgpWidgetGraph {
                 });
                 element.find('.dygraph-rangesel-fgcanvas, .dygraph-rangesel-zoomhandle').on('mousedown', function (event) {
                     status = true;
+                    window.addEventListener("mouseup", (e)=>{
+                        status = false;
+                        timeOut(function () {
+                            var finalDateRagne = scope.currentChart.xAxisRange();
+                            scope.chartDateTime = {
+                                begin: finalDateRagne[0],
+                                end: finalDateRagne[1]
+                            };
+                        });
+                    }, {once:true});
                 });
                 //bind chart
                 if (basicInfo && basicInfo.childrenChart.length > 0) {
@@ -3951,6 +3961,9 @@ class fgpWidgetGraph {
                                         'ylabel': leftAndRight.left,
                                         'y2label': leftAndRight.right,
                                         'series': series,
+                                        'zoomCallback': function(minX, maxX, yRanges){
+                                            console.info(minX, maxX, yRanges);
+                                        },
                                         'axes': {
                                             'x': {
                                                 valueFormatter: function (ms) {

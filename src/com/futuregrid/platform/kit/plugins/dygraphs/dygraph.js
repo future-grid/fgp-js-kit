@@ -5249,7 +5249,7 @@ var Dygraph = (function () {
   Dygraph.prototype.parseArray_ = function (data) {
     // Peek at the first x value to see if it's numeric.
     if (data.length === 0) {
-      console.error("Can't plot empty data set");
+      console.warn("Can't plot empty data set");
       return null;
     }
     if (data[0].length === 0) {
