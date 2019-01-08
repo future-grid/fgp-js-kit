@@ -15,7 +15,7 @@ var paths = {
     javascriptRoot: ["src/**/*.js","!src/**/plugins/**/*.js"],
     stylesheetRoot: "src/**/*.less",
     distRoot: "dist",
-    distUI: "/Users/haiyangwang/Development/font-end/fgp-compass/lv-health/fgp-smud-ui/bower_components/fgp-js-kit/dist/"
+    distUI: "/Users/haiyangwang/Development/font-end/fieldai/fgp-fieldai-ui/bower_components/fgp-js-kit/dist/"
 };
 
 var moduleName = "fgp.kit";
