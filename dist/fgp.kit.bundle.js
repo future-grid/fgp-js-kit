@@ -1958,8 +1958,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     $scope.memoryVisibility = [];
 
     $scope.saveGraphAsPng = function () {
-        var lnk = document.createElement('a'),
-            e;
+        var lnk = document.createElement('a'),e;
         lnk.download = "fgp_graph.png";
         lnk.href = Dygraph.Export.asPNGStr($scope.currentChart);
         if (document.createEvent) {

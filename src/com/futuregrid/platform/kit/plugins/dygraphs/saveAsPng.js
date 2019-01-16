@@ -22,8 +22,8 @@ Dygraph.Export = {};
 
 Dygraph.Export.DEFAULT_ATTRS = {
 
-    backgroundColor: "transparent",
-
+    // backgroundColor: "transparent",
+    backgroundColor: "white",
     //Texts displayed below the chart's x-axis and to the left of the y-axis 
     titleFont: "bold 18px serif",
     titleFontColor: "black",
@@ -84,7 +84,7 @@ Dygraph.Export.asPNG = function (dygraph, img, userOptions) {
 
 Dygraph.Export.asPNGStr = function (dygraph, userOptions) {
     "use strict";
-    var canvas = Dygraph.Export.asCanvas(dygraph, userOptions);
+    var canvas = Dygraph.Export.asCanvasWithoutLegend(dygraph, userOptions);
     return canvas.toDataURL();
 };
 
@@ -114,6 +114,22 @@ Dygraph.Export.asCanvas = function (dygraph, userOptions) {
     return canvas;
 };
 
+Dygraph.Export.asCanvasWithoutLegend = function (dygraph, userOptions) {
+    "use strict";
+    var options = {}, 
+        canvas = Dygraph.createCanvas();
+    
+    Dygraph.update(options, Dygraph.Export.DEFAULT_ATTRS);
+    Dygraph.update(options, userOptions);
+
+    canvas.width = dygraph.width_;
+    canvas.height = dygraph.height_;
+
+    Dygraph.Export.drawPlot(canvas, dygraph, options);    
+
+    return canvas;
+};
+
 /**
  * Adds the plot and the axes to a canvas context.
  */
@@ -130,7 +146,7 @@ Dygraph.Export.drawPlot = function (canvas, dygraph, options) {
     
     var i = 0;
     
-    ctx.drawImage(plotCanvas, 0, 0);
+    ctx.drawImage(plotCanvas, 0, 0, canvas.width, canvas.height);
 
 
     // Add the x and y axes
