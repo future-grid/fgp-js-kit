@@ -2229,7 +2229,8 @@ var Dygraph = (function () {
   Dygraph.dateAxisLabelFormatter = function (date, granularity, opts) {
     var utc = opts('labelsUTC');
     var accessors = utc ? Dygraph.DateAccessorsUTC : Dygraph.DateAccessorsLocal;
-
+    var timezone = opts('labelsTimezone');
+    accessors = timezone ? timezone : accessors;
     var year = accessors.getFullYear(date),
       month = accessors.getMonth(date),
       day = accessors.getDate(date),
@@ -2263,7 +2264,12 @@ var Dygraph = (function () {
    * @private
    */
   Dygraph.dateValueFormatter = function (d, opts) {
-    return Dygraph.dateString_(d, opts('labelsUTC'));
+    if(opts('labelsTimezone')){
+      return Dygraph.dateString_(d, opts('labelsTimezone'));
+    }else{
+      return Dygraph.dateString_(d, opts('labelsUTC'));
+    }
+    
   };
 
   /**
@@ -6314,6 +6320,8 @@ var Dygraph = (function () {
     }
   };
 
+ 
+
   /**
    * Date accessors to get the parts of a calendar date (year, month,
    * day of month, hour, minute, second and millisecond) according to UTC time,
@@ -6377,6 +6385,30 @@ var Dygraph = (function () {
   Dygraph.dateString_ = function (time, utc) {
     var zeropad = Dygraph.zeropad;
     var accessors = utc ? Dygraph.DateAccessorsUTC : Dygraph.DateAccessorsLocal;
+    var date = new Date(time);
+    var y = accessors.getFullYear(date);
+    var m = accessors.getMonth(date);
+    var d = accessors.getDate(date);
+    var hh = accessors.getHours(date);
+    var mm = accessors.getMinutes(date);
+    var ss = accessors.getSeconds(date);
+    // Get a year string:
+    var year = "" + y;
+    // Get a 0 padded month string
+    var month = zeropad(m + 1); //months are 0-offset, sigh
+    // Get a 0 padded day string
+    var day = zeropad(d);
+    var frac = hh * 3600 + mm * 60 + ss;
+    var ret = year + "/" + month + "/" + day;
+    if (frac) {
+      ret += " " + Dygraph.hmsString_(hh, mm, ss);
+    }
+    return ret;
+  };
+
+  Dygraph.dateTimezoneString_ = function (time, timezone) {
+    var zeropad = Dygraph.zeropad;
+    var accessors = timezone ? timezone : Dygraph.DateAccessorsLocal;
     var date = new Date(time);
     var y = accessors.getFullYear(date);
     var m = accessors.getMonth(date);
@@ -8285,6 +8317,23 @@ var Dygraph = (function () {
   Dygraph.CENTENNIAL = 21;
   Dygraph.NUM_GRANULARITIES = 22;
 
+  Dygraph.SHORT_SPACINGS = [];
+Dygraph.SHORT_SPACINGS[Dygraph.SECONDLY]        = 1000 * 1;
+Dygraph.SHORT_SPACINGS[Dygraph.TWO_SECONDLY]    = 1000 * 2;
+Dygraph.SHORT_SPACINGS[Dygraph.FIVE_SECONDLY]   = 1000 * 5;
+Dygraph.SHORT_SPACINGS[Dygraph.TEN_SECONDLY]    = 1000 * 10;
+Dygraph.SHORT_SPACINGS[Dygraph.THIRTY_SECONDLY] = 1000 * 30;
+Dygraph.SHORT_SPACINGS[Dygraph.MINUTELY]        = 1000 * 60;
+Dygraph.SHORT_SPACINGS[Dygraph.TWO_MINUTELY]    = 1000 * 60 * 2;
+Dygraph.SHORT_SPACINGS[Dygraph.FIVE_MINUTELY]   = 1000 * 60 * 5;
+Dygraph.SHORT_SPACINGS[Dygraph.TEN_MINUTELY]    = 1000 * 60 * 10;
+Dygraph.SHORT_SPACINGS[Dygraph.THIRTY_MINUTELY] = 1000 * 60 * 30;
+Dygraph.SHORT_SPACINGS[Dygraph.HOURLY]          = 1000 * 3600;
+Dygraph.SHORT_SPACINGS[Dygraph.TWO_HOURLY]      = 1000 * 3600 * 2;
+Dygraph.SHORT_SPACINGS[Dygraph.SIX_HOURLY]      = 1000 * 3600 * 6;
+Dygraph.SHORT_SPACINGS[Dygraph.DAILY]           = 1000 * 86400;
+Dygraph.SHORT_SPACINGS[Dygraph.WEEKLY]          = 1000 * 604800;
+
   // Date components enumeration (in the order of the arguments in Date)
   // TODO: make this an @enum
   Dygraph.DATEFIELD_Y = 0;
@@ -8489,6 +8538,9 @@ var Dygraph = (function () {
       opts("axisLabelFormatter"));
     var utc = opts("labelsUTC");
     var accessors = utc ? Dygraph.DateAccessorsUTC : Dygraph.DateAccessorsLocal;
+    
+    var timezone = opts('labelsTimezone');
+    accessors = timezone ? timezone : accessors;
 
     var datefield = Dygraph.TICK_PLACEMENT[granularity].datefield;
     var step = Dygraph.TICK_PLACEMENT[granularity].step;
@@ -11243,6 +11295,12 @@ Dygraph.OPTIONS_REFERENCE = // <JSON>
       "default": "false",
       "labels": ["Value display/formatting", "Axis display"],
       "type": "boolean",
+      "description": "Show date/time labels according to UTC (instead of local time)."
+    },
+    "labelsTimezone": {
+      "default": "",
+      "labels": ["Value display/formatting", "Axis display"],
+      "type": "",
       "description": "Show date/time labels according to UTC (instead of local time)."
     },
     "labelsKMB": {

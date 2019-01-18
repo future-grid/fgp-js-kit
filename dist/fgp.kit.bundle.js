@@ -1800,7 +1800,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 barDefine.forEach(function (_def, _index) {
                     if (_def.name == value.options.group) {
                         barDef = _def;
-                        if(key === setName){
+                        if (key === setName) {
                             currentBarIndex = _index;
                         }
                     }
@@ -1808,8 +1808,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                 if (barDef) {
                     barDef.members.push(key);
-                    if(key === setName){
-                        currentGroupIndex = barDef.members.length -1;
+                    if (key === setName) {
+                        currentGroupIndex = barDef.members.length - 1;
                     }
                 } else {
                     barDef = {
@@ -1817,19 +1817,19 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         "members": [key]
                     };
                     barDefine.push(barDef);
-                    if(key === setName){
-                        currentBarIndex = barDefine.length -1;
+                    if (key === setName) {
+                        currentBarIndex = barDefine.length - 1;
                         currentGroupIndex = 0;
                     }
                 }
 
-                if(key === setName){
+                if (key === setName) {
                     currenBarDef = barDef;
                 }
             }
 
         });
-            
+
 
 
 
@@ -1841,7 +1841,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 if (sep < min_sep) min_sep = sep;
             }
         }
-        var full_bar_width = Math.floor(2.0 / 3 * min_sep);  
+        var full_bar_width = Math.floor(2.0 / 3 * min_sep);
         //draw
         var points = e.points;
         for (var i = 0; i < points.length; i++) {
@@ -1849,8 +1849,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var center_x = p.canvasx;
             var partentY = 0;
             // find all parents series point
-            currenBarDef.members.forEach(function(_member, _index){
-                if(_index < currentGroupIndex){
+            currenBarDef.members.forEach(function (_member, _index) {
+                if (_index < currentGroupIndex) {
                     partentY += (y_bottom - sets[_series[_member].idx][i].canvasy);
                 }
             });
@@ -1858,21 +1858,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             ctx.lineWidth = 0.5;
             ctx.fillStyle = darkenColor(g.getColors()[_seriesIndex]);
             ctx.strokeStyle = g.getColors()[_seriesIndex];
-                
+
 
             // xleft
-            var x_left = (center_x - (full_bar_width / 2)) +  ((full_bar_width/barDefine.length) * currentBarIndex);
+            var x_left = (center_x - (full_bar_width / 2)) + ((full_bar_width / barDefine.length) * currentBarIndex);
 
-            if(p.yval != 0){
+            if (p.yval != 0) {
                 ctx.fillRect(x_left, p.canvasy - partentY,
-                ((full_bar_width/barDefine.length)), (y_bottom - p.canvasy));
-                    
+                    ((full_bar_width / barDefine.length)), (y_bottom - p.canvasy));
+
                 ctx.strokeRect(x_left, p.canvasy - partentY,
-                ((full_bar_width/barDefine.length)), (y_bottom - p.canvasy));
+                    ((full_bar_width / barDefine.length)), (y_bottom - p.canvasy));
             }
 
             ctx.lineWidth = 1;
-                
+
         }
     };
 
@@ -1958,7 +1958,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     $scope.memoryVisibility = [];
 
     $scope.saveGraphAsPng = function () {
-        var lnk = document.createElement('a'),e;
+        var lnk = document.createElement('a'),
+            e;
         lnk.download = "fgp_graph.png";
         lnk.href = Dygraph.Export.asPNGStr($scope.currentChart);
         if (document.createEvent) {
@@ -4060,7 +4061,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'labelsKMB': true,
                         'file': allLines,
-                        'visibility':_initVisibility,
+                        'visibility': _initVisibility,
                         legend: 'never',
                         labelsKMB: true,
                         labelsSeparateLines: false,
@@ -4101,7 +4102,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'connectSeparatedPoints': connectSeparatedPoints,
                         'drawGapEdgePoints': true,
                         'pointSize': 2,
-                        'visibility':_initVisibility,
+                        'visibility': _initVisibility,
                         'legend': 'never',
                         'labelsKMB': true,
                         'file': newLines,
@@ -4570,43 +4571,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         'series': series,
                         'colors': colors,
                         'axes': {
-                            'x': {
-                                valueFormatter: function (ms) {
-                                    var result = moment(ms);
-
-                                    if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
-                                        result = result.tz($scope.dateFormatter.timezone);
-                                    } else {
-                                        result = result.tz(moment.tz.guess());
-                                    }
-
-                                    if ($scope.dateFormatter && $scope.dateFormatter.pattern) {
-                                        return result.format($scope.dateFormatter.pattern);
-                                    } else {
-                                        return result.format();
-                                    }
-                                },
-                                axisLabelFormatter: function (ms, granularity, opts) {
-                                    //
-                                    var result = moment(ms);
-                                    if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
-                                        result = result.tz($scope.dateFormatter.timezone);
-                                    }
-                                    if (granularity >= Dygraph.DECADAL) {
-                                        return '' + result.year();
-                                    } else if (granularity >= Dygraph.MONTHLY) {
-                                        return Dygraph.SHORT_MONTH_NAMES_[result.month()] + '&#160;' + result.year();
-                                    } else {
-                                        var frac = result.hours() * 3600 + result.minutes() * 60 + result.seconds() + 1e-3 * result.milliseconds();
-                                        if (frac === 0 || granularity >= Dygraph.DAILY) {
-                                            // e.g. '21 Jan' (%d%b)
-                                            return Dygraph.zeropad(result.date()) + '&#160;' + Dygraph.SHORT_MONTH_NAMES_[result.month()];
-                                        } else {
-                                            return Dygraph.hmsString_(result.hours(), result.minutes(), result.seconds());
-                                        }
-                                    }
-                                }
-                            },
                             'y': {
                                 valueRange: [yRange.min, yRange.max],
                                 axisLabelWidth: 80
@@ -4736,10 +4700,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             series[row.label]["plotter"] = stackedBarPlotter;
                             if (row.yaxis == 0) {
                                 yStartLeft0 = true;
-                            }else if (row.yaxis == 1){
+                            } else if (row.yaxis == 1) {
                                 yStartRight0 = true;
                             }
-                                
+
                         }
 
                         if (row.type && row.type === "stacked-bar") {
@@ -4748,7 +4712,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             series[row.label]["plotter"] = stackedBarPlotter;
                             if (row.yaxis == 0) {
                                 yStartLeft0 = true;
-                            }else if (row.yaxis == 1){
+                            } else if (row.yaxis == 1) {
                                 yStartRight0 = true;
                             }
                         }
@@ -4859,12 +4823,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'series': series,
                                     'axes': {
                                         'y': {
-                                            valueRange: [yStartLeft0 == true ? 0 :  yRanges[0].min, yRanges[0].max],
+                                            valueRange: [yStartLeft0 == true ? 0 : yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
                                         },
                                         'y2': {
                                             'labelsKMB': true,
-                                            valueRange: [yStartRight0 == true ? 0:  yRanges[1].min, yRanges[1].max],
+                                            valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
                                         }
                                     },
@@ -4894,6 +4858,43 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'labelsKMB': true,
                                     'file': allLines,
                                     'labels': ['x'].concat(labels),
+                                    'labelsTimezone': {
+                                        getFullYear: function (d) {
+                                            return d.getFullYear();
+                                        },
+                                        getMonth: function (d) {
+                                            return d.getMonth();
+                                        },
+                                        getDate: function (d) {
+                                            return d.getDate();
+                                        },
+                                        getHours: function (d) {
+                                            return d.getHours();
+                                        },
+                                        getMinutes: function (d) {
+                                            return d.getMinutes();
+                                        },
+                                        getSeconds: function (d) {
+                                            return d.getSeconds();
+                                        },
+                                        getMilliseconds: function (d) {
+                                            return d.getMilliseconds();
+                                        },
+                                        getDay: function (d) {
+                                            return d.getDay();
+                                        },
+                                        makeDate: function (y, m, d, hh, mm, ss, ms) {
+                                            return moment.tz({
+                                                year: y,
+                                                month: m,
+                                                day: d,
+                                                hour: hh,
+                                                minute: mm,
+                                                second: ss,
+                                                millisecond: ms,
+                                            }, $scope.dateFormatter.timezone).toDate();
+                                        }
+                                    },
                                     'ylabel': leftAndRight.left,
                                     'y2label': leftAndRight.right,
                                     'series': series,
@@ -4904,7 +4905,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'x': {
                                             valueFormatter: function (ms) {
                                                 var result = moment(ms);
-
                                                 if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     result = result.tz($scope.dateFormatter.timezone);
                                                 } else {
@@ -4939,12 +4939,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             }
                                         },
                                         'y': {
-                                            valueRange: [yStartLeft0 == true ? 0 :  yRanges[0].min, yRanges[0].max],
+                                            valueRange: [yStartLeft0 == true ? 0 : yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
                                         },
                                         'y2': {
                                             'labelsKMB': true,
-                                            valueRange: [yStartRight0 == true ? 0:  yRanges[1].min, yRanges[1].max],
+                                            valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
                                         }
                                     },
@@ -4978,17 +4978,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
+                                        
                                     'ylabel': leftAndRight.left,
                                     'y2label': "",
                                     'series': series,
                                     'axes': {
                                         'y': {
-                                            valueRange: [yStartLeft0 == true ? 0 :  yRanges[0].min, yRanges[0].max],
+                                            valueRange: [yStartLeft0 == true ? 0 : yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
                                         },
                                         'y2': {
                                             'labelsKMB': true,
-                                            valueRange: [yStartRight0 == true ? 0:  yRanges[1].min, yRanges[1].max],
+                                            valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
                                         }
                                     },
@@ -5018,6 +5019,43 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'labelsKMB': true,
                                     'file': newLines,
                                     'labels': ['x'].concat(labels).concat(['span_y2']),
+                                    'labelsTimezone': {
+                                        getFullYear: function (d) {
+                                            return d.getFullYear();
+                                        },
+                                        getMonth: function (d) {
+                                            return d.getMonth();
+                                        },
+                                        getDate: function (d) {
+                                            return d.getDate();
+                                        },
+                                        getHours: function (d) {
+                                            return d.getHours();
+                                        },
+                                        getMinutes: function (d) {
+                                            return d.getMinutes();
+                                        },
+                                        getSeconds: function (d) {
+                                            return d.getSeconds();
+                                        },
+                                        getMilliseconds: function (d) {
+                                            return d.getMilliseconds();
+                                        },
+                                        getDay: function (d) {
+                                            return d.getDay();
+                                        },
+                                        makeDate: function (y, m, d, hh, mm, ss, ms) {
+                                            return moment.tz({
+                                                year: y,
+                                                month: m,
+                                                day: d,
+                                                hour: hh,
+                                                minute: mm,
+                                                second: ss,
+                                                millisecond: ms,
+                                            }, $scope.dateFormatter.timezone).toDate();
+                                        }
+                                    },
                                     'ylabel': leftAndRight.left,
                                     'y2label': "",
                                     'series': series,
@@ -5059,7 +5097,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             }
                                         },
                                         'y': {
-                                            valueRange: [yStartLeft0 == true ? 0 :  yRanges[0].min, yRanges[0].max],
+                                            valueRange: [yStartLeft0 == true ? 0 : yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
                                         },
                                         'y2': {
@@ -5405,7 +5443,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
                         //
-                            
+
 
                         //&& ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000)
                         if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
@@ -5423,16 +5461,16 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 init_flag = true;
                             } else {
 
-                                if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.period && $scope.interactions.graphs.period.device){
+                                if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.period && $scope.interactions.graphs.period.device) {
                                     //this is a function
                                     var period = [];
-                                    if(typeof $scope.interactions.graphs.period.device === "function"){
-                                        period =  $scope.interactions.graphs.period.device();
-                                    }else if($scope.interactions.graphs.period.device instanceof Array){
-                                        period =  $scope.interactions.graphs.period.device;
+                                    if (typeof $scope.interactions.graphs.period.device === "function") {
+                                        period = $scope.interactions.graphs.period.device();
+                                    } else if ($scope.interactions.graphs.period.device instanceof Array) {
+                                        period = $scope.interactions.graphs.period.device;
                                     }
                                     $scope.rangeConfig.dateWindow = period;
-                                }else{
+                                } else {
                                     if ($scope.currentIntervalChoosed && ((allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= allLines[0][0].getTime())) {
                                         $scope.rangeConfig.dateWindow = [allLines[allLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, allLines[allLines.length - 1][0].getTime()];
                                     } else {
@@ -5441,7 +5479,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     }
                                 }
 
-                                    
+
                             }
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             // reset l & r axes window

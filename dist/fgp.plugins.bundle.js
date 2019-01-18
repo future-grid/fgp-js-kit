@@ -1318,6 +1318,8 @@ var Dygraph = function() {
     Dygraph.dateAxisLabelFormatter = function(date, granularity, opts) {
         var utc = opts("labelsUTC");
         var accessors = utc ? Dygraph.DateAccessorsUTC : Dygraph.DateAccessorsLocal;
+        var timezone = opts("labelsTimezone");
+        accessors = timezone ? timezone : accessors;
         var year = accessors.getFullYear(date), month = accessors.getMonth(date), day = accessors.getDate(date), hours = accessors.getHours(date), mins = accessors.getMinutes(date), secs = accessors.getSeconds(date), millis = accessors.getSeconds(date);
         if (granularity >= Dygraph.DECADAL) {
             return "" + year;
@@ -1334,7 +1336,11 @@ var Dygraph = function() {
     };
     Dygraph.dateAxisFormatter = Dygraph.dateAxisLabelFormatter;
     Dygraph.dateValueFormatter = function(d, opts) {
-        return Dygraph.dateString_(d, opts("labelsUTC"));
+        if (opts("labelsTimezone")) {
+            return Dygraph.dateString_(d, opts("labelsTimezone"));
+        } else {
+            return Dygraph.dateString_(d, opts("labelsUTC"));
+        }
     };
     Dygraph.Plotters = DygraphCanvasRenderer._Plotters;
     Dygraph.DEFAULT_ATTRS = {
@@ -3773,6 +3779,26 @@ var Dygraph = function() {
         }
         return ret;
     };
+    Dygraph.dateTimezoneString_ = function(time, timezone) {
+        var zeropad = Dygraph.zeropad;
+        var accessors = timezone ? timezone : Dygraph.DateAccessorsLocal;
+        var date = new Date(time);
+        var y = accessors.getFullYear(date);
+        var m = accessors.getMonth(date);
+        var d = accessors.getDate(date);
+        var hh = accessors.getHours(date);
+        var mm = accessors.getMinutes(date);
+        var ss = accessors.getSeconds(date);
+        var year = "" + y;
+        var month = zeropad(m + 1);
+        var day = zeropad(d);
+        var frac = hh * 3600 + mm * 60 + ss;
+        var ret = year + "/" + month + "/" + day;
+        if (frac) {
+            ret += " " + Dygraph.hmsString_(hh, mm, ss);
+        }
+        return ret;
+    };
     Dygraph.round_ = function(num, places) {
         var shift = Math.pow(10, places);
         return Math.round(num * shift) / shift;
@@ -4821,6 +4847,22 @@ var Dygraph = function() {
     Dygraph.DECADAL = 20;
     Dygraph.CENTENNIAL = 21;
     Dygraph.NUM_GRANULARITIES = 22;
+    Dygraph.SHORT_SPACINGS = [];
+    Dygraph.SHORT_SPACINGS[Dygraph.SECONDLY] = 1e3 * 1;
+    Dygraph.SHORT_SPACINGS[Dygraph.TWO_SECONDLY] = 1e3 * 2;
+    Dygraph.SHORT_SPACINGS[Dygraph.FIVE_SECONDLY] = 1e3 * 5;
+    Dygraph.SHORT_SPACINGS[Dygraph.TEN_SECONDLY] = 1e3 * 10;
+    Dygraph.SHORT_SPACINGS[Dygraph.THIRTY_SECONDLY] = 1e3 * 30;
+    Dygraph.SHORT_SPACINGS[Dygraph.MINUTELY] = 1e3 * 60;
+    Dygraph.SHORT_SPACINGS[Dygraph.TWO_MINUTELY] = 1e3 * 60 * 2;
+    Dygraph.SHORT_SPACINGS[Dygraph.FIVE_MINUTELY] = 1e3 * 60 * 5;
+    Dygraph.SHORT_SPACINGS[Dygraph.TEN_MINUTELY] = 1e3 * 60 * 10;
+    Dygraph.SHORT_SPACINGS[Dygraph.THIRTY_MINUTELY] = 1e3 * 60 * 30;
+    Dygraph.SHORT_SPACINGS[Dygraph.HOURLY] = 1e3 * 3600;
+    Dygraph.SHORT_SPACINGS[Dygraph.TWO_HOURLY] = 1e3 * 3600 * 2;
+    Dygraph.SHORT_SPACINGS[Dygraph.SIX_HOURLY] = 1e3 * 3600 * 6;
+    Dygraph.SHORT_SPACINGS[Dygraph.DAILY] = 1e3 * 86400;
+    Dygraph.SHORT_SPACINGS[Dygraph.WEEKLY] = 1e3 * 604800;
     Dygraph.DATEFIELD_Y = 0;
     Dygraph.DATEFIELD_M = 1;
     Dygraph.DATEFIELD_D = 2;
@@ -4969,6 +5011,8 @@ var Dygraph = function() {
         var formatter = opts("axisLabelFormatter");
         var utc = opts("labelsUTC");
         var accessors = utc ? Dygraph.DateAccessorsUTC : Dygraph.DateAccessorsLocal;
+        var timezone = opts("labelsTimezone");
+        accessors = timezone ? timezone : accessors;
         var datefield = Dygraph.TICK_PLACEMENT[granularity].datefield;
         var step = Dygraph.TICK_PLACEMENT[granularity].step;
         var spacing = Dygraph.TICK_PLACEMENT[granularity].spacing;
@@ -6918,6 +6962,12 @@ Dygraph.OPTIONS_REFERENCE = {
         "default": "false",
         labels: [ "Value display/formatting", "Axis display" ],
         type: "boolean",
+        description: "Show date/time labels according to UTC (instead of local time)."
+    },
+    labelsTimezone: {
+        "default": "",
+        labels: [ "Value display/formatting", "Axis display" ],
+        type: "",
         description: "Show date/time labels according to UTC (instead of local time)."
     },
     labelsKMB: {
