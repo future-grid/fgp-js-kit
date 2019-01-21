@@ -4133,8 +4133,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     };
                 }
 
-                // $scope.currentChart.updateOptions($scope.defaultNullCOnfig);
-                $scope.currentChart.updateOptions($scope.childrenRangeConfig, false);
+                // TODO: we need to destory old graph instance and create a new one.
+                // $scope.currentChart.updateOptions($scope.childrenRangeConfig, false);
 
                 // set the first one to range bar
                 // update range bar with the first channel data
@@ -4176,6 +4176,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     }
                                 };
                             }
+
                             $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                             // reset the datetime for current chart
                             // && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000)
@@ -4189,10 +4190,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             } else {
                                 $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
-                                    // $scope.chartDateTime = {
-                                    // "begin": new Date(new Number(begin_path)),
-                                    // "end": new Date(new Number(end_path))
-                                    // };
                                     $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
@@ -4242,7 +4239,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                         // reset the datetime for current chart
 
-                        if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
+                        if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
                             // keep the current range bar refresh once.
                             $scope.chartDateTime = {
                                 begin: $scope.chartDateTime.begin,
@@ -4252,10 +4249,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
-                                // $scope.chartDateTime = {
-                                // "begin": new Date(new Number(begin_path)),
-                                // "end": new Date(new Number(end_path))
-                                // };
                                 $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 init_flag = true;
@@ -4393,7 +4386,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 chartData.push([new Date(nt)]);
             });
 
-
             angular$1.forEach(newLines, function (line) {
                 angular$1.forEach(chartData, function (timeTicket) {
                     // line data
@@ -4413,12 +4405,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 });
             });
 
-
             if (yRange.min == yRange.max && yRange.min != null && yRange.max != null) {
                 yRange.min = yRange.min - (yRange.min) * 0.10;
                 yRange.max = yRange.max + (yRange.max) * 0.10;
             }
-
 
             if (chartData.length == 0) {
                 $scope.currentChart.updateOptions({
@@ -4540,7 +4530,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 // send data to outside
                                 if ($scope.highlights && $scope.highlights.onExternal) {
                                     $scope.highlights.onExternal = [];
-
                                     var labels = $scope.currentChart.getLabels();
                                     var _tempData = [];
                                     var _color = null;

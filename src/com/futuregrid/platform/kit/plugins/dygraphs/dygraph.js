@@ -11642,7 +11642,7 @@ Dygraph.OPTIONS_REFERENCE = // <JSON>
     },
     "group":{
       "default":"null",
-      "labels":["series stacked group name"],
+      "labels":["Bar Chart Group"],
       "type": "string",
       "description":"Defines per-series stacked bar group"
     },
@@ -11691,7 +11691,8 @@ Dygraph.OPTIONS_REFERENCE = // <JSON>
     'Zooming',
     'Debugging',
     'Configuration',
-    'Deprecated'
+    'Deprecated',
+    'Bar Chart Group'
   ];
   var i;
   var cats = {};
