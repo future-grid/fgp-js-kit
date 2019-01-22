@@ -2970,7 +2970,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     angular$1.forEach($scope.childrenDevices, function (device, $index) {
                                         if ($scope.childrenColors) {
                                             $scope.childrenColors.forEach(function (_item) {
-                                                if (_item.name == device.name) {
+                                                if (_item.name == device.name ) {
                                                     colors.push(_item.color);
                                                 }
                                             });
@@ -3553,10 +3553,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             angular$1.forEach(device.trees, function (tree, index) {
                                 if (expectedInterval == tree.frequency) {
                                     currentStore = tree.store;
-                                    deviceInfo.push({
+                                    var _tempDeviceObj = {
                                         name: device.name,
                                         tree: tree
-                                    });
+                                    };
+                                    if($scope.childrenDeviceNameColumn && device[$scope.childrenDeviceNameColumn] != null){
+                                        _tempDeviceObj[$scope.childrenDeviceNameColumn] = device[$scope.childrenDeviceNameColumn];
+                                    }
+                                    deviceInfo.push(_tempDeviceObj);
                                     device["show"] = true;
                                     $scope.childrenDevices.push(device);
                                 }
@@ -3601,11 +3605,16 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 data.forEach(function (_item) {
                                     deviceInfo.forEach(function (_device) {
                                         if (_item.hasOwnProperty(_device.name)) {
-                                            //
-                                            showData.push({
+                                            // we need to add another name for device when $scope.childrenDeviceNameColumn
+                                            var _tempDeviceObj = {
                                                 device: _device.name,
                                                 data: _item[_device.name].data
-                                            });
+                                            };
+                                            if($scope.childrenDeviceNameColumn && _device[$scope.childrenDeviceNameColumn] != null){
+                                                _tempDeviceObj[$scope.childrenDeviceNameColumn] = _device[$scope.childrenDeviceNameColumn];
+                                            }
+
+                                            showData.push(_tempDeviceObj);
                                         }
                                     });
                                 });
@@ -3859,17 +3868,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
             // we should give colors to all devices (no matter has data or not)
             deviceDatas.forEach(function (_device, _index) {
-                if ($scope.defaultColors[_index]) {
-                    $scope.childrenColors.push({
-                        name: _device.device.name,
-                        color: $scope.defaultColors[_index]
-                    });
-                } else {
-                    $scope.childrenColors.push({
-                        name: _device.device.name,
-                        color: $scope.defaultColors[Math.floor(Math.random() * (10))]
-                    });
+                var _tempDeviceColorInfo = {
+                    name: _device.device.name
+                };
+
+                if($scope.childrenDeviceNameColumn && _device.device[$scope.childrenDeviceNameColumn]!=null){
+                    _tempDeviceColorInfo[$scope.childrenDeviceNameColumn] = _device.device[$scope.childrenDeviceNameColumn];
                 }
+
+
+                if ($scope.defaultColors[_index]) {
+                    _tempDeviceColorInfo["color"] = $scope.defaultColors[_index];
+                } else {
+                    _tempDeviceColorInfo["color"] = $scope.defaultColors[Math.floor(Math.random() * (10))];
+                }
+
+                $scope.childrenColors.push(_tempDeviceColorInfo);
             });
             angular$1.forEach(deviceDatas, function (deviceData, _index) {
                 var device = {};
@@ -4050,10 +4064,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 var _initVisibility = [];
                 labels.forEach(function (key) {
                     $scope.childrenColors.forEach(function (_item) {
-                        if (_item.name == key) {
+                        if (_item.name == key || ($scope.childrenDeviceNameColumn && _item[$scope.childrenDeviceNameColumn] == key)) {
                             colors.push(_item.color);
                             _initVisibility.push(true);
                         }
+
                     });
                 });
                 if (showY2axis) {
@@ -4311,7 +4326,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             angular$1.forEach(allData, function (device) {
                 counter++;
                 if (device.data.length > 0) {
-                    labels.push(device.device);
+
+                    if($scope.childrenDeviceNameColumn){
+                        labels.push(device[$scope.childrenDeviceNameColumn]);
+                    }else{
+                        labels.push(device.device);
+                    }
+                        
                     angular$1.forEach(collections, function (collection) {
                         if (collection.name == store) {
                             $scope.currentIntervalName = store;
@@ -4426,7 +4447,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     colors = [];
                     labels.forEach(function (key) {
                         $scope.childrenColors.forEach(function (_item) {
-                            if (_item.name == key) {
+                            if (_item.name == key || ($scope.childrenDeviceNameColumn && _item[$scope.childrenDeviceNameColumn] == key)) {
                                 colors.push(_item.color);
                             }
                         });
