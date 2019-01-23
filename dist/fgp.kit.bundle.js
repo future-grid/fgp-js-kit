@@ -2574,6 +2574,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.$watch('currentView', function (nObj, oObj) {
                 // change
                 if (nObj != oObj) {
+                    $scope.resetVisibilityRequest = true;
                     $scope.currentInitScaleLevelLeftConf = null;
                     $scope.forceScale = true;
                     if ($scope.eventsHandler && $scope.eventsHandler.viewChangeListener) {
@@ -4613,6 +4614,21 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
                         // 
                         $scope.currentChart.updateOptions(_tempConfig);
+
+                        if($scope.resetVisibilityRequest === true){
+                            // reset visibility
+                            var visibilities = $scope.currentChart.getOption('visibility');
+                            var _tempV = [];
+                            visibilities.forEach(function(_v){
+                                _tempV.push(true);
+                            });
+                            $scope.currentChart.updateOptions({
+                                'visibility': _tempV
+                            });
+                            $scope.resetVisibilityRequest = false;
+                        }
+
+
                     }
                     // reset l & r axes window
                     var axesRight = $scope.currentChart.axes_[1];
@@ -5132,6 +5148,20 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 });
                             }
 
+
+                            if($scope.resetVisibilityRequest === true){
+                                // reset visibility
+                                var visibilities = $scope.currentChart.getOption('visibility');
+                                var _tempV = [];
+                                visibilities.forEach(function(_v){
+                                    _tempV.push(true);
+                                });
+                                $scope.currentChart.updateOptions({
+                                    'visibility': _tempV
+                                });
+                                $scope.resetVisibilityRequest = false;
+                            }
+
                             // reset l & r axes window
                             var axesRight = $scope.currentChart.axes_[1];
                             var axesLeft = $scope.currentChart.axes_[0];
@@ -5339,7 +5369,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 angular$1.forEach(newLines, function (line) {
                                     line.push(null);
                                 });
-
                                 $scope.rangeSelectorBar.updateOptions({
                                     'file': newLines,
                                     'labels': ['x'].concat(rangeBarLabels).concat(['span_y2']),
