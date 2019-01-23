@@ -3762,6 +3762,16 @@ class fgpWidgetGraph {
                                 }
                                 // set current child device and will do show one
                                 $scope.currentHighLightChildDevice = seriesName;
+
+                                // if $scope.childrenDeviceNameColumn
+                                if($scope.childrenDeviceNameColumn && $scope.childrenDeviceNameColumn !=""){
+                                    $scope.childrenDevices.forEach(function(_device){
+                                        if(_device[$scope.childrenDeviceNameColumn] && _device[$scope.childrenDeviceNameColumn] == seriesName){
+                                            $scope.currentHighLightChildDevice = _device.name;
+                                        }
+                                    });
+                                }
+
                                 $scope.$apply(function () {
 
                                     // send data to outside
