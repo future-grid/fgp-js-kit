@@ -5073,7 +5073,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         },
                                         makeDate: function (y, m, d, hh, mm, ss, ms) {
                                             if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                return moment.tz([y,m,d,hh,mm,ss,ms], $scope.dateFormatter.timezone).toDate();
+                                                return moment.tz(new Date(y, m, d, hh, mm, ss, ms).getTime(), $scope.dateFormatter.timezone).toDate();
                                             }else{
                                                 return new Date(y, m, d, hh, mm, ss, ms);
                                             }
@@ -5230,7 +5230,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         },
                                         makeDate: function (y, m, d, hh, mm, ss, ms) {
                                             if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                return moment.tz([y,m,d,hh,mm,ss,ms], $scope.dateFormatter.timezone).toDate();
+                                                return moment.tz(new Date(y, m, d, hh, mm, ss, ms).getTime(), $scope.dateFormatter.timezone).toDate();
                                             }else{
                                                 return new Date(y, m, d, hh, mm, ss, ms);
                                             }
