@@ -4137,25 +4137,9 @@ class fgpWidgetGraph {
                                             },
                                             makeDate: function (y, m, d, hh, mm, ss, ms) {
                                                 if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                    return moment.tz({
-                                                        year: y,
-                                                        month: m,
-                                                        day: d,
-                                                        hour: hh,
-                                                        minute: mm,
-                                                        second: ss,
-                                                        millisecond: ms,
-                                                    }, $scope.dateFormatter.timezone).toDate();
+                                                    return moment.tz(new Date(y, m, d, hh, mm, ss, ms).getTime(), $scope.dateFormatter.timezone).toDate();
                                                 }else{
-                                                    return moment({
-                                                        year: y,
-                                                        month: m,
-                                                        day: d,
-                                                        hour: hh,
-                                                        minute: mm,
-                                                        second: ss,
-                                                        millisecond: ms,
-                                                    }).toDate();
+                                                    return new Date(y, m, d, hh, mm, ss, ms);
                                                 }
                                             }
                                         },
@@ -4309,30 +4293,11 @@ class fgpWidgetGraph {
                                                 return d.getDay();
                                             },
                                             makeDate: function (y, m, d, hh, mm, ss, ms) {
-
                                                 if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                    return moment.tz({
-                                                        year: y,
-                                                        month: m,
-                                                        day: d,
-                                                        hour: hh,
-                                                        minute: mm,
-                                                        second: ss,
-                                                        millisecond: ms,
-                                                    }, $scope.dateFormatter.timezone).toDate();
+                                                    return moment.tz(new Date(y, m, d, hh, mm, ss, ms).getTime(), $scope.dateFormatter.timezone).toDate();
                                                 }else{
-                                                    return moment({
-                                                        year: y,
-                                                        month: m,
-                                                        day: d,
-                                                        hour: hh,
-                                                        minute: mm,
-                                                        second: ss,
-                                                        millisecond: ms,
-                                                    }).toDate();
+                                                    return new Date(y, m, d, hh, mm, ss, ms);
                                                 }
-
-                                                
                                             }
                                         },
                                         'ylabel': leftAndRight.left,

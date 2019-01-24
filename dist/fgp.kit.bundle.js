@@ -205,6 +205,18 @@ fgpStage.buildFactory = function buildFactory () {
     return fgpStage.instance;
 };
 
+var validator = function validator () {};
+
+validator.prototype.isDeviceKey = function isDeviceKey (param) {
+    var patt = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+    return patt.test(param);
+};
+
+validator.buildFactory = function buildFactory () {
+    validator.instance = new validator();
+    return validator.instance;
+};
+
 /**
  * Created by ericwang on 15/06/2016.
  */
@@ -217,9 +229,8 @@ var dataAccessApi = function dataAccessApi($http, $q, $cacheFactory, $interval, 
     this.deviceStores = $cacheFactory('deviceStores');
     this._$interval = $interval;
     this._$graphDataService = graphDataService;
+    this._validator = validator.buildFactory();
 };
-
-
 
 dataAccessApi.prototype.mergeArraySimple = function mergeArraySimple (array1, array2) {
     var result_array = [];
@@ -238,6 +249,149 @@ dataAccessApi.prototype.mergeArraySimple = function mergeArraySimple (array1, ar
     return result_array;
 };
 
+/**
+ * reference table jdbc query api
+ * @param {*} host restapi url
+ * @param {*} application application name
+ * @param {*} reference reference name
+ * @param {*} page start page number
+ * @param {*} size page size
+ */
+dataAccessApi.prototype.referenceTableJDBC = function referenceTableJDBC (host, application, reference, rsql, page, size, isHazelcast, pkColumn, timeout) {
+
+    var deferred = this._$q.defer();
+    var promise = deferred.promise;
+    var url = "";
+    if (isHazelcast) {
+        // data stored in cassandra and loaded into hazelcast on startup
+        url = host + '/' + application + '/' + reference + '/data/hz/' + size + '/' + page + '/' + pkColumn + ' desc';
+    } else {
+        // data stored in other relation type database (mysql, postgresql, etc)
+        url = host + '/' + application + '/' + reference + '/data/' + size + '/' + page + '/' + pkColumn + ' desc';
+    }
+
+    // check rsql, should be a string like name==why;age=gt=30
+    if (rsql && rsql != '') {
+        url = url + '?' + rsql;
+    }
+
+    this._$http({
+        method: 'GET',
+        url: url,
+        timeout: timeout ? timeout : 10000,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(function (response) {
+        deferred.resolve(response);
+    }, function (error) {
+        deferred.reject(error);
+    });
+    return promise;
+};;
+
+dataAccessApi.prototype.getDeviceWithExtensions = function getDeviceWithExtensions (host, application, id, type, extensionTypes){
+    var deferred = this._$q.defer();
+    var deviceObj = {};
+    var _this = this;
+    _this.getDevice(host, application, id, type).then(function success(resp){
+        deviceObj = resp.device;
+        _this.getDeviceExtensions(host, application, id, type, extensionTypes).then(function success(resp){
+            angular$1.forEach(resp, function (_ext,key) {
+                deviceObj[key] = _ext;
+            });
+            deferred.resolve(deviceObj);
+        }, function error(error){
+            deferred.reject(error);
+        });
+    }, function error(error){
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+};
+
+/**
+ * get device extensions
+ * @param {*} host 
+ * @param {*} application 
+ * @param {*} id 
+ * @param {*} type 
+ * @param {*} extensionTypes 
+ */
+dataAccessApi.prototype.getDeviceExtensions = function getDeviceExtensions (host, application, id, type, extensionTypes){
+    var deferred = this._$q.defer();
+    var url = host + "/" + application + "/" + type;
+
+    if (!host || "" === host || !application || "" === application || !type || "" === type) {
+        console.error("host url/applicaiton is empty or device type not found~");
+        return false;
+    }
+    // check id (UUID key,  string name)
+    if (this._validator.isDeviceKey(id)) {
+        // device key
+        url += '/key/' + id + '?hasExtensions=true';
+    } else {
+        // device name
+        url += '/name/' + id + '?hasExtensions=true';
+    }
+
+    this._$http({
+        method: 'POST',
+        url: url,
+        data: {
+            'extensions': [].concat(extensionTypes)
+        },
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).success(function (data) {
+        deferred.resolve(data);
+    }).error(function (error) {
+        deferred.reject(error);
+    });
+    return deferred.promise;
+};
+
+
+/**
+ * 
+ * @param {string} host 
+ * @param {string} applicatoin 
+ * @param {string} id 
+ * @param {string} type 
+ */
+dataAccessApi.prototype.getDevice = function getDevice (host, application, id, type) {
+    if (!host || "" === host || !application || "" === application || !type || "" === type) {
+        console.error("host url/applicaiton is empty or device type not found~");
+        return false;
+    }
+
+    var deferred = this._$q.defer();
+    var url = host + "/" + application + "/" + type;
+    // check id (UUID key,  string name)
+    if (this._validator.isDeviceKey(id)) {
+        // device key
+        url += '/key/' + id + '?hasExtensions=true';
+    } else {
+        // device name
+        url += '/name/' + id + '?hasExtensions=true';
+    }
+    // send request to rest-api
+    this._$http({
+        method: 'GET',
+        url: url
+    }).success(function (data) {
+        deferred.resolve(data);
+    }).error(function (error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+
+
+
+};;
 
 /**
  * sync using JQuery
@@ -263,12 +417,10 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
     }
 
     var httpServices = this._$http;
-    var qServices = this._$q;
-
     httpServices({
         method: 'GET',
         url: url
-    }).success(function(data) {
+    }).success(function (data) {
         if (deviceName) {
             url = host + "/" + application + "/" + deviceType + "/name/" + deviceName;
         } else if (deviceKey) {
@@ -290,7 +442,7 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).success(function(extensions) {
+            }).success(function (extensions) {
                 if (!extensions) {
                     deferred.resolve(data);
                 } else {
@@ -304,14 +456,14 @@ dataAccessApi.prototype.deviceInfo = function deviceInfo (host, deviceName, devi
                     });
                     deferred.resolve(data);
                 }
-            }).error(function(error) {
+            }).error(function (error) {
                 deferred.reject(error);
             });
         } else {
             // return device info and stop here.
             deferred.resolve(data);
         }
-    }).error(function(error) {
+    }).error(function (error) {
         deferred.reject(error);
     });
 
@@ -335,10 +487,10 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     this._$http.post(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
         // cache: this.deviceStores
     }).then(
-        function(response) {
+        function (response) {
             deferred.resolve(response.data);
         },
-        function(response) {
+        function (response) {
             deferred.reject(response.data);
         }
     );
@@ -369,7 +521,7 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
     this._$http.get(host + '/' + application + '/' + deviceType + '/' + deviceName + '/relation/' + relationType).then(function successCallback(resp) {
         if (!extensionType || "" === extensionType) {
             var result = [];
-            angular$1.forEach(resp.data, function(_device) {
+            angular$1.forEach(resp.data, function (_device) {
                 result.push({
                     "name": _device.name,
                     "device": _device
@@ -378,7 +530,7 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
             deferred.resolve(result);
         } else {
             var promises = [];
-            angular$1.forEach(resp.data, function(_device) {
+            angular$1.forEach(resp.data, function (_device) {
                 if (_device && _device.name) {
 
                     var deferred = __q.defer();
@@ -391,13 +543,13 @@ dataAccessApi.prototype.childrenExtensionInitInfo = function childrenExtensionIn
                         headers: {
                             'Content-Type': 'application/json'
                         }
-                    }).success(function(extension) {
+                    }).success(function (extension) {
                         deferred.resolve({
                             "name": _device.name,
                             "extension": extension[extensionType],
                             "device": _device
                         });
-                    }).error(function(error) {
+                    }).error(function (error) {
                         deferred.reject(error);
                     });
                     promises.push(deferred.promise);
@@ -439,7 +591,7 @@ dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInit
     var __q = this._$q;
 
 
-    angular$1.forEach(devices, function(_name) {
+    angular$1.forEach(devices, function (_name) {
         if (_name && "" != _name) {
             var deferred = __q.defer();
             __http({
@@ -451,13 +603,13 @@ dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInit
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).success(function(extension) {
+            }).success(function (extension) {
                 deferred.resolve({
                     "name": _device.name,
                     "extension": extension[extensionType],
                     "device": _device
                 });
-            }).error(function(error) {
+            }).error(function (error) {
                 deferred.reject(error);
             });
             promises.push(deferred.promise);
@@ -499,12 +651,12 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
             "content-type": "application/json"
         }
     }).then(
-        function(response) {
+        function (response) {
             // only return 1 device data
             var devicesGraphData = [].concat(response.data);
             deferred.resolve(devicesGraphData);
         },
-        function(error) {
+        function (error) {
             deferred.reject(error);
         }
     );
@@ -548,15 +700,15 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
             "content-type": "application/json"
         }
     }).then(
-        function(response) {
+        function (response) {
             // only return 1 device data
             var deviceGraphData = [];
             var newComeResult = response.data[deviceName].data;
-            newComeResult.forEach(function(item) {
+            newComeResult.forEach(function (item) {
                 deviceGraphData.push(item);
             });
             // order by timestamp
-            deviceGraphData.sort(function(a, b) {
+            deviceGraphData.sort(function (a, b) {
                 if (a.timestamp > b.timestamp) {
                     return 1;
                 } else if (a.timestamp < b.timestamp) {
@@ -566,7 +718,7 @@ dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, ap
             });
             deferred.resolve(deviceGraphData);
         },
-        function(error) {
+        function (error) {
             deferred.reject(error);
         }
     );
@@ -605,7 +757,7 @@ dataAccessApi.prototype.healthcheck = function healthcheck (application, id) {
         return;
     }
     this._$http.get('/rest/api/app/' + application + '/docker/healthcheck/reports?id=' + id)
-        .success(function(response) {
+        .success(function (response) {
             console.info(response);
             return response;
         });
@@ -619,7 +771,7 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
     var _$http = this._$http;
     var fetcher = null;
     this._$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
-        .success(function(response) {
+        .success(function (response) {
             var last = -1;
             var interval = -1;
             if (response.trees && response.trees.length === 1) {
@@ -637,12 +789,12 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
                         "start": start,
                         "end": end
                     }
-                }).success(function(graphData) {
+                }).success(function (graphData) {
 
                     // start task
-                    fetcher = _$interval(function() {
+                    fetcher = _$interval(function () {
                         _$http.get('/rest/api/app/' + application + '/store/index/' + device + '/' + schema + '/' + store)
-                            .success(function(response) {
+                            .success(function (response) {
                                 if (response.trees && response.trees.length === 1) {
                                     last = response.trees[0].last.timeKey;
                                     start = last - (count * interval);
@@ -654,7 +806,7 @@ dataAccessApi.prototype.autoUpdateGraph = function autoUpdateGraph (application,
                                             "start": start,
                                             "end": end
                                         }
-                                    }).success(function(graphData) {
+                                    }).success(function (graphData) {
                                         // put the data back
                                         callback(graphData[device], null, interval);
                                     });
@@ -4921,25 +5073,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         },
                                         makeDate: function (y, m, d, hh, mm, ss, ms) {
                                             if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                return moment.tz({
-                                                    year: y,
-                                                    month: m,
-                                                    day: d,
-                                                    hour: hh,
-                                                    minute: mm,
-                                                    second: ss,
-                                                    millisecond: ms,
-                                                }, $scope.dateFormatter.timezone).toDate();
+                                                return moment.tz(new Date(y, m, d, hh, mm, ss, ms).getTime(), $scope.dateFormatter.timezone).toDate();
                                             }else{
-                                                return moment({
-                                                    year: y,
-                                                    month: m,
-                                                    day: d,
-                                                    hour: hh,
-                                                    minute: mm,
-                                                    second: ss,
-                                                    millisecond: ms,
-                                                }).toDate();
+                                                return new Date(y, m, d, hh, mm, ss, ms);
                                             }
                                         }
                                     },
@@ -5093,30 +5229,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             return d.getDay();
                                         },
                                         makeDate: function (y, m, d, hh, mm, ss, ms) {
-
                                             if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                return moment.tz({
-                                                    year: y,
-                                                    month: m,
-                                                    day: d,
-                                                    hour: hh,
-                                                    minute: mm,
-                                                    second: ss,
-                                                    millisecond: ms,
-                                                }, $scope.dateFormatter.timezone).toDate();
+                                                return moment.tz(new Date(y, m, d, hh, mm, ss, ms).getTime(), $scope.dateFormatter.timezone).toDate();
                                             }else{
-                                                return moment({
-                                                    year: y,
-                                                    month: m,
-                                                    day: d,
-                                                    hour: hh,
-                                                    minute: mm,
-                                                    second: ss,
-                                                    millisecond: ms,
-                                                }).toDate();
+                                                return new Date(y, m, d, hh, mm, ss, ms);
                                             }
-
-                                                
                                         }
                                     },
                                     'ylabel': leftAndRight.left,
@@ -7258,7 +7375,9 @@ fgpWidgetChartTable.buildFactory = function buildFactory () {
  * Created by ericwang on 10/06/2016.
  */
 // angular module
-angular$1.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('dataService', dataAccessApi.buildFactory)
+angular$1.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache'])
+.service('dataService', dataAccessApi.buildFactory)
+.service('validator', validator.buildFactory)
     .filter('removeSlash', function () {
         return function (input) {
             if (input.startsWith("/")) {

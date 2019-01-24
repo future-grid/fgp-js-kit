@@ -5,6 +5,7 @@
 import angular from "angular";
 import fgpStage from "./com/futuregrid/platform/kit/show/directives/fgp.stage.js";
 import fgpWidgetStatus from "./com/futuregrid/platform/kit/show/directives/fgp.stage.js";
+import validator from "./com/futuregrid/platform/kit/utils/validator";
 import dataApi from "./com/futuregrid/platform/kit/utils/data.api.js";
 import fgpWidgetContainer from "./com/futuregrid/platform/kit/show/directives/fgp.container.js";
 import fgpWidgetGraph from "./com/futuregrid/platform/kit/show/directives/fgp.graph.js";
@@ -20,7 +21,9 @@ import fgpWidgetIcon from "./com/futuregrid/platform/kit/show/directives/fgp.ico
 import fgpWidgetAppContainer from "./com/futuregrid/platform/kit/show/directives/fgp.app.container.js";
 import fgpWidgetChartTable from "./com/futuregrid/platform/kit/show/directives/fgp.chart.table.js";
 // angular module
-angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache']).service('dataService', dataApi.buildFactory)
+angular.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache'])
+.service('dataService', dataApi.buildFactory)
+.service('validator', validator.buildFactory)
     .filter('removeSlash', function () {
         return function (input) {
             if (input.startsWith("/")) {
