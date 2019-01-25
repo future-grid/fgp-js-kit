@@ -4137,7 +4137,7 @@ class fgpWidgetGraph {
                                             },
                                             makeDate: function (y, m, d, hh, mm, ss, ms) {
                                                 if($scope.dateFormatter && $scope.dateFormatter.timezone){
-                                                    return moment.tz(moment.utc(new Date(y, m, d, hh, mm, ss, ms)), $scope.dateFormatter.timezone).toDate();
+                                                    return moment.tz([y,m,d,hh,mm,ss,ms], $scope.dateFormatter.timezone).toDate();
                                                 }else{
                                                     return new Date(y, m, d, hh, mm, ss, ms);
                                                 }
@@ -4295,7 +4295,7 @@ class fgpWidgetGraph {
                                             makeDate: function (y, m, d, hh, mm, ss, ms) {
                                                 if($scope.dateFormatter && $scope.dateFormatter.timezone){
                                                     // [y,m,d,hh,mm,ss,ms]
-                                                    return moment.tz(moment.utc(new Date(y, m, d, hh, mm, ss, ms)), $scope.dateFormatter.timezone).toDate();
+                                                    return moment.tz([y,m,d,hh,mm,ss,ms], $scope.dateFormatter.timezone).toDate();
                                                 }else{
                                                     return new Date(y, m, d, hh, mm, ss, ms);
                                                 }
