@@ -257,7 +257,7 @@ dataAccessApi.prototype.mergeArraySimple = function mergeArraySimple (array1, ar
  * @param {*} page start page number
  * @param {*} size page size
  */
-dataAccessApi.prototype.referenceTableJDBC = function referenceTableJDBC (host, application, reference, rsql, page, size, isHazelcast, pkColumn, timeout) {
+dataAccessApi.prototype.referenceTableRSQL = function referenceTableRSQL (host, application, reference, rsql, page, size, isHazelcast, pkColumn, timeout) {
 
     var deferred = this._$q.defer();
     var promise = deferred.promise;
@@ -620,6 +620,10 @@ dataAccessApi.prototype.devicesExtensionInitInfo = function devicesExtensionInit
 };
 
 
+    
+
+
+
 dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, application, devices, deviceType, store, start, end, fields, interval) {
 
     if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
@@ -665,8 +669,22 @@ dataAccessApi.prototype.devicesStoreData = function devicesStoreData (id, host, 
     return deferred.promise;
 };
 
+dataAccessApi.prototype.getRelatedDevices = function getRelatedDevices (host, application, device, deviceType, relationType, isParent) {
+    var deferred = this._$q.defer();
+    this._$http({
+        url: host + '/' + application + '/' + deviceType + '/' + device + '/relation/' + relationType + '?isParent='+(isParent ? true : false),
+        method: 'GET'
+    }).then(function successCallback(resp) {
+        deferred.resolve(resp);
+    }, function errorCallback(error) {
+        deferred.reject(error);
+    });
+    return deferred.promise;
+};;
 
-
+dataAccessApi.prototype.getStoreData = function getStoreData (host, application, devices, deviceType, store, start, end, fields){
+    return this.devicesStoreData("_id", host, application, devices, deviceType, store, start, end, fields, 0);
+};
 
 
 dataAccessApi.prototype.deviceStoreData = function deviceStoreData (id, host, application, deviceName, deviceType, store, start, end, fields, interval) {

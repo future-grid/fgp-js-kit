@@ -48,7 +48,7 @@ class dataAccessApi {
      * @param {*} page start page number
      * @param {*} size page size
      */
-    referenceTableJDBC(host, application, reference, rsql, page, size, isHazelcast, pkColumn, timeout) {
+    referenceTableRSQL(host, application, reference, rsql, page, size, isHazelcast, pkColumn, timeout) {
 
         var deferred = this._$q.defer();
         var promise = deferred.promise;
@@ -63,7 +63,7 @@ class dataAccessApi {
 
         // check rsql, should be a string like name==why;age=gt=30
         if (rsql && rsql != '') {
-            url = url + '?' + rsql
+            url = url + '?' + rsql;
         }
 
         this._$http({
@@ -411,6 +411,10 @@ class dataAccessApi {
     }
 
 
+    
+
+
+
     devicesStoreData(id, host, application, devices, deviceType, store, start, end, fields, interval) {
 
         if (!host || "" === host || !application || "" === application || !deviceType || "" === deviceType) {
@@ -456,8 +460,22 @@ class dataAccessApi {
         return deferred.promise;
     }
 
+    getRelatedDevices(host, application, device, deviceType, relationType, isParent) {
+        var deferred = this._$q.defer();
+        this._$http({
+            url: host + '/' + application + '/' + deviceType + '/' + device + '/relation/' + relationType + '?isParent='+(isParent ? true : false),
+            method: 'GET'
+        }).then(function successCallback(resp) {
+            deferred.resolve(resp);
+        }, function errorCallback(error) {
+            deferred.reject(error);
+        });
+        return deferred.promise;
+    };
 
-
+    getStoreData(host, application, devices, deviceType, store, start, end, fields){
+        return this.devicesStoreData("_id", host, application, devices, deviceType, store, start, end, fields, 0);
+    }
 
 
     deviceStoreData(id, host, application, deviceName, deviceType, store, start, end, fields, interval) {
