@@ -484,7 +484,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     }
 
     var deferred = this._$q.defer();
-    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-end', {
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-last', {
         // cache: this.deviceStores
     }).then(
         function (response) {
@@ -2830,7 +2830,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     "store": rangeLevel.store,
                                     "interval": rangeLevel.interval,
                                     "last": {
-                                        "timestamp": data.end
+                                        "timestamp": data.last.timestamp
                                     }
                                 }];
 
@@ -2844,7 +2844,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         "store": _level.store,
                                         "interval": _level.interval,
                                         "last": {
-                                            "timestamp": dataend
+                                            "timestamp": data.last.timestamp
                                         }
                                     });
                                 });
@@ -3355,7 +3355,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             "store": rangeLevel.store,
                             "interval": rangeLevel.interval,
                             "last": {
-                                "timestamp": data.end
+                                "timestamp": data.last.timestamp
                             }
                         }];
 
@@ -3369,7 +3369,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 "store": _level.store,
                                 "interval": _level.interval,
                                 "last": {
-                                    "timestamp": data.end
+                                    "timestamp": data.last.timestamp
                                 }
                             });
                         });

@@ -275,7 +275,7 @@ class dataAccessApi {
         }
 
         var deferred = this._$q.defer();
-        this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-end', {
+        this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-last', {
             // cache: this.deviceStores
         }).then(
             function (response) {
