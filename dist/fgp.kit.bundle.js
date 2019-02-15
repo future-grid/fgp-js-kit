@@ -484,7 +484,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     }
 
     var deferred = this._$q.defer();
-    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-end', {
         // cache: this.deviceStores
     }).then(
         function (response) {
@@ -2824,13 +2824,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                 deviceStoreInfo["trees"] = [{
                                     "first": {
-                                        "timestamp": data.first.timestamp
+                                        "timestamp": data.start
                                     },
                                     "range": true,
                                     "store": rangeLevel.store,
                                     "interval": rangeLevel.interval,
                                     "last": {
-                                        "timestamp": data.last.timestamp
+                                        "timestamp": data.end
                                     }
                                 }];
 
@@ -2838,13 +2838,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 otherLevels.forEach(function (_level, _index) {
                                     deviceStoreInfo["trees"].push({
                                         "first": {
-                                            "timestamp": data.first.timestamp
+                                            "timestamp": data.start
                                         },
                                         "range": false,
                                         "store": _level.store,
                                         "interval": _level.interval,
                                         "last": {
-                                            "timestamp": data.last.timestamp
+                                            "timestamp": dataend
                                         }
                                     });
                                 });
@@ -3349,13 +3349,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         deviceStoreInfo["trees"] = [{
                             "first": {
-                                "timestamp": data.first.timestamp
+                                "timestamp": data.start
                             },
                             "range": true,
                             "store": rangeLevel.store,
                             "interval": rangeLevel.interval,
                             "last": {
-                                "timestamp": data.last.timestamp
+                                "timestamp": data.end
                             }
                         }];
 
@@ -3363,13 +3363,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         otherLevels.forEach(function (_level, _index) {
                             deviceStoreInfo["trees"].push({
                                 "first": {
-                                    "timestamp": data.first.timestamp
+                                    "timestamp": data.start
                                 },
                                 "range": false,
                                 "store": _level.store,
                                 "interval": _level.interval,
                                 "last": {
-                                    "timestamp": data.last.timestamp
+                                    "timestamp": data.end
                                 }
                             });
                         });

@@ -1870,13 +1870,13 @@ class fgpWidgetGraph {
 
                                     deviceStoreInfo["trees"] = [{
                                         "first": {
-                                            "timestamp": data.first.timestamp
+                                            "timestamp": data.start
                                         },
                                         "range": true,
                                         "store": rangeLevel.store,
                                         "interval": rangeLevel.interval,
                                         "last": {
-                                            "timestamp": data.last.timestamp
+                                            "timestamp": data.end
                                         }
                                     }];
 
@@ -1884,13 +1884,13 @@ class fgpWidgetGraph {
                                     otherLevels.forEach(function (_level, _index) {
                                         deviceStoreInfo["trees"].push({
                                             "first": {
-                                                "timestamp": data.first.timestamp
+                                                "timestamp": data.start
                                             },
                                             "range": false,
                                             "store": _level.store,
                                             "interval": _level.interval,
                                             "last": {
-                                                "timestamp": data.last.timestamp
+                                                "timestamp": dataend
                                             }
                                         });
                                     });
@@ -2395,13 +2395,13 @@ class fgpWidgetGraph {
 
                             deviceStoreInfo["trees"] = [{
                                 "first": {
-                                    "timestamp": data.first.timestamp
+                                    "timestamp": data.start
                                 },
                                 "range": true,
                                 "store": rangeLevel.store,
                                 "interval": rangeLevel.interval,
                                 "last": {
-                                    "timestamp": data.last.timestamp
+                                    "timestamp": data.end
                                 }
                             }];
 
@@ -2409,13 +2409,13 @@ class fgpWidgetGraph {
                             otherLevels.forEach(function (_level, _index) {
                                 deviceStoreInfo["trees"].push({
                                     "first": {
-                                        "timestamp": data.first.timestamp
+                                        "timestamp": data.start
                                     },
                                     "range": false,
                                     "store": _level.store,
                                     "interval": _level.interval,
                                     "last": {
-                                        "timestamp": data.last.timestamp
+                                        "timestamp": data.end
                                     }
                                 });
                             });
