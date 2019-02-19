@@ -2187,7 +2187,7 @@ class fgpWidgetGraph {
                                         angular.forEach($scope.childrenDevices, function (device, $index) {
                                             if ($scope.childrenColors) {
                                                 $scope.childrenColors.forEach(function (_item) {
-                                                    if (_item.name == device.name ) {
+                                                    if (_item.name == device.name) {
                                                         colors.push(_item.color);
                                                     }
                                                 });
@@ -2774,7 +2774,7 @@ class fgpWidgetGraph {
                                             name: device.name,
                                             tree: tree
                                         };
-                                        if($scope.childrenDeviceNameColumn && device[$scope.childrenDeviceNameColumn] != null){
+                                        if ($scope.childrenDeviceNameColumn && device[$scope.childrenDeviceNameColumn] != null) {
                                             _tempDeviceObj[$scope.childrenDeviceNameColumn] = device[$scope.childrenDeviceNameColumn];
                                         }
                                         deviceInfo.push(_tempDeviceObj);
@@ -2827,7 +2827,7 @@ class fgpWidgetGraph {
                                                     device: _device.name,
                                                     data: _item[_device.name].data
                                                 };
-                                                if($scope.childrenDeviceNameColumn && _device[$scope.childrenDeviceNameColumn] != null){
+                                                if ($scope.childrenDeviceNameColumn && _device[$scope.childrenDeviceNameColumn] != null) {
                                                     _tempDeviceObj[$scope.childrenDeviceNameColumn] = _device[$scope.childrenDeviceNameColumn];
                                                 }
 
@@ -3089,7 +3089,7 @@ class fgpWidgetGraph {
                         name: _device.device.name
                     };
 
-                    if($scope.childrenDeviceNameColumn && _device.device[$scope.childrenDeviceNameColumn]!=null){
+                    if ($scope.childrenDeviceNameColumn && _device.device[$scope.childrenDeviceNameColumn] != null) {
                         _tempDeviceColorInfo[$scope.childrenDeviceNameColumn] = _device.device[$scope.childrenDeviceNameColumn];
                     }
 
@@ -3356,9 +3356,9 @@ class fgpWidgetGraph {
                                     valueRange: [yRange.min, yRange.max]
                                 },
                                 'y2': {
-                                    axisLabelFormatter: function (d) {
-                                        return '';
-                                    }
+                                    // axisLabelFormatter: function (d) {
+                                    //     return '';
+                                    // }
                                 }
                             }
                             // showRangeSelector: true
@@ -3544,12 +3544,12 @@ class fgpWidgetGraph {
                     counter++;
                     if (device.data.length > 0) {
 
-                        if($scope.childrenDeviceNameColumn){
+                        if ($scope.childrenDeviceNameColumn) {
                             labels.push(device[$scope.childrenDeviceNameColumn]);
-                        }else{
+                        } else {
                             labels.push(device.device);
                         }
-                        
+
                         angular.forEach(collections, function (collection) {
                             if (collection.name == store) {
                                 $scope.currentIntervalName = store;
@@ -3765,9 +3765,9 @@ class fgpWidgetGraph {
                                 $scope.currentHighLightChildDevice = seriesName;
 
                                 // if $scope.childrenDeviceNameColumn
-                                if($scope.childrenDeviceNameColumn && $scope.childrenDeviceNameColumn !=""){
-                                    $scope.childrenDevices.forEach(function(_device){
-                                        if(_device[$scope.childrenDeviceNameColumn] && _device[$scope.childrenDeviceNameColumn] == seriesName){
+                                if ($scope.childrenDeviceNameColumn && $scope.childrenDeviceNameColumn != "") {
+                                    $scope.childrenDevices.forEach(function (_device) {
+                                        if (_device[$scope.childrenDeviceNameColumn] && _device[$scope.childrenDeviceNameColumn] == seriesName) {
                                             $scope.currentHighLightChildDevice = _device.name;
                                         }
                                     });
@@ -3831,11 +3831,11 @@ class fgpWidgetGraph {
                             // 
                             $scope.currentChart.updateOptions(_tempConfig);
 
-                            if($scope.resetVisibilityRequest === true){
+                            if ($scope.resetVisibilityRequest === true) {
                                 // reset visibility
                                 var visibilities = $scope.currentChart.getOption('visibility');
                                 var _tempV = [];
-                                visibilities.forEach(function(_v){
+                                visibilities.forEach(function (_v) {
                                     _tempV.push(true);
                                 });
                                 $scope.currentChart.updateOptions({
@@ -4080,6 +4080,9 @@ class fgpWidgetGraph {
                                             },
                                             'y2': {
                                                 'labelsKMB': true,
+                                                axisLabelFormatter: function (y2, granularity, opts, g) {
+                                                    return Dygraph.numberValueFormatter(y2,opts);
+                                                },
                                                 valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                                 axisLabelWidth: 80
                                             }
@@ -4112,79 +4115,79 @@ class fgpWidgetGraph {
                                         'labels': ['x'].concat(labels),
                                         'labelsTimezone': {
                                             getFullYear: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.year();
-                                                }else{
+                                                } else {
                                                     return d.getFullYear();
                                                 }
                                             },
                                             getMonth: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.month();
-                                                }else{
+                                                } else {
                                                     return d.getMonth();
                                                 }
                                             },
                                             getDate: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.date();
-                                                }else{
+                                                } else {
                                                     return d.getDate();
                                                 }
-                                                
+
                                             },
                                             getHours: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.hour();
-                                                }else{
+                                                } else {
                                                     return d.getHours();
                                                 }
-                                                
+
                                             },
                                             getMinutes: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.minute();
-                                                }else{
+                                                } else {
                                                     return d.getMinutes();
                                                 }
-                                                
+
                                             },
                                             getSeconds: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.second();
-                                                }else{
+                                                } else {
                                                     return d.getSeconds();
                                                 }
-                                                
+
                                             },
                                             getMilliseconds: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.millisecond();
-                                                }else{
+                                                } else {
                                                     return d.getMilliseconds();
                                                 }
-                                                
+
                                             },
                                             getDay: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.day();
-                                                }else{
+                                                } else {
                                                     return d.getDay();
                                                 }
                                             },
                                             makeDate: function (y, m, d, hh, mm, ss, ms) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _temp = new Date(y, m, d, hh, mm, ss, ms);
-                                                    return moment.tz([_temp.getFullYear(), _temp.getMonth(),_temp.getDate(),_temp.getHours(),_temp.getMinutes(),_temp.getMilliseconds()],$scope.dateFormatter.timezone).toDate();
-                                                }else{
+                                                    return moment.tz([_temp.getFullYear(), _temp.getMonth(), _temp.getDate(), _temp.getHours(), _temp.getMinutes(), _temp.getMilliseconds()], $scope.dateFormatter.timezone).toDate();
+                                                } else {
                                                     return new Date(y, m, d, hh, mm, ss, ms);
                                                 }
                                             }
@@ -4218,6 +4221,9 @@ class fgpWidgetGraph {
                                             },
                                             'y2': {
                                                 'labelsKMB': true,
+                                                axisLabelFormatter: function (y2, granularity, opts, g) {
+                                                    return Dygraph.numberValueFormatter(y2,opts);
+                                                },
                                                 valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                                 axisLabelWidth: 80
                                             }
@@ -4252,7 +4258,6 @@ class fgpWidgetGraph {
                                         'labelsKMB': true,
                                         'file': newLines,
                                         'labels': ['x'].concat(labels).concat(['span_y2']),
-                                        
                                         'ylabel': leftAndRight.left,
                                         'y2label': "",
                                         'series': series,
@@ -4263,6 +4268,9 @@ class fgpWidgetGraph {
                                             },
                                             'y2': {
                                                 'labelsKMB': true,
+                                                axisLabelFormatter: function (y2, granularity, opts, g) {
+                                                    return Dygraph.numberValueFormatter(y2,opts);
+                                                },
                                                 valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                                 axisLabelWidth: 80
                                             }
@@ -4295,82 +4303,82 @@ class fgpWidgetGraph {
                                         'labels': ['x'].concat(labels).concat(['span_y2']),
                                         'labelsTimezone': {
                                             getFullYear: function (d) {
-                                                
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.year();
-                                                }else{
+                                                } else {
                                                     return d.getFullYear();
                                                 }
-                                                
+
                                             },
                                             getMonth: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.month();
-                                                }else{
+                                                } else {
                                                     return d.getMonth();
                                                 }
                                             },
                                             getDate: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.date();
-                                                }else{
+                                                } else {
                                                     return d.getDate();
                                                 }
-                                                
+
                                             },
                                             getHours: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.hour();
-                                                }else{
+                                                } else {
                                                     return d.getHours();
                                                 }
-                                                
+
                                             },
                                             getMinutes: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.minute();
-                                                }else{
+                                                } else {
                                                     return d.getMinutes();
                                                 }
-                                                
+
                                             },
                                             getSeconds: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.second();
-                                                }else{
+                                                } else {
                                                     return d.getSeconds();
                                                 }
-                                                
+
                                             },
                                             getMilliseconds: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.millisecond();
-                                                }else{
+                                                } else {
                                                     return d.getMilliseconds();
                                                 }
-                                                
+
                                             },
                                             getDay: function (d) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _date = moment.tz(d.getTime(), $scope.dateFormatter.timezone);
                                                     return _date.day();
-                                                }else{
+                                                } else {
                                                     return d.getDay();
                                                 }
-                                                
+
                                             },
                                             makeDate: function (y, m, d, hh, mm, ss, ms) {
-                                                if($scope.dateFormatter && $scope.dateFormatter.timezone){
+                                                if ($scope.dateFormatter && $scope.dateFormatter.timezone) {
                                                     var _temp = new Date(y, m, d, hh, mm, ss, ms);
-                                                    return moment.tz([_temp.getFullYear(), _temp.getMonth(),_temp.getDate(),_temp.getHours(),_temp.getMinutes(),_temp.getMilliseconds()],$scope.dateFormatter.timezone).toDate();
-                                                }else{
+                                                    return moment.tz([_temp.getFullYear(), _temp.getMonth(), _temp.getDate(), _temp.getHours(), _temp.getMinutes(), _temp.getMilliseconds()], $scope.dateFormatter.timezone).toDate();
+                                                } else {
                                                     return new Date(y, m, d, hh, mm, ss, ms);
                                                 }
                                             }
@@ -4401,10 +4409,10 @@ class fgpWidgetGraph {
                                                 axisLabelWidth: 80
                                             },
                                             'y2': {
-                                                axisLabelFormatter: function (d) {
-                                                    return '';
-                                                },
-                                                axisLabelWidth: 80
+                                                // axisLabelFormatter: function (d) {
+                                                //     return '';
+                                                // },
+                                                // axisLabelWidth: 80
                                             }
                                         },
                                         'colors': colors
@@ -4413,11 +4421,11 @@ class fgpWidgetGraph {
                                 }
 
 
-                                if($scope.resetVisibilityRequest === true){
+                                if ($scope.resetVisibilityRequest === true) {
                                     // reset visibility
                                     var visibilities = $scope.currentChart.getOption('visibility');
                                     var _tempV = [];
-                                    visibilities.forEach(function(_v){
+                                    visibilities.forEach(function (_v) {
                                         _tempV.push(true);
                                     });
                                     $scope.currentChart.updateOptions({
@@ -4690,6 +4698,9 @@ class fgpWidgetGraph {
                                         },
                                         'y2': {
                                             'labelsKMB': true,
+                                            axisLabelFormatter: function (y2, granularity, opts, g) {
+                                                return Dygraph.numberValueFormatter(y2,opts);
+                                            },
                                             valueRange: [yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
                                         }
@@ -4732,10 +4743,10 @@ class fgpWidgetGraph {
                                             axisLabelWidth: 80
                                         },
                                         'y2': {
-                                            axisLabelFormatter: function (d) {
-                                                return '';
-                                            },
-                                            axisLabelWidth: 80
+                                            // axisLabelFormatter: function (d) {
+                                            //     return '';
+                                            // },
+                                            // axisLabelWidth: 80
                                         }
                                     },
                                     'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
@@ -4754,9 +4765,6 @@ class fgpWidgetGraph {
                                     range: false
                                 });
                             }
-
-                            //
-
 
                             //&& ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000)
                             if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= allLines[0][0] && $scope.chartDateWindow[1] <= allLines[allLines.length - 1][0])) {
@@ -4791,8 +4799,6 @@ class fgpWidgetGraph {
                                             $scope.rangeConfig.dateWindow = [allLines[0][0].getTime(), allLines[allLines.length - 1][0].getTime()];
                                         }
                                     }
-
-
                                 }
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 // reset l & r axes window
