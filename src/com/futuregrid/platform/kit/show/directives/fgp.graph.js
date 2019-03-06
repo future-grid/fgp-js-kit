@@ -1876,7 +1876,7 @@ class fgpWidgetGraph {
                                         "store": rangeLevel.store,
                                         "interval": rangeLevel.interval,
                                         "last": {
-                                            "timestamp": data.last.timestamp
+                                            "timestamp": data.end
                                         }
                                     }];
 
@@ -1890,7 +1890,7 @@ class fgpWidgetGraph {
                                             "store": _level.store,
                                             "interval": _level.interval,
                                             "last": {
-                                                "timestamp": data.last.timestamp
+                                                "timestamp": data.end
                                             }
                                         });
                                     });
@@ -2401,7 +2401,7 @@ class fgpWidgetGraph {
                                 "store": rangeLevel.store,
                                 "interval": rangeLevel.interval,
                                 "last": {
-                                    "timestamp": data.last.timestamp
+                                    "timestamp": data.end
                                 }
                             }];
 
@@ -2415,7 +2415,7 @@ class fgpWidgetGraph {
                                     "store": _level.store,
                                     "interval": _level.interval,
                                     "last": {
-                                        "timestamp": data.last.timestamp
+                                        "timestamp": data.end
                                     }
                                 });
                             });

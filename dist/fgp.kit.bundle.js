@@ -2830,7 +2830,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     "store": rangeLevel.store,
                                     "interval": rangeLevel.interval,
                                     "last": {
-                                        "timestamp": data.last.timestamp
+                                        "timestamp": data.end
                                     }
                                 }];
 
@@ -2844,7 +2844,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         "store": _level.store,
                                         "interval": _level.interval,
                                         "last": {
-                                            "timestamp": data.last.timestamp
+                                            "timestamp": data.end
                                         }
                                     });
                                 });
@@ -3355,7 +3355,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             "store": rangeLevel.store,
                             "interval": rangeLevel.interval,
                             "last": {
-                                "timestamp": data.last.timestamp
+                                "timestamp": data.end
                             }
                         }];
 
@@ -3369,7 +3369,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 "store": _level.store,
                                 "interval": _level.interval,
                                 "last": {
-                                    "timestamp": data.last.timestamp
+                                    "timestamp": data.end
                                 }
                             });
                         });
