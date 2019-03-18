@@ -484,6 +484,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     }
 
     var deferred = this._$q.defer();
+    //start-last
     this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
         // cache: this.deviceStores
     }).then(
@@ -1916,6 +1917,63 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         color.g = Math.floor((255 + color.g) / 2);
         color.b = Math.floor((255 + color.b) / 2);
         return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
+    };
+
+
+    var dotsPlotter = function (e) {
+        var g = e.dygraph;
+        var setName = e.setName;
+        var drawPointCallback = g.getOption("drawPointCallback", setName) ||
+            Dygraph.Circles.DEFAULT;
+        var strokePattern = g.getOption("strokePattern", setName);
+        var pointSize = g.getNumericOption("pointSize", setName);
+        var setName = e.setName;
+
+        var points = e.points;
+        var setName = e.setName;
+        var iter = Dygraph.createIterator(points, 0, points.length,
+          DygraphCanvasRenderer._getIteratorPredicate(
+            g.getBooleanOption("connectSeparatedPoints", setName)));
+
+
+        var stroking = strokePattern && (strokePattern.length >= 2);
+        var ctx = e.drawingContext;
+        ctx.save();
+        if (stroking) {
+            ctx.installPattern(strokePattern);
+        }
+
+        // get poinsts
+
+        var arr = iter.array_;
+        var limit = iter.end_;
+        var predicate = iter.predicate_;
+        var pointsOnLine = [];
+
+        var point = null;
+        for (var i = iter.start_; i < limit; i++) {
+            point = arr[i];
+            if (predicate) {
+              while (i < limit && !predicate(arr, i)) {
+                i++;
+              }
+              if (i == limit) break;
+              point = arr[i];
+            }
+            pointsOnLine.push([point.canvasx, point.canvasy, point.idx]);
+        }
+
+        for (var idx = 0; idx < pointsOnLine.length; idx++) {
+            var cb = pointsOnLine[idx];
+            ctx.save();
+            drawPointCallback.call(e.dygraph,
+                e.dygraph, e.setName, ctx, cb[0], cb[1], color, pointSize, cb[2]);
+            ctx.restore();
+        }
+        if (stroking) {
+            ctx.uninstallPattern();
+        }
+        ctx.restore();
     };
 
     var barChartPlotter = function (e) {
@@ -4924,6 +4982,17 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
 
 
+                        if(row.type && row.type === "dots"){
+                            series[row.label]["group"] = row.group || "_" + Math.floor(Math.random() * 1000) + 1;
+                            series[row.label]["plotter"] = dotsPlotter;
+                            if (row.yaxis == 0) {
+                                yStartLeft0 = true;
+                            } else if (row.yaxis == 1) {
+                                yStartRight0 = true;
+                            }
+                        }
+
+
                         var f = new Function("data", "with(data) { if(" + row.value + "!=null)return " + row.value + ";return null;}");
 
                         var filterF = null;
@@ -5035,7 +5104,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'y2': {
                                             'labelsKMB': true,
                                             axisLabelFormatter: function (y2, granularity, opts, g) {
-                                                return Dygraph.numberValueFormatter(y2,opts);
+                                                return Dygraph.numberValueFormatter(y2, opts);
                                             },
                                             valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
@@ -5176,7 +5245,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'y2': {
                                             'labelsKMB': true,
                                             axisLabelFormatter: function (y2, granularity, opts, g) {
-                                                return Dygraph.numberValueFormatter(y2,opts);
+                                                return Dygraph.numberValueFormatter(y2, opts);
                                             },
                                             valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
@@ -5223,7 +5292,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'y2': {
                                             'labelsKMB': true,
                                             axisLabelFormatter: function (y2, granularity, opts, g) {
-                                                return Dygraph.numberValueFormatter(y2,opts);
+                                                return Dygraph.numberValueFormatter(y2, opts);
                                             },
                                             valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
@@ -5653,7 +5722,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'y2': {
                                         'labelsKMB': true,
                                         axisLabelFormatter: function (y2, granularity, opts, g) {
-                                            return Dygraph.numberValueFormatter(y2,opts);
+                                            return Dygraph.numberValueFormatter(y2, opts);
                                         },
                                         valueRange: [yRanges[1].min, yRanges[1].max],
                                         axisLabelWidth: 80
