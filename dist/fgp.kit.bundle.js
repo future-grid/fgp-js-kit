@@ -485,7 +485,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
 
     var deferred = this._$q.defer();
     //start-last
-    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-last', {
         // cache: this.deviceStores
     }).then(
         function (response) {
@@ -1967,7 +1967,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             var cb = pointsOnLine[idx];
             ctx.save();
             drawPointCallback.call(e.dygraph,
-                e.dygraph, e.setName, ctx, cb[0], cb[1], color, pointSize, cb[2]);
+                e.dygraph, e.setName, ctx, cb[0], cb[1], e.color, pointSize, cb[2]);
             ctx.restore();
         }
         if (stroking) {
@@ -2888,7 +2888,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     "store": rangeLevel.store,
                                     "interval": rangeLevel.interval,
                                     "last": {
-                                        "timestamp": data.end
+                                        "timestamp": data.last.timestamp
                                     }
                                 }];
 
@@ -2902,7 +2902,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         "store": _level.store,
                                         "interval": _level.interval,
                                         "last": {
-                                            "timestamp": data.end
+                                            "timestamp": data.last.timestamp
                                         }
                                     });
                                 });
@@ -3413,7 +3413,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             "store": rangeLevel.store,
                             "interval": rangeLevel.interval,
                             "last": {
-                                "timestamp": data.end
+                                "timestamp": data.last.timestamp
                             }
                         }];
 
@@ -3427,7 +3427,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 "store": _level.store,
                                 "interval": _level.interval,
                                 "last": {
-                                    "timestamp": data.end
+                                    "timestamp": data.last.timestamp
                                 }
                             });
                         });

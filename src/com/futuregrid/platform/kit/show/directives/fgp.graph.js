@@ -1012,7 +1012,7 @@ class fgpWidgetGraph {
                 var cb = pointsOnLine[idx];
                 ctx.save();
                 drawPointCallback.call(e.dygraph,
-                    e.dygraph, e.setName, ctx, cb[0], cb[1], color, pointSize, cb[2]);
+                    e.dygraph, e.setName, ctx, cb[0], cb[1], e.color, pointSize, cb[2]);
                 ctx.restore();
             }
             if (stroking) {
@@ -1933,7 +1933,7 @@ class fgpWidgetGraph {
                                         "store": rangeLevel.store,
                                         "interval": rangeLevel.interval,
                                         "last": {
-                                            "timestamp": data.end
+                                            "timestamp": data.last.timestamp
                                         }
                                     }];
 
@@ -1947,7 +1947,7 @@ class fgpWidgetGraph {
                                             "store": _level.store,
                                             "interval": _level.interval,
                                             "last": {
-                                                "timestamp": data.end
+                                                "timestamp": data.last.timestamp
                                             }
                                         });
                                     });
@@ -2458,7 +2458,7 @@ class fgpWidgetGraph {
                                 "store": rangeLevel.store,
                                 "interval": rangeLevel.interval,
                                 "last": {
-                                    "timestamp": data.end
+                                    "timestamp": data.last.timestamp
                                 }
                             }];
 
@@ -2472,7 +2472,7 @@ class fgpWidgetGraph {
                                     "store": _level.store,
                                     "interval": _level.interval,
                                     "last": {
-                                        "timestamp": data.end
+                                        "timestamp": data.last.timestamp
                                     }
                                 });
                             });
