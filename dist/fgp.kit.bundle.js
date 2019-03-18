@@ -485,7 +485,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
 
     var deferred = this._$q.defer();
     //start-last
-    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-last', {
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
         // cache: this.deviceStores
     }).then(
         function (response) {
@@ -1919,6 +1919,34 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
     };
 
+    var barChartPlotter = function (e) {
+        var ctx = e.drawingContext;
+        var points = e.points;
+        var y_bottom = e.dygraph.toDomYCoord(0);
+
+        ctx.fillStyle = darkenColor(e.color);
+
+        // Find the minimum separation between x-values.
+        // This determines the bar width.
+        var min_sep = Infinity;
+        for (var i = 1; i < points.length; i++) {
+            var sep = points[i].canvasx - points[i - 1].canvasx;
+            if (sep < min_sep) min_sep = sep;
+        }
+        var bar_width = Math.floor(2.0 / 3 * min_sep);
+
+        // Do the actual plotting.
+        for (var i = 0; i < points.length; i++) {
+            var p = points[i];
+            var center_x = p.canvasx;
+
+            ctx.fillRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+
+            ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
+                bar_width, y_bottom - p.canvasy);
+        }
+    };
 
     var dotsPlotter = function (e) {
         var g = e.dygraph;
@@ -1974,35 +2002,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             ctx.uninstallPattern();
         }
         ctx.restore();
-    };
-
-    var barChartPlotter = function (e) {
-        var ctx = e.drawingContext;
-        var points = e.points;
-        var y_bottom = e.dygraph.toDomYCoord(0);
-
-        ctx.fillStyle = darkenColor(e.color);
-
-        // Find the minimum separation between x-values.
-        // This determines the bar width.
-        var min_sep = Infinity;
-        for (var i = 1; i < points.length; i++) {
-            var sep = points[i].canvasx - points[i - 1].canvasx;
-            if (sep < min_sep) min_sep = sep;
-        }
-        var bar_width = Math.floor(2.0 / 3 * min_sep);
-
-        // Do the actual plotting.
-        for (var i = 0; i < points.length; i++) {
-            var p = points[i];
-            var center_x = p.canvasx;
-
-            ctx.fillRect(center_x - bar_width / 2, p.canvasy,
-                bar_width, y_bottom - p.canvasy);
-
-            ctx.strokeRect(center_x - bar_width / 2, p.canvasy,
-                bar_width, y_bottom - p.canvasy);
-        }
     };
 
 
@@ -2882,7 +2881,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                 deviceStoreInfo["trees"] = [{
                                     "first": {
-                                        "timestamp": data.start
+                                        "timestamp": data.first.timestamp
                                     },
                                     "range": true,
                                     "store": rangeLevel.store,
@@ -2896,7 +2895,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 otherLevels.forEach(function (_level, _index) {
                                     deviceStoreInfo["trees"].push({
                                         "first": {
-                                            "timestamp": data.start
+                                            "timestamp": data.first.timestamp
                                         },
                                         "range": false,
                                         "store": _level.store,
@@ -3407,7 +3406,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         deviceStoreInfo["trees"] = [{
                             "first": {
-                                "timestamp": data.start
+                                "timestamp": data.first.timestamp
                             },
                             "range": true,
                             "store": rangeLevel.store,
@@ -4326,7 +4325,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 valueRange: [yRange.min, yRange.max],
                                 axisLabelWidth: 80
                             },
-                            'y2': {}
+                            "y2": {
+                                axisLabelFormatter: function (d) {
+                                    return '';
+                                },
+                                axisLabelWidth: 80
+                            }
                         }
                         // showRangeSelector: true
                     };
@@ -4367,10 +4371,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             'y': {
                                 valueRange: [yRange.min, yRange.max]
                             },
-                            'y2': {
-                                // axisLabelFormatter: function (d) {
-                                // return '';
-                                // }
+                            "y2": {
+                                axisLabelFormatter: function (d) {
+                                    return '';
+                                },
+                                axisLabelWidth: 80
                             }
                         }
                         // showRangeSelector: true
@@ -4970,21 +4975,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         }
 
+                        if (row.type && row.type === "dots") {
+                            series[row.label]["group"] = "_" + Math.floor(Math.random() * 1000) + 1;
+                            series[row.label]["plotter"] = dotsPlotter;
+                        }
+
                         if (row.type && row.type === "stacked-bar") {
                             //group name
                             series[row.label]["group"] = row.group || "_" + Math.floor(Math.random() * 1000) + 1;
                             series[row.label]["plotter"] = stackedBarPlotter;
-                            if (row.yaxis == 0) {
-                                yStartLeft0 = true;
-                            } else if (row.yaxis == 1) {
-                                yStartRight0 = true;
-                            }
-                        }
-
-
-                        if(row.type && row.type === "dots"){
-                            series[row.label]["group"] = row.group || "_" + Math.floor(Math.random() * 1000) + 1;
-                            series[row.label]["plotter"] = dotsPlotter;
                             if (row.yaxis == 0) {
                                 yStartLeft0 = true;
                             } else if (row.yaxis == 1) {
@@ -5104,7 +5103,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'y2': {
                                             'labelsKMB': true,
                                             axisLabelFormatter: function (y2, granularity, opts, g) {
-                                                return Dygraph.numberValueFormatter(y2, opts);
+                                                return Dygraph.numberValueFormatter(y2,opts);
                                             },
                                             valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
@@ -5245,7 +5244,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'y2': {
                                             'labelsKMB': true,
                                             axisLabelFormatter: function (y2, granularity, opts, g) {
-                                                return Dygraph.numberValueFormatter(y2, opts);
+                                                return Dygraph.numberValueFormatter(y2,opts);
                                             },
                                             valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
@@ -5292,7 +5291,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         'y2': {
                                             'labelsKMB': true,
                                             axisLabelFormatter: function (y2, granularity, opts, g) {
-                                                return Dygraph.numberValueFormatter(y2, opts);
+                                                return Dygraph.numberValueFormatter(y2,opts);
                                             },
                                             valueRange: [yStartRight0 == true ? 0 : yRanges[1].min, yRanges[1].max],
                                             axisLabelWidth: 80
@@ -5431,11 +5430,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             valueRange: [yStartLeft0 == true ? 0 : yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
                                         },
-                                        'y2': {
-                                            // axisLabelFormatter: function (d) {
-                                            // return '';
-                                            // },
-                                            // axisLabelWidth: 80
+                                        "y2": {
+                                            axisLabelFormatter: function (d) {
+                                                return '';
+                                            },
+                                            axisLabelWidth: 80
                                         }
                                     },
                                     'colors': colors
@@ -5722,7 +5721,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     'y2': {
                                         'labelsKMB': true,
                                         axisLabelFormatter: function (y2, granularity, opts, g) {
-                                            return Dygraph.numberValueFormatter(y2, opts);
+                                            return Dygraph.numberValueFormatter(y2,opts);
                                         },
                                         valueRange: [yRanges[1].min, yRanges[1].max],
                                         axisLabelWidth: 80
@@ -5765,11 +5764,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         valueRange: [yRanges[0].min, yRanges[0].max],
                                         axisLabelWidth: 80
                                     },
-                                    'y2': {
-                                        // axisLabelFormatter: function (d) {
-                                        // return '';
-                                        // },
-                                        // axisLabelWidth: 80
+                                    "y2": {
+                                        axisLabelFormatter: function (d) {
+                                            return '';
+                                        },
+                                        axisLabelWidth: 80
                                     }
                                 },
                                 'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
