@@ -1947,6 +1947,62 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         }
     };
 
+    var dotsPlotter = function (e) {
+        var g = e.dygraph;
+        var setName = e.setName;
+        var drawPointCallback = g.getOption("drawPointCallback", setName) ||
+            Dygraph.Circles.DEFAULT;
+        var strokePattern = g.getOption("strokePattern", setName);
+        var pointSize = g.getNumericOption("pointSize", setName);
+        var setName = e.setName;
+
+        var points = e.points;
+        var setName = e.setName;
+        var iter = Dygraph.createIterator(points, 0, points.length,
+          DygraphCanvasRenderer._getIteratorPredicate(
+            g.getBooleanOption("connectSeparatedPoints", setName)));
+
+
+        var stroking = strokePattern && (strokePattern.length >= 2);
+        var ctx = e.drawingContext;
+        ctx.save();
+        if (stroking) {
+            ctx.installPattern(strokePattern);
+        }
+
+        // get poinsts
+
+        var arr = iter.array_;
+        var limit = iter.end_;
+        var predicate = iter.predicate_;
+        var pointsOnLine = [];
+
+        var point = null;
+        for (var i = iter.start_; i < limit; i++) {
+            point = arr[i];
+            if (predicate) {
+              while (i < limit && !predicate(arr, i)) {
+                i++;
+              }
+              if (i == limit) break;
+              point = arr[i];
+            }
+            pointsOnLine.push([point.canvasx, point.canvasy, point.idx]);
+        }
+
+        for (var idx = 0; idx < pointsOnLine.length; idx++) {
+            var cb = pointsOnLine[idx];
+            ctx.save();
+            drawPointCallback.call(e.dygraph,
+                e.dygraph, e.setName, ctx, cb[0], cb[1], e.color, pointSize, cb[2]);
+            ctx.restore();
+        }
+        if (stroking) {
+            ctx.uninstallPattern();
+        }
+        ctx.restore();
+    };
+
 
     var stackedBarPlotter = function (e) {
         //
@@ -4268,7 +4324,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 valueRange: [yRange.min, yRange.max],
                                 axisLabelWidth: 80
                             },
-                            'y2': {}
+                            "y2": {
+                                axisLabelFormatter: function (d) {
+                                    return '';
+                                },
+                                axisLabelWidth: 80
+                            }
                         }
                         // showRangeSelector: true
                     };
@@ -4309,10 +4370,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             'y': {
                                 valueRange: [yRange.min, yRange.max]
                             },
-                            'y2': {
-                                // axisLabelFormatter: function (d) {
-                                // return '';
-                                // }
+                            "y2": {
+                                axisLabelFormatter: function (d) {
+                                    return '';
+                                },
+                                axisLabelWidth: 80
                             }
                         }
                         // showRangeSelector: true
@@ -4912,6 +4974,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         }
 
+                        if (row.type && row.type === "dots") {
+                            series[row.label]["group"] = "_" + Math.floor(Math.random() * 1000) + 1;
+                            series[row.label]["plotter"] = dotsPlotter;
+                        }
+
                         if (row.type && row.type === "stacked-bar") {
                             //group name
                             series[row.label]["group"] = row.group || "_" + Math.floor(Math.random() * 1000) + 1;
@@ -5362,11 +5429,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             valueRange: [yStartLeft0 == true ? 0 : yRanges[0].min, yRanges[0].max],
                                             axisLabelWidth: 80
                                         },
-                                        'y2': {
-                                            // axisLabelFormatter: function (d) {
-                                            // return '';
-                                            // },
-                                            // axisLabelWidth: 80
+                                        "y2": {
+                                            axisLabelFormatter: function (d) {
+                                                return '';
+                                            },
+                                            axisLabelWidth: 80
                                         }
                                     },
                                     'colors': colors
@@ -5696,11 +5763,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         valueRange: [yRanges[0].min, yRanges[0].max],
                                         axisLabelWidth: 80
                                     },
-                                    'y2': {
-                                        // axisLabelFormatter: function (d) {
-                                        // return '';
-                                        // },
-                                        // axisLabelWidth: 80
+                                    "y2": {
+                                        axisLabelFormatter: function (d) {
+                                            return '';
+                                        },
+                                        axisLabelWidth: 80
                                     }
                                 },
                                 'dateWindow': [allLines[0][0], allLines[allLines.length - 1][0]],
