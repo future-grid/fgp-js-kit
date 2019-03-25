@@ -2933,7 +2933,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             // add reset button for restore scatter view visibility
                             var _resetScatterButton_func = '_' + (Math.random().toString(36).slice(2, 13));
                             // create click event handler for this button and put it into $scope
-                            buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _resetScatterButton_func + '();">' + _resetScatterButton.label + '</span>';
+                            var buttons_html = '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _resetScatterButton_func + '();">' + _resetScatterButton.label + '</span>';
                             // compile the html and add it into toolbar
                             $element.find("#buttons_area").append($compile(buttons_html)($scope));
 
