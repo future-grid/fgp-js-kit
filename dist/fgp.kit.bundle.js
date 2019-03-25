@@ -484,7 +484,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     }
 
     var deferred = this._$q.defer();
-    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
+    this._$http.post(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
         // cache: this.deviceStores
     }).then(
         function (response) {
