@@ -2925,7 +2925,90 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     "title": $scope.scatterTitle
                                 });
                             }
+                                
+                            // reset btn label
+                            var _resetScatterButton = {
+                                label : "Show All"
+                            };
+                            // add reset button for restore scatter view visibility
+                            var _resetScatterButton_func = '_' + (Math.random().toString(36).slice(2, 13));
+                            // create click event handler for this button and put it into $scope
+                            buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _resetScatterButton_func + '();">' + _resetScatterButton.label + '</span>';
+                            // compile the html and add it into toolbar
+                            $element.find("#buttons_area").append($compile(buttons_html)($scope));
+
+
+                            $scope.button_handlers[_resetScatterButton_func] = function(){
+                                $timeout(function () {
+                                    var oldVisibility = $scope.currentChart.getOption('visibility');
+                                    var v = [];
+                                    // reset by new Visibility
+                                    oldVisibility.forEach(function () {
+                                        v.push(true);
+                                    });
+                                    $scope.currentChart.updateOptions({
+                                        'visibility': v
+                                    });
+                                });
+                            };
+
                             if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
+                                // use for filter
+                                if ($scope.interactions.graphs.buttons.scatter.filters) {
+                                    var buttons = $scope.interactions.graphs.buttons.scatter.filters;
+                                        angular$1.forEach(buttons, function (button) {
+                                            var buttons_html = '';
+                                            // create an event handler
+                                            var _func = '_' + (Math.random().toString(36).slice(2, 13));
+    
+                                            if (!$scope.button_handlers) {
+                                                $scope.button_handlers = {};
+                                            }
+
+                                            $scope.button_handlers[_func] = function () {
+                                                // get all data
+                                                var _v = [];
+                                                var graphSeries = $scope.currentChart.getLabels();
+                                                var graphData = $scope.currentChart._file;
+                                                graphSeries.forEach(function (_series, _index) {
+                                                    if(_series != "x" && _series !="span_y2"){
+                                                        // get data and call func
+                                                        var _tempData = [];
+                                                        graphData.forEach(function(_data){
+                                                            var _tempObj = {"timestamp": _data[0], "data":  _data[_index]};
+                                                            _tempData.push(_tempObj);
+                                                        });
+                                                        // call filter
+                                                        if(button.func(_series, _tempData)){
+                                                            _v.push(true);
+                                                        }else{
+                                                            _v.push(false);
+                                                        }
+                                                    }
+                                                });
+                                                // update visibility once
+                                                $timeout(function () {
+                                                    var oldVisibility = $scope.currentChart.getOption('visibility');
+                                                    // reset by new Visibility
+                                                    v.forEach(function (item, _index) {
+                                                        oldVisibility[_index] = item;
+                                                    });
+                                                    $scope.currentChart.updateOptions({
+                                                        'visibility': oldVisibility
+                                                    });
+                                                });
+
+
+                                            };
+
+                                            // create click event handler for this button and put it into $scope
+                                            buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                            // compile the html and add it into toolbar
+                                            $element.find("#buttons_area").append($compile(buttons_html)($scope));
+
+                                        });
+                                }
+
 
                                 if ($scope.interactions.graphs.buttons.scatter.extraDataConfig) {
                                     // create buttons
