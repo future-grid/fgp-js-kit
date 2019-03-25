@@ -2015,7 +2015,7 @@ class fgpWidgetGraph {
                                                     // get all data
                                                     var _v = [];
                                                     var graphSeries = $scope.currentChart.getLabels();
-                                                    var graphData = $scope.currentChart._file;
+                                                    var graphData = $scope.currentChart.file_;
                                                     graphSeries.forEach(function (_series, _index) {
                                                         if(_series != "x" && _series !="span_y2"){
                                                             // get data and call func
