@@ -1926,7 +1926,7 @@ class fgpWidgetGraph {
 
                                     deviceStoreInfo["trees"] = [{
                                         "first": {
-                                            "timestamp": data.start
+                                            "timestamp": data.first.timestamp
                                         },
                                         "range": true,
                                         "store": rangeLevel.store,
@@ -1940,7 +1940,7 @@ class fgpWidgetGraph {
                                     otherLevels.forEach(function (_level, _index) {
                                         deviceStoreInfo["trees"].push({
                                             "first": {
-                                                "timestamp": data.start
+                                                "timestamp": data.first.timestamp
                                             },
                                             "range": false,
                                             "store": _level.store,
@@ -2534,7 +2534,7 @@ class fgpWidgetGraph {
 
                             deviceStoreInfo["trees"] = [{
                                 "first": {
-                                    "timestamp": data.start
+                                    "timestamp": data.first.timestamp
                                 },
                                 "range": true,
                                 "store": rangeLevel.store,
@@ -2548,7 +2548,7 @@ class fgpWidgetGraph {
                             otherLevels.forEach(function (_level, _index) {
                                 deviceStoreInfo["trees"].push({
                                     "first": {
-                                        "timestamp": data.start
+                                        "timestamp": data.first.timestamp
                                     },
                                     "range": false,
                                     "store": _level.store,

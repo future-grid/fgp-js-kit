@@ -484,7 +484,7 @@ dataAccessApi.prototype.deviceInitInfo = function deviceInitInfo (host, applicat
     }
 
     var deferred = this._$q.defer();
-    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/start-last', {
+    this._$http.get(host + '/' + application + '/' + deviceType + '/' + rangeLevel + '/' + deviceName + '/all', {
         // cache: this.deviceStores
     }).then(
         function (response) {
@@ -2880,7 +2880,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                 deviceStoreInfo["trees"] = [{
                                     "first": {
-                                        "timestamp": data.start
+                                        "timestamp": data.first.timestamp
                                     },
                                     "range": true,
                                     "store": rangeLevel.store,
@@ -2894,7 +2894,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 otherLevels.forEach(function (_level, _index) {
                                     deviceStoreInfo["trees"].push({
                                         "first": {
-                                            "timestamp": data.start
+                                            "timestamp": data.first.timestamp
                                         },
                                         "range": false,
                                         "store": _level.store,
@@ -3488,7 +3488,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                         deviceStoreInfo["trees"] = [{
                             "first": {
-                                "timestamp": data.start
+                                "timestamp": data.first.timestamp
                             },
                             "range": true,
                             "store": rangeLevel.store,
@@ -3502,7 +3502,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         otherLevels.forEach(function (_level, _index) {
                             deviceStoreInfo["trees"].push({
                                 "first": {
-                                    "timestamp": data.start
+                                    "timestamp": data.first.timestamp
                                 },
                                 "range": false,
                                 "store": _level.store,
