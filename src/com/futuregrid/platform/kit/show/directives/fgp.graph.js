@@ -2016,7 +2016,7 @@ class fgpWidgetGraph {
                                                 }
 
                                                 $scope.button_handlers[_func] = function () {
-                                                    $scope.scatter.filters.current = button.label;
+                                                    $scope.filters = {current:button.label};
                                                     // get all data
                                                     var v = [];
                                                     var graphSeries = $scope.currentChart.getLabels();
@@ -2054,7 +2054,7 @@ class fgpWidgetGraph {
                                                 };
 
                                                 // create click event handler for this button and put it into $scope btn-info
-                                                buttons_html += '<span class="btn btn-xs badge" ng-class="{scatter.filters.current == \''+button.label+'\'? \'btn-info\': \'btn-default\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                                buttons_html += '<span class="btn btn-xs badge" ng-class="{filters.current == \''+button.label+'\'? \'btn-info\': \'btn-default\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                                 // compile the html and add it into toolbar
                                                 $element.find("#buttons_area").append($compile(buttons_html)($scope));
 
@@ -2076,7 +2076,7 @@ class fgpWidgetGraph {
                                             }
 
                                             $scope.button_handlers[_func] = function () {
-                                                $scope.scatter.extraData.current = button.label;
+                                                $scope.extraData = {current:button.label};
                                                 var oldVisibility = $scope.currentChart.getOption('visibility');
                                                 var v = [];
                                                 // reset by new Visibility
@@ -2222,7 +2222,7 @@ class fgpWidgetGraph {
 
                                             }
                                             // create click event handler for this button and put it into $scope
-                                            buttons_html += '<span class="btn btn-xs badge" ng-class="{scatter.extraData.current == \''+button.label+'\'? \'btn-info\': \'btn-default\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                            buttons_html += '<span class="btn btn-xs badge" ng-class="{extraData.current == \''+button.label+'\'? \'btn-info\': \'btn-default\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                             // compile the html and add it into toolbar
                                             $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                         });
