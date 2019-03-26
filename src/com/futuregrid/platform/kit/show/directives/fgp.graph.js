@@ -2004,6 +2004,7 @@ class fgpWidgetGraph {
                                 if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
                                     // use for filter
                                     if ($scope.interactions.graphs.buttons.scatter.filters) {
+                                        $scope.scatter.filters.current = "";
                                         var buttons = $scope.interactions.graphs.buttons.scatter.filters;
                                             angular.forEach(buttons, function (button) {
                                                 var buttons_html = '';
@@ -2015,6 +2016,7 @@ class fgpWidgetGraph {
                                                 }
 
                                                 $scope.button_handlers[_func] = function () {
+                                                    $scope.scatter.filters.current = button.label;
                                                     // get all data
                                                     var v = [];
                                                     var graphSeries = $scope.currentChart.getLabels();
@@ -2051,8 +2053,8 @@ class fgpWidgetGraph {
 
                                                 };
 
-                                                // create click event handler for this button and put it into $scope
-                                                buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                                // create click event handler for this button and put it into $scope btn-info
+                                                buttons_html += '<span class="btn btn-xs badge" ng-class="{scatter.filters.current == \''+button.label+'\'? \'btn-info\': \'btn-default\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                                 // compile the html and add it into toolbar
                                                 $element.find("#buttons_area").append($compile(buttons_html)($scope));
 
@@ -2074,6 +2076,19 @@ class fgpWidgetGraph {
                                             }
 
                                             $scope.button_handlers[_func] = function () {
+                                                $scope.scatter.extraData.current = button.label;
+                                                var oldVisibility = $scope.currentChart.getOption('visibility');
+                                                var v = [];
+                                                // reset by new Visibility
+                                                oldVisibility.forEach(function () {
+                                                    v.push(true);
+                                                });
+                                                $scope.childrenDevices.forEach(function(_item){
+                                                    _item.show = true;
+                                                });
+                                                $scope.currentChart.updateOptions({
+                                                    'visibility': v
+                                                }, true);
                                                 // change config then refersh scatter view
                                                 $scope.autoupdate = false;
                                                 $scope.forceScale = true;
@@ -2207,7 +2222,7 @@ class fgpWidgetGraph {
 
                                             }
                                             // create click event handler for this button and put it into $scope
-                                            buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                            buttons_html += '<span class="btn btn-xs badge" ng-class="{scatter.extraData.current == \''+button.label+'\'? \'btn-info\': \'btn-default\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                             // compile the html and add it into toolbar
                                             $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                         });
