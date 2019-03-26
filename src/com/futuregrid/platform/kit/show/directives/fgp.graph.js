@@ -1992,6 +1992,9 @@ class fgpWidgetGraph {
                                         oldVisibility.forEach(function () {
                                             v.push(true);
                                         });
+                                        $scope.childrenDevices.forEach(function(_item){
+                                            _item.show = true;
+                                        });
                                         $scope.currentChart.updateOptions({
                                             'visibility': v
                                         });
@@ -2013,7 +2016,7 @@ class fgpWidgetGraph {
 
                                                 $scope.button_handlers[_func] = function () {
                                                     // get all data
-                                                    var _v = [];
+                                                    var v = [];
                                                     var graphSeries = $scope.currentChart.getLabels();
                                                     var graphData = $scope.currentChart.file_;
                                                     graphSeries.forEach(function (_series, _index) {
@@ -2026,9 +2029,9 @@ class fgpWidgetGraph {
                                                             });
                                                             // call filter
                                                             if(button.func(_series, _tempData)){
-                                                                _v.push(true);
+                                                                v.push(true);
                                                             }else{
-                                                                _v.push(false);
+                                                                v.push(false);
                                                             }
                                                         }
                                                     });
@@ -2038,6 +2041,7 @@ class fgpWidgetGraph {
                                                         // reset by new Visibility
                                                         v.forEach(function (item, _index) {
                                                             oldVisibility[_index] = item;
+                                                            $scope.childrenDevices[_index].show = item;
                                                         });
                                                         $scope.currentChart.updateOptions({
                                                             'visibility': oldVisibility
