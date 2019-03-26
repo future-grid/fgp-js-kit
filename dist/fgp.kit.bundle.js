@@ -2450,9 +2450,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         if (widgetData.data.metadata.css) {
             $scope.css = widgetData.data.metadata.css;
         }
-        // get start and end from url
-        var begin_path = $stateParams.begin;
-        var end_path = $stateParams.end;
+        // get begin_path and end_path from interaction
+        var begin_path = null;
+        var end_path = null;
+        //
+        if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.initDatetimeWindow){
+            begin_path = $scope.interactions.graphs.initDatetimeWindow[0];
+            end_path = $scope.interactions.graphs.initDatetimeWindow[1];
+        }
+
         var init_flag = false;
         //fix interval
         $scope.fixInterval = false;
