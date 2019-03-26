@@ -3008,7 +3008,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             };
 
                                             // create click event handler for this button and put it into $scope btn-info
-                                            buttons_html += '<span class="btn btn-xs badge" ng-class=" \'btn-info\': filtersCurrent == \''+button.label+'\' , \'btn-default\' : filtersCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                            buttons_html += '<span class="btn btn-xs badge" ng-class="{\'btn-warning\' : filtersCurrent == \'' +button.label+'\' , \'btn-info\' : filtersCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                             // compile the html and add it into toolbar
                                             $element.find("#buttons_area").append($compile(buttons_html)($scope));
 
@@ -3177,7 +3177,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                         };
                                         // create click event handler for this button and put it into $scope
-                                        buttons_html += '<span class="btn btn-xs badge" ng-class="{\'btn-info\': extraDataCurrent == \''+button.label+'\' , \'btn-default\' : extraDataCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                        buttons_html += '<span class="btn btn-xs badge" ng-class="{\'btn-warning\': extraDataCurrent == \''+button.label+'\' , \'btn-info\': extraDataCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                         // compile the html and add it into toolbar
                                         $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                     });
