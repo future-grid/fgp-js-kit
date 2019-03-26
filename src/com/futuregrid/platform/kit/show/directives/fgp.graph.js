@@ -2004,7 +2004,7 @@ class fgpWidgetGraph {
                                 if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
                                     // use for filter
                                     if ($scope.interactions.graphs.buttons.scatter.filters) {
-                                        $scope.scatter.filters.current = "";
+                                        $scope.filters = {current:""};
                                         var buttons = $scope.interactions.graphs.buttons.scatter.filters;
                                             angular.forEach(buttons, function (button) {
                                                 var buttons_html = '';
@@ -2064,6 +2064,7 @@ class fgpWidgetGraph {
 
                                     if ($scope.interactions.graphs.buttons.scatter.extraDataConfig) {
                                         // create buttons
+                                        $scope.extraData = {current:""};
                                         var buttons = $scope.interactions.graphs.buttons.scatter.extraDataConfig;
                                         angular.forEach(buttons, function (button) {
                                             var buttons_html = '';
