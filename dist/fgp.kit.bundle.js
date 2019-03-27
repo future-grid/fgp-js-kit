@@ -2450,9 +2450,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         if (widgetData.data.metadata.css) {
             $scope.css = widgetData.data.metadata.css;
         }
-        // get start and end from url
-        var begin_path = $stateParams.begin;
-        var end_path = $stateParams.end;
+        // get begin_path and end_path from interaction
+        var begin_path = null;
+        var end_path = null;
+        //
+        if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.initDatetimeWindow){
+            begin_path = $scope.interactions.graphs.initDatetimeWindow[0];
+            end_path = $scope.interactions.graphs.initDatetimeWindow[1];
+        }
+
         var init_flag = false;
         //fix interval
         $scope.fixInterval = false;
@@ -2958,8 +2964,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.scatter) {
                                 // use for filter
                                 if ($scope.interactions.graphs.buttons.scatter.filters) {
-                                    var buttons = $scope.interactions.graphs.buttons.scatter.filters;
                                     $scope.filtersCurrent = "";
+                                    var buttons = $scope.interactions.graphs.buttons.scatter.filters;
                                         angular$1.forEach(buttons, function (button) {
                                             var buttons_html = '';
                                             // create an event handler
@@ -2970,8 +2976,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             }
 
                                             $scope.button_handlers[_func] = function () {
-                                                // get all data
                                                 $scope.filtersCurrent = button.label;
+                                                // get all data
                                                 var v = [];
                                                 var graphSeries = $scope.currentChart.getLabels();
                                                 var graphData = $scope.currentChart.file_;
@@ -2997,7 +3003,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                     // reset by new Visibility
                                                     v.forEach(function (item, _index) {
                                                         oldVisibility[_index] = item;
-                                                        $scope.childrenDevices[_index].show = item;
+                                                        $scope.childrenDevices[_index]["show"] = item;
                                                     });
                                                     $scope.currentChart.updateOptions({
                                                         'visibility': oldVisibility
@@ -3006,6 +3012,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                                             };
+
                                             // create click event handler for this button and put it into $scope btn-info
                                             buttons_html += '<span class="btn btn-xs badge" ng-class="{\'btn-warning\' : filtersCurrent == \'' +button.label+'\' , \'btn-info\' : filtersCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                             // compile the html and add it into toolbar
@@ -3017,6 +3024,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                 if ($scope.interactions.graphs.buttons.scatter.extraDataConfig) {
                                     // create buttons
+                                    $scope.extraDataCurrent = "";
                                     var buttons = $scope.interactions.graphs.buttons.scatter.extraDataConfig;
                                     angular$1.forEach(buttons, function (button) {
                                         var buttons_html = '';
@@ -3027,12 +3035,24 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         if (!$scope.button_handlers) {
                                             $scope.button_handlers = {};
                                         }
-                                        $scope.extraDataCurrent = "";
+
                                         $scope.button_handlers[_func] = function () {
+                                            $scope.extraDataCurrent = button.label;
+                                            var oldVisibility = $scope.currentChart.getOption('visibility');
+                                            var v = [];
+                                            // reset by new Visibility
+                                            oldVisibility.forEach(function () {
+                                                v.push(true);
+                                            });
+                                            $scope.childrenDevices.forEach(function(_item){
+                                                _item.show = true;
+                                            });
+                                            $scope.currentChart.updateOptions({
+                                                'visibility': v
+                                            }, true);
                                             // change config then refersh scatter view
                                             $scope.autoupdate = false;
                                             $scope.forceScale = true;
-                                            $scope.extraDataCurrent = button.label;
                                             // check interactions configuration $scope.hp
                                             if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true) {
                                                 $scope.hp = true;
@@ -3163,7 +3183,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                                         };
                                         // create click event handler for this button and put it into $scope
-                                        buttons_html += '<span class="btn btn-xs badge" ng-class="{\'btn-warning\' : extraDataCurrent == \'' +button.label+'\' , \'btn-info\' : filtersCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                                        buttons_html += '<span class="btn btn-xs badge" ng-class="{\'btn-warning\': extraDataCurrent == \''+button.label+'\' , \'btn-info\': extraDataCurrent != \''+button.label+'\'}" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
                                         // compile the html and add it into toolbar
                                         $element.find("#buttons_area").append($compile(buttons_html)($scope));
                                     });
@@ -3611,7 +3631,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         //
                         if (((newValue.end - newValue.begin) / expectedInterval) > expect_points) {
                             // reset range bar
-                            Config.dateWindow = [new Date(newValue.end - (expect_points - 1) * expectedInterval), new Date(newValue.end)];
+                            $scope.rangeConfig.dateWindow = [new Date(newValue.end - (expect_points - 1) * expectedInterval), new Date(newValue.end)];
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
                             $scope.alertMessage = "Limit the number of \"Zoom-Out\" points to " + expect_points + ".";
@@ -4514,7 +4534,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 };
                             }
 
-                            $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                                
                             // reset the datetime for current chart
                             // && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000)
                             if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
@@ -4527,7 +4547,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             } else {
                                 $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
-                                    $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
                                 } else {
@@ -4538,6 +4558,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                                     }
                                 }
+                                $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
                             }
@@ -4573,7 +4594,6 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             };
                         }
-                        $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                         // reset the datetime for current chart
 
                         if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
@@ -4586,7 +4606,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
-                                $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 init_flag = true;
                             } else {
@@ -4597,6 +4617,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                                 }
                             }
+                            $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
                         }
@@ -5887,7 +5908,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
-                                $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 init_flag = true;
                             } else {
