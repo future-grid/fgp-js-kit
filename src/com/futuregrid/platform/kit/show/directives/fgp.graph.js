@@ -2677,7 +2677,7 @@ class fgpWidgetGraph {
                             //
                             if (((newValue.end - newValue.begin) / expectedInterval) > expect_points) {
                                 // reset range bar
-                                Config.dateWindow = [new Date(newValue.end - (expect_points - 1) * expectedInterval), new Date(newValue.end)];
+                                $scope.rangeConfig.dateWindow = [new Date(newValue.end - (expect_points - 1) * expectedInterval), new Date(newValue.end)];
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
                                 $scope.alertMessage = "Limit the number of \"Zoom-Out\" points to " + expect_points + ".";
@@ -3580,7 +3580,7 @@ class fgpWidgetGraph {
                                     };
                                 }
 
-                                $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
+                                
                                 // reset the datetime for current chart
                                 // && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000)
                                 if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
@@ -3593,7 +3593,7 @@ class fgpWidgetGraph {
                                 } else {
                                     $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                     if (begin_path && end_path && !init_flag) {
-                                        $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                        // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                         $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                         init_flag = true;
                                     } else {
@@ -3604,6 +3604,7 @@ class fgpWidgetGraph {
                                             $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                                         }
                                     }
+                                    $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                     $scope.currentChart.updateOptions($scope.rangeConfig);
                                     $scope.currentChartOptions = $scope.rangeConfig;
                                 }
@@ -3639,7 +3640,6 @@ class fgpWidgetGraph {
                                     }
                                 };
                             }
-                            $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                             // reset the datetime for current chart
 
                             if ($scope.chartDateWindow && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
@@ -3652,7 +3652,7 @@ class fgpWidgetGraph {
                             } else {
                                 $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
-                                    $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
                                 } else {
@@ -3663,6 +3663,7 @@ class fgpWidgetGraph {
                                         $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                                     }
                                 }
+                                $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
                             }
@@ -4953,7 +4954,7 @@ class fgpWidgetGraph {
                             } else {
                                 $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
-                                    $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
                                 } else {
