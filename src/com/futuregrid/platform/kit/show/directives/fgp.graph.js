@@ -1506,7 +1506,7 @@ class fgpWidgetGraph {
                 // watch on this var and update graphs when the var changed
                 $scope.$watchCollection('interactions.graphs.initDatetimeWindow', function(newVal, oldVal){
                     //
-                    if(newVal && newVal.length == 2){
+                    if(newVal && newVal.length == 2 && $scope.rangeConfig && $scope.currentChart){
                         // update range bar
                         $scope.rangeConfig.dateWindow = [new Date(newVal[0]), new Date(newVal[1])];
                         $scope.currentChart.updateOptions($scope.rangeConfig);
