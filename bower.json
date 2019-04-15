@@ -22,6 +22,10 @@
     "ngmap": "^1.17.1",
     "angular-ui-ace": "bower",
     "angular-cache": "^4.6.0",
-    "moment-timezone": "^0.5.14"
+    "moment-timezone": "^0.5.14",
+    "keycloak": "^5.0.0",
+    "angular-jwt": "^0.1.11",
+    "auth0-lock": "^11.14.1",
+    "angular-lock": "^3.0.1"
   }
 }

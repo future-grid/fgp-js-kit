@@ -2459,7 +2459,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         $scope.css = {
             width: "col-md-12",
             height: "400",
-            heights:["400", "600", "800"]
+            heights:[]
         };
         if (widgetData.data.metadata.css) {
             $scope.css = widgetData.data.metadata.css;
