@@ -1665,12 +1665,27 @@ class fgpWidgetGraph {
                                                             if (data != null && data.length > 0) {
                                                                 initChildrenChart(data);
                                                                 // interactionHandler(); // do not need to update interactions
-                                                            } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children) {
-                                                                // no relationship in fgp platform just take it from interactions Configuration  extension_type
-                                                                if ($scope.interactions.graphs.device.children.data) {
-                                                                    var devices_key = $scope.interactions.graphs.device.children.data().then(
-                                                                        function(data) {
-                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                            } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children && $scope.interactions.graphs.device.children instanceof Array) {
+                                                                // get the config from array
+                                                                $scope.interactions.graphs.device.children.forEach(function(_relationConf){
+                                                                    if(_relationConf.type && _relationConf.type === metadata.data.source.relation_group){
+                                                                        if(_relationConf.data && _relationConf.data instanceof Function){
+                                                                            //
+                                                                            $scope.interactions.graphs.device.children.data().then(function(data){
+                                                                                $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                                    function(data) {
+                                                                                        initChildrenChart(data);
+                                                                                        interactionHandler();
+                                                                                    },
+                                                                                    function(error) {
+                                                                                        console.error(error);
+                                                                                    }
+                                                                                );
+                                                                            });
+
+
+                                                                        }else if(_relationConf.data && _relationConf.data instanceof Array){
+                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, _relationConf.data, metadata.data.source.store, _relationConf.extension_type, rangeLevel, otherLevels, fields)).then(
                                                                                 function(data) {
                                                                                     initChildrenChart(data);
                                                                                     interactionHandler();
@@ -1679,28 +1694,51 @@ class fgpWidgetGraph {
                                                                                     console.error(error);
                                                                                 }
                                                                             );
-                                                                        },
-                                                                        function(error) {
-                                                                            return;
                                                                         }
-                                                                    );
-                                                                } else {
-                                                                    return;
-                                                                }
+                                                                    }
+                                                                });
                                                             } else {
                                                                 return;
                                                             }
                                                         }, function(error) {
+                                                            // get error (maybe relation error then check if there is a extra config for scatter view)
+                                                            if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children && $scope.interactions.graphs.device.children instanceof Array) {
+                                                                // get the config from array
+                                                                $scope.interactions.graphs.device.children.forEach(function(_relationConf){
+                                                                    if(_relationConf.type && _relationConf.type === metadata.data.source.relation_group){
+                                                                        if(_relationConf.data && _relationConf.data instanceof Function){
+                                                                            //
+                                                                            $scope.interactions.graphs.device.children.data().then(function(data){
+                                                                                $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                                    function(data) {
+                                                                                        initChildrenChart(data);
+                                                                                        interactionHandler();
+                                                                                    },
+                                                                                    function(error) {
+                                                                                        console.error(error);
+                                                                                    }
+                                                                                );
+                                                                            });
+
+
+                                                                        }else if(_relationConf.data && _relationConf.data instanceof Array){
+                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, _relationConf.data, metadata.data.source.store, _relationConf.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                                function(data) {
+                                                                                    initChildrenChart(data);
+                                                                                    interactionHandler();
+                                                                                },
+                                                                                function(error) {
+                                                                                    console.error(error);
+                                                                                }
+                                                                            );
+                                                                        }
+                                                                    }
+                                                                });
+                                                            }
                                                             console.error(error)
                                                         });
-
                                                     }
                                                 }
-
-
-
-
-
                                             }
                                             // create click event handler for this button and put it into $scope
                                             buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
