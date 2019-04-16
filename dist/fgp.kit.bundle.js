@@ -2593,8 +2593,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                                 if(_relationConf.type && _relationConf.type === metadata.data.source.relation_group){
                                                                     if(_relationConf.data && _relationConf.data instanceof Function){
                                                                         //
-                                                                        $scope.interactions.graphs.device.children.data().then(function(data){
-                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                        _relationConf.data().then(function(data){
+                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, _relationConf.extension_type, rangeLevel, otherLevels, fields)).then(
                                                                                 function(data) {
                                                                                     initChildrenChart(data);
                                                                                     interactionHandler();
@@ -2630,8 +2630,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                                 if(_relationConf.type && _relationConf.type === metadata.data.source.relation_group){
                                                                     if(_relationConf.data && _relationConf.data instanceof Function){
                                                                         //
-                                                                        $scope.interactions.graphs.device.children.data().then(function(data){
-                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                                        _relationConf.data().then(function(data){
+                                                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, _relationConf.extension_type, rangeLevel, otherLevels, fields)).then(
                                                                                 function(data) {
                                                                                     initChildrenChart(data);
                                                                                     interactionHandler();
@@ -2719,23 +2719,35 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                         interactionHandler();
                                     } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children) {
                                         // no relationship in fgp platform just take it from interactions Configuration  extension_type
-                                        if ($scope.interactions.graphs.device.children.data) {
-                                            var devices_key = $scope.interactions.graphs.device.children.data().then(
-                                                function(data) {
-                                                    $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
-                                                        function(data) {
-                                                            initChildrenChart(data);
-                                                            interactionHandler();
-                                                        },
-                                                        function(error) {
-                                                            console.error(error);
-                                                        }
-                                                    );
-                                                },
-                                                function(error) {
-                                                    return;
+                                        if ($scope.interactions.graphs.device.children && $scope.interactions.graphs.device.children instanceof Array) {
+                                            var _tempConfig = null;
+                                            $scope.interactions.graphs.device.children.forEach(function(_config){
+
+                                                if(_config.type === metadata.data.source.relation_group){
+                                                    // found it
+                                                    _tempConfig = _config;
                                                 }
-                                            );
+                                            });
+
+                                            if(_tempConfig){
+                                                var devices_key = _tempConfig.data().then(
+                                                    function(data) {
+                                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, _tempConfig.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                            function(data) {
+                                                                initChildrenChart(data);
+                                                                interactionHandler();
+                                                            },
+                                                            function(error) {
+                                                                console.error(error);
+                                                            }
+                                                        );
+                                                    },
+                                                    function(error) {
+                                                        return;
+                                                    }
+                                                ); 
+                                            }
+                                                
                                         } else {
                                             return;
                                         }
@@ -3337,28 +3349,41 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                             // try to find
-                            if ($scope.interactions.graphs.device.children.data) {
-                                var devices_key = $scope.interactions.graphs.device.children.data().then(
-                                    function(data) {
-                                        $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type, rangeLevel, otherLevels, fields)).then(
-                                            function(data) {
-                                                if (data) {
-                                                    data.forEach(function (_device) {
-                                                        deviceInfo.push(_device.device);
-                                                    });
-                                                }
-                                                // do we need fixed interval
-                                                _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, $scope.fixedInterval);
-                                            },
-                                            function(error) {
-                                                console.error(error);
-                                            }
-                                        );
-                                    },
-                                    function(error) {
-                                        return;
+                            if ($scope.interactions.graphs.device.children && $scope.interactions.graphs.device.children instanceof Array) {
+
+                                // get config from array
+                                var _tempConfig = null;
+                                $scope.interactions.graphs.device.children.forEach(function(_config){
+                                    if(_config.type && _config.type ===  relationConfig.relation_group){
+                                        // found it
+                                        _tempConfig = _config;
                                     }
-                                );
+                                });
+
+                                if(_tempConfig){
+                                    var devices_key = _tempConfig.data().then(
+                                        function(data) {
+                                            $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, _tempConfig.extension_type, rangeLevel, otherLevels, fields)).then(
+                                                function(data) {
+                                                    if (data) {
+                                                        data.forEach(function (_device) {
+                                                            deviceInfo.push(_device.device);
+                                                        });
+                                                    }
+                                                    // do we need fixed interval
+                                                    _init(deviceInfo, currentStore, newValue.begin, newValue.end, fields, expectedInterval, $scope.fixedInterval);
+                                                },
+                                                function(error) {
+                                                    console.error(error);
+                                                }
+                                            );
+                                        },
+                                        function(error) {
+                                            return;
+                                        }
+                                    );
+                                }
+                                    
                             } else {
                                 return;
                             }
