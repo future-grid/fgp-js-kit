@@ -8,10 +8,10 @@ class fgpWidgetGraph {
     constructor($timeout, dataService, $rootScope, $interval, $filter, $location, $stateParams, $compile, $q) {
         this.restrict = 'E';
         this.scope = {
-            interactions: "=",
-            drill: "=",
-            highlights: "=",
-            eventsHandler: "=",
+            interactionsItem: "=interactions",
+            drillItem: "=drill",
+            highlightsItem: "=highlights",
+            eventsHandlerItem: "=eventsHandler",
             dateFormatter: "=" // has 2 attributes  pattern & timezone
         };
         this.$timeout = $timeout;
@@ -67,15 +67,19 @@ class fgpWidgetGraph {
                 '</div>';
 
 
-            var dom_scatter_addon = '<div ng-hide="interactions.graphs.btns.scatter == \'hide\'" ng-show="scatterAddon && scatterAddon.length > 0" class="dropdown"> <button class="btn btn-warning dropdown-toggle badge" type="button" data-toggle="dropdown">Series<span class="caret"></span></button> <ul class="dropdown-menu" style="font-size:12px;height:auto;max-height:300px;overflow-x:hidden;padding:10px;"><li ng-repeat="addon in scatterAddon"><input type="checkbox" ng-click="" ng-checked="series.show"/>&nbsp;&nbsp;{{addon.label}}</li></ul> </div>';
+            var dom_scatter_addon = '<div ng-hide="interactions.graphs.btns.scatter == \'hide\'" ng-show="scatterAddon && scatterAddon.length > 1" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">scatter<span class="caret"></span></button> <ul class="dropdown-menu dropdown-menu-right" style="font-size:12px;overflow-x:hidden;"><li ng-repeat="addon in scatterAddon">&nbsp;&nbsp;<a href="javascript:;" ng-click="initScatterView(addon)">{{addon.label}}</a></li></ul> </div>';
 
-            var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="graph-body col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"> <div style="float: right; margin-right: 10px;">'+dom_scatter_addon+'</div> <a class="btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\'" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="saveGraphAsPng()"><i class="glyphicon glyphicon-picture"></i></a><div id="buttons_area" style=""></div><a ng-show="false" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + ' ' + dom_series_list_device + '</div><div style="float: right; margin-right: 10px;"> '+ dom_graphs_size +'  </div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div><div style="float: right; margin-right: 10px;">Timezone:{{dateFormatter.timezone}}</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
+            var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="graph-body col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"> <div style="float: right; margin-right: 10px;">'+dom_scatter_addon+'</div> <a class="btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\' || scatterAddon && scatterAddon.length > 1" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="saveGraphAsPng()"><i class="glyphicon glyphicon-picture"></i></a><div id="buttons_area" style=""></div><a ng-show="false" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + ' ' + dom_series_list_device + '</div><div style="float: right; margin-right: 10px;"> '+ dom_graphs_size +'  </div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div><div style="float: right; margin-right: 10px;">Timezone:{{dateFormatter.timezone}}</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
             return html;
         }
     }
 
     link(scope, element, attrs) {
+
+
+        
+
         scope['defaultColors'] = this._dataService.defaultColors();
         var dataService = this._dataService;
         var _$interval = this._$interval;
@@ -83,6 +87,33 @@ class fgpWidgetGraph {
         var timeOut = this.$timeout;
         scope.completionPercent = 0;
         scope.graphId = attrs.id;
+
+        if(scope.interactionsItem && scope.interactionsItem.hasOwnProperty(attrs.id)){
+            scope.interactions = scope.interactionsItem[attrs.id];
+        }else if(scope.interactionsItem){
+            scope.interactions = scope.interactionsItem;
+        }
+
+        if(scope.drillItem && scope.drillItem.hasOwnProperty(attrs.id)){
+            scope.drill = scope.drillItem[attrs.id];
+        }else if(scope.drillItem){
+            scope.drill = scope.drillItem;
+        }
+
+        if(scope.highlightsItem && scope.highlightsItem.hasOwnProperty(attrs.id)){
+            scope.highlights = scope.highlightsItem[attrs.id];
+        }else if(scope.highlightsItem){
+            scope.highlights = scope.highlightsItem;
+        }
+
+        if(scope.eventsHandlerItem && scope.eventsHandlerItem.hasOwnProperty(attrs.id)){
+            scope.eventsHandler = scope.eventsHandlerItem[attrs.id];
+        }else if(scope.eventsHandlerItem){
+            scope.eventsHandler = scope.eventsHandlerItem;
+        }
+
+
+
         scope.deviceTitle = attrs.hasOwnProperty("dTitle") ? attrs["dTitle"] : null;
         scope.scatterTitle = attrs.hasOwnProperty("sTitle") ? attrs["sTitle"] : null;
         scope.parent_id = attrs.container;
@@ -1995,7 +2026,7 @@ class fgpWidgetGraph {
                                 $scope.hp = true;
                             }
                             //get relation config
-                            if (!metadata.data.source.relation || "none" === metadata.data.source.relation) {
+                            if (!metadata.data.source.relation || "none" === metadata.data.source.relation || ($scope['interactions'] && $scope['interactions'].graphs && $scope.scatterAddon && $scope.scatterAddon.length > 1)) {
                                 return;
                             } else {
                                 if ($scope.scatterTitle) {
@@ -2612,13 +2643,154 @@ class fgpWidgetGraph {
                                 });
                             });
 
-                            $scope.scatterAddon = [];
+                            $scope.scatterAddon = [{
+                                name: '-1',
+                                label: "back to device view"
+                            }];
                             // extra buttons form scatter view
                             if($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatterAddon){
-                                // add these buttons on 
+
                                 $scope['interactions'].graphs.scatterAddon.forEach(function(_addon){
-                                    
+                                    _addon["label"] = _addon.label ?  _addon.label : _addon.name;
+                                    $scope.scatterAddon.push(_addon);
                                 });
+                                
+
+                                $scope.initScatterView = function(_config){
+
+                                    if(_config.name == '-1'){
+                                        $scope.currentView = -1; 
+                                    }else{
+                                        $scope.currentView = 1;
+
+                                        // change config then refersh scatter view
+                                        $scope.autoupdate = false;
+                                        $scope.forceScale = true;
+                                        // check interactions configuration $scope.hp
+                                        if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.performance == true) {
+                                            $scope.hp = true;
+                                        }
+                                        // send title to parent container
+                                        $scope.$emit('changeContainerTitleEvent', {
+                                            "id": $scope.parent_id,
+                                            "title": _config.name
+                                        });
+    
+                                        metadata.data.groups[2] = _config;
+                                        metadata.data.source.relation_group = _config.relation_group;
+                                        var rangeLevel;
+                                        var otherLevels = [];
+                                        var relationConfig = metadata.data.groups[2];
+                                        if (relationConfig.nameColumn) {
+                                            $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
+                                        } else {
+                                            $scope.childrenDeviceNameColumn = "name";
+                                        }
+                                        angular.forEach(metadata.data.groups[2].collections, function (level) {
+                                            if (level.rows.length > 0) {
+                                                if (!rangeLevel) {
+                                                    //
+                                                    rangeLevel = {
+                                                        "store": level.name,
+                                                        "frequency": level.interval,
+                                                        "range": true
+                                                    };
+                                                } else if (rangeLevel.frequency < level.interval) {
+                                                    otherLevels.push({
+                                                        "store": rangeLevel.store,
+                                                        "frequency": rangeLevel.frequency,
+                                                        "range": false
+                                                    });
+                                                    rangeLevel = {
+                                                        "store": level.name,
+                                                        "frequency": level.interval,
+                                                        "range": true
+                                                    };
+                                                } else {
+                                                    otherLevels.push({
+                                                        "store": rangeLevel.store,
+                                                        "frequency": rangeLevel.frequency,
+                                                        "range": false
+                                                    });
+                                                }
+    
+                                            }
+                                        });
+                                        if (deviceData.device.name && deviceData.device.name != "" && deviceData.device.name != "undefined") {
+                                            var fields = [];
+                                            var patt = new RegExp(/data[.]{1}[a-zA-Z0-9]+/g);
+                                            angular.forEach(_config.collections, function (level) {
+                                                if (level.rows.length > 0 && level.name === rangeLevel) {
+                                                    var lines = level.rows;
+                                                    if (lines) {
+                                                        angular.forEach(lines, function (line) {
+                                                            if (line.value) {
+                                                                var columns = (line.value).match(patt);
+                                                                angular.forEach(columns, function (column) {
+                                                                    if (column.startsWith('data.')) {
+                                                                        fields.push(column.replace('data.', ''));
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                            $scope.auto_fields = fields;
+                                            // show children view
+                                            //host, application, deviceName, relationType, relationDeviceType, extensionType, rangeLevel, otherLevels
+                                            dataService.childrenExtensionInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, _config.relation, _config.relation_group, _config.extension, rangeLevel, otherLevels).then(function (data) {
+                                                if (data != null && data.length > 0) {
+                                                    data.forEach(function (_item) {
+                                                        _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                        _item["trees"].sort(function (a, b) {
+                                                            return b.frequency - a.frequency;
+                                                        });
+                                                    });
+                                                    initChildrenChart(data);
+                                                    // interactionHandler(); // do not need to update interactions
+                                                } else if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.device && $scope.interactions.graphs.device.children) {
+                                                    // no relationship in fgp platform just take it from interactions Configuration  extension_type
+                                                    if ($scope.interactions.graphs.device.children.data) {
+                                                        var devices_key = $scope.interactions.graphs.device.children.data().then(
+                                                            function (data) {
+                                                                $q.all(dataService.devicesExtensionInitInfo($rootScope.host, $rootScope.applicationName, data, metadata.data.source.store, $scope.interactions.graphs.device.children.extension_type)).then(
+                                                                    function (data) {
+                                                                        data.forEach(function (_item) {
+                                                                            _item["trees"] = [rangeLevel].concat(otherLevels);
+                                                                            _item["trees"].sort(function (a, b) {
+                                                                                return b.frequency - a.frequency;
+                                                                            });
+                                                                        });
+                                                                        initChildrenChart(data);
+                                                                        interactionHandler();
+                                                                    },
+                                                                    function (error) {
+                                                                        console.error(error);
+                                                                    }
+                                                                );
+                                                            },
+                                                            function (error) {
+                                                                return;
+                                                            }
+                                                        );
+                                                    } else {
+                                                        return;
+                                                    }
+                                                } else {
+                                                    return;
+                                                }
+                                            }, function (error) {
+                                                console.error(error)
+                                            });
+    
+                                        }
+                                    }
+
+                                    
+                                    
+                                }
+                            } 
 
                             if ($scope['interactions'] && $scope['interactions'].graphs && $scope['interactions'].graphs.scatter) {
 
@@ -2649,6 +2821,7 @@ class fgpWidgetGraph {
                                 $scope.currentView = -1;
                                 initChart(deviceStoreInfo, deviceData.device.name);
                             }
+                            
                         }, function (error) {
                             console.error(error)
                         });
@@ -3763,7 +3936,11 @@ class fgpWidgetGraph {
                                     series[collection.rows[0].label] = {
                                         'axis': 'y1',
                                     };
+                                    if (collection.rows[0].type && collection.rows[0].type === "dots") {
+                                        series[collection.rows[0].label]["plotter"] = dotsPlotter;
+                                    }
                                 }
+                                
                                 var f = new Function("data", "with(data) { if(" + collection.rows[0].value + "!=null)return " + collection.rows[0].value + ";return null;}");
                                 var filterF = null;
                                 if (collection.rows[0].filter) {

@@ -321,42 +321,49 @@ class dataAccessApi {
                 deferred.resolve(result);
             } else {
                 var promises = [];
+
+                var deviceNames = [];
                 angular.forEach(resp.data, function (_device) {
                     if (_device && _device.name) {
-
-                        var deferred = __q.defer();
-                        __http({
-                            method: 'POST',
-                            url: host + '/' + application + '/' + _device.type + '/name/' + _device.name,
-                            data: {
-                                'extensions': [].concat([extensionType])
-                            },
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        }).success(function (extension) {
-                            deferred.resolve({
-                                "name": _device.name,
-                                "extension": extension[extensionType],
-                                "device": _device
-                            });
-                        }).error(function (error) {
-                            deferred.reject(error);
-                        });
-                        promises.push(deferred.promise);
+                        deviceNames.push(_device.name);
                     }
                 });
 
-                // waiting for all request come back
-                __q.all(promises).then(function successCallback(_result) {
+                // send request to get extension for all devices
+                __http({
+                    method: 'POST',
+                    url: host + '/' + application + '/' + relationDeviceType + '/' + extensionType,
+                    data: {"timestamp":(new Date()).getTime(),"devices": deviceNames ,"lookupKey":""},
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).success(function (extensions) {
+                    var _result = [];
+                    // compare key
+                    angular.forEach(resp.data, function (_device, _index) {
+                        var extension = null;
+                        extensions.forEach(_ext => {
+                            Object.keys(_ext).forEach(function(key,index) {
+                                if(_ext[key] instanceof Object && _ext[key].hasOwnProperty('id')){
+                                    // found key
+                                    if(_device.deviceKey.id === _ext[key].id){
+                                        extension = _ext;
+                                    }
+                                }
+                            });
+                        });
+                        _result.push({
+                            "name": _device.name,
+                            "extension": extension,
+                            "device": _device
+                        });
+                    });
+
                     deferred.resolve(_result);
-                }, function errorCallback(_data) {
+                }).error(function (error) {
                     deferred.reject(error);
                 });
             }
-
-
-
         }, function errorCallback(error) {
             deferred.reject(error);
         });
