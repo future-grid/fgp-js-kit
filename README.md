@@ -60,9 +60,7 @@ There are 4 attributes of this directive.
 ## Markup
 
 ```html
-<div fgp-container application-name="'node-agent'" device-name="'127.0.0.1'"
-         configuration="configuration"
-         server="'http://localhost:8081'"></div>
+<div fgp-container application-name="application" device-name="meter" configuration="graphConfig" server="api_server" device-type="meter" date-formatter="df" style="font-size:14px;border:1px solid #eee;border-radius: 3px;"></div>
 ```
 
 ## Javascript
