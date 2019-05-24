@@ -111,7 +111,7 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
                         "childrenChart": [],
                         "parentChart": [],
                         "zoom": true,
-                        "ranges": [{
+                        "ranges": [{                  // init datetime period
                             "name": "7 days",
                             "value": "604800000",
                             "checked": true
@@ -131,19 +131,19 @@ angular.module('app', ['fgp-kit']).controller('ctl', function ($scope) {
                         "rightYAxis": "Y2",
                         "collections": []
                     }, {
-                        "name": "device",
+                        "name": "device",                 // device view configuration
                         "leftYAxis": "wh",
                         "rightYAxis": "",
-                        "collections": [
+                        "collections": [                  // intervals  5 minutes or day
                             {
                                 "name": "meter_interval",
-                                "interval": 3600000,
-                                "rows": [{
-                                    "color": "#035db9",
-                                    "label": "consumption",
-                                    "value": "data.consumptionWh",
-                                    "yaxis": "0",
-                                    "type": "line"
+                                "interval": 3600000,      // interval in milliseconds
+                                "rows": [{                      //  lines  
+                                    "color": "#035db9",       // color of the line
+                                    "label": "consumption",     // label of the line
+                                    "value": "data.consumptionWh",  // data of the line, start with data.(dto atrribute name)
+                                    "yaxis": "0",                 // yaxis . 0 left 1 right
+                                    "type": "line"                // type of the line . line or dots or bar...
                                 }, {
                                     "color": "#0453b9",
                                     "label": "generation",
