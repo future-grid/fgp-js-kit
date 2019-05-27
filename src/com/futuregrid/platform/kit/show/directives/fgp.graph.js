@@ -1988,6 +1988,12 @@ class fgpWidgetGraph {
                                 dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function (data) {
                                     var deviceStoreInfo = {};
 
+                                    if(data.start == null || data.last == null){
+                                        $scope.emptyDataShow = ture;
+                                        return false;
+                                    }
+
+
                                     deviceStoreInfo["trees"] = [{
                                         "first": {
                                             "timestamp": data.start
@@ -2016,7 +2022,8 @@ class fgpWidgetGraph {
                                     });
                                     initChart(deviceStoreInfo, deviceData.device.name);
                                 }, function (error) {
-                                    console.error(error)
+                                    console.error(error);
+                                    $scope.emptyDataShow = ture;
                                 });
                             }
                         } else {
@@ -2613,6 +2620,11 @@ class fgpWidgetGraph {
                         //send a rest request
                         //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel)
                         dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function (data) {
+                            // show no data
+                            if(data.start == null || data.last == null){
+                                $scope.emptyDataShow = ture;
+                                return false;
+                            }
                             // tree info
                             var deviceStoreInfo = {};
 
@@ -2781,7 +2793,9 @@ class fgpWidgetGraph {
                                                     return;
                                                 }
                                             }, function (error) {
-                                                console.error(error)
+                                                console.error(error);
+                                                // no data
+                                                $scope.emptyDataShow = ture;
                                             });
     
                                         }
@@ -2823,7 +2837,8 @@ class fgpWidgetGraph {
                             }
                             
                         }, function (error) {
-                            console.error(error)
+                            console.error(error);
+                            $scope.emptyDataShow = ture;
                         });
                     }
                 });

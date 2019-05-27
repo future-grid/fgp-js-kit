@@ -2949,6 +2949,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function (data) {
                                 var deviceStoreInfo = {};
 
+                                if(data.start == null || data.last == null){
+                                    $scope.emptyDataShow = ture;
+                                    return false;
+                                }
+
+
                                 deviceStoreInfo["trees"] = [{
                                     "first": {
                                         "timestamp": data.start
@@ -2978,6 +2984,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 initChart(deviceStoreInfo, deviceData.device.name);
                             }, function (error) {
                                 console.error(error);
+                                $scope.emptyDataShow = ture;
                             });
                         }
                     } else {
@@ -3574,6 +3581,11 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     //send a rest request
                     //deviceInitInfo(host, application, deviceName, deviceType, rangeLevel)
                     dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function (data) {
+                        // show no data
+                        if(data.start == null || data.last == null){
+                            $scope.emptyDataShow = ture;
+                            return false;
+                        }
                         // tree info
                         var deviceStoreInfo = {};
 
@@ -3743,6 +3755,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             }
                                         }, function (error) {
                                             console.error(error);
+                                            // no data
+                                            $scope.emptyDataShow = ture;
                                         });
     
                                     }
@@ -3785,6 +3799,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             
                     }, function (error) {
                         console.error(error);
+                        $scope.emptyDataShow = ture;
                     });
                 }
             });
