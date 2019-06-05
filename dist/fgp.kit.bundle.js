@@ -1030,7 +1030,7 @@ fgpWidgetGraph.prototype.template = function template (element, attrs) {
 
         var dom_scatter_addon = '<div ng-hide="interactions.graphs.btns.scatter == \'hide\'" ng-show="scatterAddon && scatterAddon.length > 1" class="dropdown"> <button class="btn btn-info dropdown-toggle badge" type="button" data-toggle="dropdown">scatter<span class="caret"></span></button> <ul class="dropdown-menu dropdown-menu-right" style="font-size:12px;overflow-x:hidden;"><li ng-repeat="addon in scatterAddon">&nbsp;&nbsp;<a href="javascript:;" ng-click="initScatterView(addon)">{{addon.label}}</a></li></ul> </div>';
 
-        var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="graph-body col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"> <div style="float: right; margin-right: 10px;">'+dom_scatter_addon+'</div> <a class="btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\' || scatterAddon && scatterAddon.length > 1" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="saveGraphAsPng()"><i class="glyphicon glyphicon-picture"></i></a><div id="buttons_area" style=""></div><a ng-show="false" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + ' ' + dom_series_list_device + '</div><div style="float: right; margin-right: 10px;"> '+ dom_graphs_size +'  </div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div><div style="float: right; margin-right: 10px;">Timezone:{{dateFormatter.timezone}}</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
+        var html = '<div id="legendbox' + attrs.id + '" ng-show="legendText" ng-style="{top:legendTop,left:legendLeft}" style="border-radius:10px;background-color:#ffffff;position: absolute;border: 1px solid {{legendColor}};-moz-box-shadow: 5px 5px 5px #888888;box-shadow: 5px 5px 5px #888888;z-index: 99999999;margin-right: 5px;"><ul style="list-style: none;list-style-position: inside;text-align: right;">' + dom_legend + '</ul></div><div class="{{css.width}}"><div class="graph-body col-md-12" style="padding:0px;height:{{css.height}}px;-webkit-user-select: none; /* Chrome all / Safari all */  -moz-user-select: none; /* Firefox all */  -ms-user-select: none; /* IE 10+ */  user-select: none;"><div class="row"><div class="col-md-12"> <div style="float: right; margin-right: 10px;">'+dom_scatter_addon+'</div> <a class="btn btn-xs btn-info badge" href="javascript:;" ng-hide="interactions.graphs.btns.scatter == \'hide\' || scatterAddon && scatterAddon.length > 1" style="float: right;margin-right: 10px;" ng-click="currentView = -currentView"><i class="glyphicon glyphicon-transfer"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="graphDatadownload()"><i class="glyphicon glyphicon-download-alt"></i></a><a class="btn btn-xs btn-info badge" href="javascript:;" style="float: right;margin-right: 10px;" ng-click="saveGraphAsPng()"><i class="glyphicon glyphicon-picture"></i></a><div id="buttons_area" style=""></div><a ng-show="false" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="showRealTimeGraph()" data-toggle="modal"><i class="glyphicon glyphicon-random"></i></a><a ng-show="selectControl" class="btn btn-xs btn-info badge" style="float: right;margin-right: 10px;" ng-click="switchSelectFeature()"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a><div style="float: right; margin-right: 10px;">' + dom_series_list + ' ' + dom_series_list_device + '</div><div style="float: right; margin-right: 10px;"> '+ dom_graphs_size +'  </div><div style="float: right; margin-right: 10px;">' + dom_datetime_interval + '</div><div ng-hide="true" class="checkbox" style="float: right;margin-right: 10px; margin-bottom: 5px; margin-top: 0;" ng-model="fixInterval" ng-click="fixInterval=!fixInterval"><label><input type="checkbox" ng-model="fixInterval" ng-clicked="fixInterval" ng-change="fixGraphWithGap_click()"/>fixed interval</label></div><div style="float: right; margin-right: 10px;"><label class="label-inline" ng-repeat="item in intevals.device"><span class="badge" style="background-color: {{ item.name == currentIntervalName ? (locked_interval.name == item.name ? \'#e57432;\':\'#009900;\') : (locked_interval.name == item.name ? \'#e57432;\':\'\') }}" ng-click="lock(item)">{{item.name}}</span></label></div><div style="float: right; margin-right: 10px;">Timezone:{{dateFormatter.timezone}}</div><div style="float: right; margin-right: 10px;">' + dom_alert_info + '</div></div></div><div style="position: relative;width: 100%;height:100%;"><div style="position: absolute;left:25px;z-index: 999;" ng-show="basicInfo.zoom" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVULeft()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDLeft()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVLeft()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVLeft()"><i class="fa fa-minus" aria-hidden="true"></i></button></div><div class="line-chart-graph" style="width: 100%;height:100%;" ng-dblclick="drillDown()" ng-click="singleClickEventHandler()"></div><div style="position: absolute;right:-15px;top:0px;z-index: 999;" ng-show="checkY2Btns()" class="btn-group-vertical btn-group-xs"><button type="button" class="btn btn-default" ng-click="btnPanVURight()"><i class="fa fa-arrow-up" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnPanVDRight()"><i class="fa fa-arrow-down" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomInVRight()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnZoomOutVRight()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div>' + dom_loading + dom_empty_data + '<div class="row"><div class="col-md-12" style="min-height: 30px;"></div><div class="col-md-6" style="text-align: left;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[0] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-6" style="text-align: right;" ng-show="rangeSelectorBar">{{rangeSelectorBar.xAxisRange()[1] | df : (dateFormatter.pattern ? dateFormatter.pattern : \'\') : dateFormatter.timezone}}</div><div class="col-md-12" style="min-height: 40px;position: relative"><div class="btn-group btn-group-xs" role="group" style="position: absolute;left: 20px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnpanleft()"><i class="fa fa-arrow-left" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnpanright()"><i class="fa fa-arrow-right" aria-hidden="true"></i></button></div><div class="range-selector-bar" style="height: 0px;margin-top: 30px;width: 100%;position: absolute;"></div><div class="btn-group btn-group-xs" role="group" style="position: absolute;right: 0px;" ng-show="basicInfo.range_show"><button type="button" class="btn btn-default" ng-click="btnzoomin()"><i class="fa fa-plus" aria-hidden="true"></i></button><button type="button" class="btn btn-default" ng-click="btnzoomout()"><i class="fa fa-minus" aria-hidden="true"></i></button></div></div></div></div></div>' + dom_real_time_grap;
 
         return html;
     }
@@ -1612,6 +1612,12 @@ fgpWidgetGraph.prototype.link = function link (scope, element, attrs) {
         scope.chartInitStatus = true;
         scope.areaElement = element.find("div[class='line-chart-graph']")[0];
         scope.currentChart = new Dygraph(scope.areaElement, sampleData.data, configuration);
+
+
+        scope.newGraph = function(){
+            scope.currentChart.destroy();
+            scope.currentChart = new Dygraph(scope.areaElement, sampleData.data, configuration);
+        };
 
         // start and end are timestamp
         scope.currentChart._updateDatetimeWindow = function (datetimeWindow) {
@@ -2950,7 +2956,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 var deviceStoreInfo = {};
 
                                 if(data.start == null || data.last == null){
-                                    $scope.emptyDataShow = ture;
+                                    $scope.emptyDataShow = true;
                                     return false;
                                 }
 
@@ -2984,7 +2990,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 initChart(deviceStoreInfo, deviceData.device.name);
                             }, function (error) {
                                 console.error(error);
-                                $scope.emptyDataShow = ture;
+                                $scope.emptyDataShow = true;
                             });
                         }
                     } else {
@@ -3583,7 +3589,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                     dataService.deviceInitInfo($rootScope.host, $rootScope.applicationName, deviceData.device.name, deviceData.device.type, rangeLevel.store).then(function (data) {
                         // show no data
                         if(data.start == null || data.last == null){
-                            $scope.emptyDataShow = ture;
+                            $scope.emptyDataShow = true;
                             return false;
                         }
                         // tree info
@@ -3744,19 +3750,34 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                                             );
                                                         },
                                                         function (error) {
+                                                            $scope.alertMessage = "Devices [" + $scope.interactions.graphs.device.children.extension_type + "] not found!";
+                                                            // show no data
+                                                            $timeout(function () {
+                                                                $scope.alertMessage = "";
+                                                            }, 5000);
                                                             return;
                                                         }
                                                     );
                                                 } else {
+                                                    $scope.alertMessage = "Devices [" + $scope.interactions.graphs.device.children.extension_type + "] not found!";
+                                                    // show no data
+                                                    $timeout(function () {
+                                                        $scope.alertMessage = "";
+                                                    }, 5000);
                                                     return;
                                                 }
                                             } else {
+                                                $scope.alertMessage = "Devices not found! Relation [" + _config.relation + "]";
+                                                // show no data
+                                                $timeout(function () {
+                                                    $scope.alertMessage = "";
+                                                }, 5000);
                                                 return;
                                             }
                                         }, function (error) {
                                             console.error(error);
                                             // no data
-                                            $scope.emptyDataShow = ture;
+                                            $scope.emptyDataShow = true;
                                         });
     
                                     }
@@ -3799,7 +3820,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             
                     }, function (error) {
                         console.error(error);
-                        $scope.emptyDataShow = ture;
+                        $scope.emptyDataShow = true;
                     });
                 }
             });
@@ -4439,6 +4460,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
                 if ($scope.childrenDeviceNameColumn && _device.device[$scope.childrenDeviceNameColumn] != null) {
                     _tempDeviceColorInfo[$scope.childrenDeviceNameColumn] = _device.device[$scope.childrenDeviceNameColumn];
+                }
+
+                if ($scope.childrenDeviceNameColumn && _device.extension && _device.extension[$scope.childrenDeviceNameColumn] != null) {
+                    _tempDeviceColorInfo[$scope.childrenDeviceNameColumn] = _device.extension[$scope.childrenDeviceNameColumn];
                 }
 
 
@@ -5187,9 +5212,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         } else {
                             _tempConfig['visibility'] = _tempVisibility;
                         }
-                        // 
+                            
                         $scope.currentChart.updateOptions(_tempConfig);
-
+                            
                         if ($scope.resetVisibilityRequest === true) {
                             // reset visibility
                             var visibilities = $scope.currentChart.getOption('visibility');
@@ -5197,9 +5222,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             visibilities.forEach(function (_v) {
                                 _tempV.push(true);
                             });
-                            $scope.currentChart.updateOptions({
-                                'visibility': _tempV
-                            });
+
+                            if (labels.length < _tempVisibility.length) {
+                                $scope.currentChart.updateOptions({
+                                    'visibility': _tempV
+                                });
+                            }
                             $scope.resetVisibilityRequest = false;
                         }
 
@@ -5251,7 +5279,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
          * @param allData
          */
         var updateDetailChart = function (metadata, store, rangeData, allData) {
-
+            $scope.seriesList = [];
             var deviceConfig = metadata.data.groups[1];
             var collections = deviceConfig.collections;
             var labels = [];
@@ -5300,6 +5328,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         series[row.label] = {
                             'axis': 'y1'
                         };
+
+                        $scope.seriesList.push({
+                            "label": row.label,
+                            "show": true
+                        });
+
+
                         if (row.yaxis == 1) {
                             series[row.label].axis = 'y2';
                             showY2axis = true;

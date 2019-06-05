@@ -215,7 +215,7 @@ var DygraphOptions = (function () {
 
   // For "production" code, this gets set to false by uglifyjs.
   // Need to define it outside of "use strict", hence the nested IIFEs.
-  if (typeof (DEBUG) === 'undefined') DEBUG = true;
+  if (typeof (DEBUG) === 'undefined') DEBUG = false;
 
   return (function () {
 
@@ -2059,7 +2059,7 @@ var DygraphCanvasRenderer = (function () {
  */
 
 // For "production" code, this gets set to false by uglifyjs.
-if (typeof (DEBUG) === 'undefined') DEBUG = true;
+if (typeof (DEBUG) === 'undefined') DEBUG = false;
 
 var Dygraph = (function () {
   /*global DygraphLayout:false, DygraphCanvasRenderer:false, DygraphOptions:false, G_vmlCanvasManager:false,ActiveXObject:false */
