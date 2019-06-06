@@ -1007,6 +1007,12 @@ class fgpWidgetGraph {
             return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
         };
 
+        if($scope.interactionsItem && $scope.interactionsItem.hasOwnProperty($element.attr('id'))){
+            $scope.interactions = $scope.interactionsItem[$element.attr('id')];
+        }else if($scope.interactionsItem){
+            $scope.interactions = $scope.interactionsItem;
+        }
+
         var barChartPlotter = function (e) {
             var ctx = e.drawingContext;
             var points = e.points;
@@ -3840,7 +3846,36 @@ class fgpWidgetGraph {
                                 } else {
                                     $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                     if (begin_path && end_path && !init_flag) {
-                                        // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                     
+                                    // left side of current chart datewindow
+                                    if(new Date(new Number(end_path)) < $scope.currentChart["xAxisZoomRange"][0]){
+                                        var _gap =  end_path - begin_path;
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        
+                                        if(_gap < (($scope.currentChart["xAxisZoomRange"][1]).getTime() - ($scope.currentChart["xAxisZoomRange"][1]).getTime())){
+                                            end_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime() + _gap;
+                                        }else{
+                                            end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                        }
+                                    } else if(new Date(new Number(begin_path)) > $scope.currentChart["xAxisZoomRange"][1]){
+                                        var _gap =  end_path - begin_path;
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                        
+                                        if(_gap < (($scope.currentChart["xAxisZoomRange"][1]).getTime() - ($scope.currentChart["xAxisZoomRange"][1]).getTime())){
+                                            begin_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime() + _gap;
+                                        }else{
+                                            begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        }
+                                    } else if(new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][0] && (new Date(new Number(end_path)) >  $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(end_path)) < $scope.currentChart["xAxisZoomRange"][1])){
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                    } else if(new Date(new Number(end_path)) > $scope.currentChart["xAxisZoomRange"][1] && (new Date(new Number(begin_path)) > $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][1]) ){
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+
+                                    } else if(new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(end_path)) > $scope.currentChart["xAxisZoomRange"][1]){
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                    } 
+
                                         $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                         init_flag = true;
                                     } else {
@@ -3900,6 +3935,32 @@ class fgpWidgetGraph {
                                 $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
                                     // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    // check datetime range 
+                                    if(new Date(new Number(end_path)) < $scope.currentChart["xAxisZoomRange"][0]){
+                                        var _gap =  end_path - begin_path;
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        if(_gap < (($scope.currentChart["xAxisZoomRange"][1]).getTime() - ($scope.currentChart["xAxisZoomRange"][1]).getTime())){
+                                            end_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime() + _gap;
+                                        }else{
+                                            end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                        }
+                                    } else if(new Date(new Number(begin_path)) > $scope.currentChart["xAxisZoomRange"][1]){
+                                        var _gap =  end_path - begin_path;
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                        if(_gap < (($scope.currentChart["xAxisZoomRange"][1]).getTime() - ($scope.currentChart["xAxisZoomRange"][1]).getTime())){
+                                            begin_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime() + _gap;
+                                        }else{
+                                            begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        }
+                                    } else if(new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][0] && (new Date(new Number(end_path)) >  $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(end_path)) < $scope.currentChart["xAxisZoomRange"][1])){
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                    } else if(new Date(new Number(end_path)) > $scope.currentChart["xAxisZoomRange"][1] && (new Date(new Number(begin_path)) > $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][1]) ){
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+
+                                    } else if(new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(end_path)) > $scope.currentChart["xAxisZoomRange"][1]){
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                    }
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
                                 } else {
@@ -5216,6 +5277,36 @@ class fgpWidgetGraph {
                                 $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
                                     // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
+                                    // check datetime range 
+                                    if(new Date(new Number(end_path)) < $scope.currentChart["xAxisZoomRange"][0]){
+                                        var _gap =  end_path - begin_path;
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        
+                                        if(_gap < (($scope.currentChart["xAxisZoomRange"][1]).getTime() - ($scope.currentChart["xAxisZoomRange"][1]).getTime())){
+                                            end_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime() + _gap;
+                                        }else{
+                                            end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                        }
+                                    } else if(new Date(new Number(begin_path)) > $scope.currentChart["xAxisZoomRange"][1]){
+                                        var _gap =  end_path - begin_path;
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                        
+                                        if(_gap < (($scope.currentChart["xAxisZoomRange"][1]).getTime() - ($scope.currentChart["xAxisZoomRange"][1]).getTime())){
+                                            begin_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime() + _gap;
+                                        }else{
+                                            begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        }
+                                    } else if(new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][0] && (new Date(new Number(end_path)) >  $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(end_path)) < $scope.currentChart["xAxisZoomRange"][1])){
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                    } else if(new Date(new Number(end_path)) > $scope.currentChart["xAxisZoomRange"][1] && (new Date(new Number(begin_path)) > $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][1]) ){
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+
+                                    } else if(new Date(new Number(begin_path)) < $scope.currentChart["xAxisZoomRange"][0] && new Date(new Number(end_path)) > $scope.currentChart["xAxisZoomRange"][1]){
+                                        begin_path = ($scope.currentChart["xAxisZoomRange"][0]).getTime();
+                                        end_path = ($scope.currentChart["xAxisZoomRange"][1]).getTime();
+                                    }
+
+
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
                                 } else {
