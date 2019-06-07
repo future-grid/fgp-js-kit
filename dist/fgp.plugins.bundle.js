@@ -3417,10 +3417,10 @@ var Dygraph = function() {
         if (!this.getOption("visibility")) {
             this.attrs_.visibility = [];
         }
-        while (this.getOption("visibility").length < this.numColumns() - 1) {
+        while (this.attrs_.visibility.length < this.numColumns() - 1) {
             this$1.attrs_.visibility.push(true);
         }
-        return this.getOption("visibility");
+        return this.attrs_.visibility;
     };
     Dygraph.prototype.setVisibility = function(num, value) {
         var x = this.visibility();
@@ -8310,22 +8310,6 @@ Dygraph.Export.getPlugin = function(dygraph, name) {
         var ng = typeof angular === "undefined" ? require("angular") : angular;
         var jq = typeof jquery === "undefined" ? require("jquery") : jquery;
         factory(ng, jq);
-        module.exports = "fgp.auth";
-    } else if (typeof define === "function" && define.amd) {
-        define([ "angular", "jquery" ], factory);
-    } else {
-        factory(root.angular, root.jquery);
-    }
-})(this, function(angular) {
-    "use strict";
-    var FgpAuth = angular.module("fgp.auth", [ "angular-jwt", "auth0.lock" ]);
-});
-(function(root, factory) {
-    "use strict";
-    if (typeof module !== "undefined" && module.exports) {
-        var ng = typeof angular === "undefined" ? require("angular") : angular;
-        var jq = typeof jquery === "undefined" ? require("jquery") : jquery;
-        factory(ng, jq);
         module.exports = "fgp.kit.queryBuilder";
     } else if (typeof define === "function" && define.amd) {
         define([ "angular", "jquery" ], factory);
@@ -8433,4 +8417,20 @@ Dygraph.Export.getPlugin = function(dygraph, name) {
             controller: _controller
         };
     } ]);
+});
+(function(root, factory) {
+    "use strict";
+    if (typeof module !== "undefined" && module.exports) {
+        var ng = typeof angular === "undefined" ? require("angular") : angular;
+        var jq = typeof jquery === "undefined" ? require("jquery") : jquery;
+        factory(ng, jq);
+        module.exports = "fgp.auth";
+    } else if (typeof define === "function" && define.amd) {
+        define([ "angular", "jquery" ], factory);
+    } else {
+        factory(root.angular, root.jquery);
+    }
+})(this, function(angular) {
+    "use strict";
+    var FgpAuth = angular.module("fgp.auth", [ "angular-jwt", "auth0.lock" ]);
 });

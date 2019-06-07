@@ -5720,10 +5720,10 @@ var Dygraph = (function () {
       this.attrs_.visibility = [];
     }
     // TODO(danvk): it looks like this could go into an infinite loop w/ user_attrs.
-    while (this.getOption("visibility").length < this.numColumns() - 1) {
+    while (this.attrs_.visibility.length < this.numColumns() - 1) {
       this.attrs_.visibility.push(true);
     }
-    return this.getOption("visibility");
+    return this.attrs_.visibility;
   };
 
   /**

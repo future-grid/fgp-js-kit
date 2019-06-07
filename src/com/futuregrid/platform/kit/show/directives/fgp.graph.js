@@ -2161,6 +2161,7 @@ class fgpWidgetGraph {
 
                                             $scope.button_handlers[_func] = function () {
                                                 $scope.extraDataCurrent = button.label;
+                                                $scope.resetVisibilityRequest = true;
                                                 var oldVisibility = $scope.currentChart.getOption('visibility');
                                                 var v = [];
                                                 // reset by new Visibility
@@ -4204,7 +4205,12 @@ class fgpWidgetGraph {
                                 if ($scope.memoryVisibility[_index]) {
                                     _tempVisibility[_index] = $scope.memoryVisibility[_index];
                                 } else {
-                                    _tempVisibility[_index] = v;
+                                    if($scope.resetVisibilityRequest){
+                                        _tempVisibility[_index] = true;
+                                    }else{
+                                        _tempVisibility[_index] = v;
+                                    }
+                                    
                                 }
                             }
                             if ($scope.childrenDevices && $scope.childrenDevices[_index] && $scope.childrenDevices[_index].hasOwnProperty("show")) {
@@ -4306,31 +4312,33 @@ class fgpWidgetGraph {
                             // showRangeSelector: true
                         };
                         if (newLines && newLines.length > 0) {
+                            // has data
                             if (labels.length > _tempVisibility.length) {
                                 // don't
-                                console.info("first time");
+                                // console.info("first time");
                             } else {
                                 _tempConfig['visibility'] = _tempVisibility;
                             }
-                            
+
                             $scope.currentChart.updateOptions(_tempConfig);
-                            
+
                             if ($scope.resetVisibilityRequest === true) {
                                 // reset visibility
                                 var visibilities = $scope.currentChart.getOption('visibility');
                                 var _tempV = [];
-                                visibilities.forEach(function (_v) {
-                                    _tempV.push(true);
-                                });
-
-                                if (labels.length < _tempVisibility.length) {
-                                    $scope.currentChart.updateOptions({
-                                        'visibility': _tempV
+                                
+                                if (labels.length > _tempVisibility.length) {
+                                    visibilities.forEach(function (_v) {
+                                        _tempV.push(true);
                                     });
                                 }
+                            
+                                $scope.currentChart.updateOptions({
+                                    'visibility': _tempV
+                                }, false);
+
                                 $scope.resetVisibilityRequest = false;
                             }
-
 
                         }
                         // reset l & r axes window
@@ -4927,6 +4935,7 @@ class fgpWidgetGraph {
                                     visibilities.forEach(function (_v) {
                                         _tempV.push(true);
                                     });
+                                
                                     $scope.currentChart.updateOptions({
                                         'visibility': _tempV
                                     });
