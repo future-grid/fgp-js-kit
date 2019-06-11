@@ -1973,6 +1973,22 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     }else if($scope.interactionsItem){
         $scope.interactions = $scope.interactionsItem;
     }
+        
+        
+    if($scope.highlightsItem && $scope.highlightsItem.hasOwnProperty($element.attr('id'))){
+        $scope.highlights = $scope.highlightsItem[$element.attr('id')];
+    }else if($scope.highlightsItem){
+        $scope.highlights = $scope.highlightsItem;
+    }
+
+    if($scope.drillItem && $scope.drillItem.hasOwnProperty($element.attr('id'))){
+        $scope.drill = $scope.drillItem[$element.attr('id')];
+    }else if($scope.drillItem){
+        $scope.drill = $scope.drillItem;
+    }
+
+
+
 
     var barChartPlotter = function (e) {
         var ctx = e.drawingContext;
@@ -2740,6 +2756,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                             highlightDevice.push(deviceName);
                                             exist = true;
                                         }
+
+                                        if(_child[$scope.childrenDeviceNameColumn] == deviceName){
+                                            highlightDevice.push(deviceName);
+                                            exist = true;
+                                        }
+
                                     });
                                     if (!exist) {
                                         if (ghostDevices.indexOf(deviceName.split("_")[0]) == -1) {
@@ -3278,6 +3300,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             var rangeLevel;
                             var otherLevels = [];
                             var relationConfig = metadata.data.groups[2];
+                            $scope.currentChildrenDeviceType = metadata.data.source.relation_group;
                             if (relationConfig.nameColumn) {
                                 $scope.childrenDeviceNameColumn = relationConfig.nameColumn;
                             } else {
@@ -3664,6 +3687,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
     
                                     metadata.data.groups[2] = _config;
                                     metadata.data.source.relation_group = _config.relation_group;
+                                    $scope.currentChildrenDeviceType = metadata.data.source.relation_group;
                                     var rangeLevel;
                                     var otherLevels = [];
                                     var relationConfig = metadata.data.groups[2];
@@ -6351,9 +6375,23 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
         $scope.drillDown = function () {
             //get redirect configuration from interactions
-            if ($scope.currentView == 1 && $scope.currentHighLightChildDevice && $scope.drill && $scope.drill.graphs && $scope.drill.graphs.drillDown && $scope.drill.graphs.drillDown.url) {
+            if ($scope.currentView == 1 && $scope.currentHighLightChildDevice && $scope.currentChildrenDeviceType && $scope.drill && $scope.drill.graphs && $scope.drill.graphs.drillDown) {
+
+                // array
+                var url = '';
+                if(Array.isArray($scope.drill.graphs.drillDown)){
+                    $scope.drill.graphs.drillDown.forEach(function(_item){
+                        if(_item.type == $scope.currentChildrenDeviceType){
+                            url = _item.url;
+                        }
+                    });
+                }else{
+                    url = $scope.drill.graphs.drillDown.url;
+                }
+
+
                 //
-                var url = $scope.drill.graphs.drillDown.url;
+                    
                 url = url.replace("{0}", $scope.currentHighLightChildDevice);
                 $window.open(url);
             }
