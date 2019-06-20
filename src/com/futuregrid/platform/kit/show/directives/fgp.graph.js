@@ -1463,6 +1463,29 @@ class fgpWidgetGraph {
                         $element.find("#buttons_area").append($compile(buttons_html)($scope));
                     });
                 }
+                // if($scope.interactions.graphs.buttons.device.extraData){
+                //     // 1. get current datewindow 
+
+                //     var _func = $scope.interactions.graphs.buttons.device.extraData;
+                //     var _currentInterval = "";
+                //     var _currentDateWindow = ["",""];
+                //     // 
+                //     _func(interval).then(function(resp){
+                //         //
+                //         if(resp.data && Array.isArray(resp.data) ){
+                //             // [{time:3424234423,value:0343},{..}...]
+                            
+                //             // get current graph's data  then merge them to together
+                //             var _currentData = $scope.currentChart._file;
+                //             var _labels = $scope.currentChart._labels;
+                //             var _series = "";
+
+                //         }
+                //     }, function(error){
+                //         // something wrong then ignore
+                //         console.error(error);
+                //     });
+                // }
             }
         };
 
