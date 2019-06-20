@@ -3,6 +3,7 @@
  */
 'use strict';
 import angular from "angular";
+import moment from "moment";
 import fgpStage from "./com/futuregrid/platform/kit/show/directives/fgp.stage.js";
 import fgpWidgetStatus from "./com/futuregrid/platform/kit/show/directives/fgp.stage.js";
 import validator from "./com/futuregrid/platform/kit/utils/validator";

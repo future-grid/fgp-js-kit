@@ -1,38 +1,45 @@
 {
-    "name": "fgp-kit-js",
-    "version": "19.2.1",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "gulp default",
-        "release": "npm-github-release"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/future-grid/fgp-js-kit/tree/v2"
-    },
-    "author": "Eric Wang <flexdeviser@gmail.com>",
-    "license": "ISC",
-    "devDependencies": {
-        "del": "^2.2.1",
-        "gulp": "^3.9.1",
-        "gulp-buble": "^0.7.0",
-        "gulp-clean-css": "^2.0.11",
-        "gulp-concat": "^2.6.0",
-        "gulp-less": "^3.1.0",
-        "gulp-minify": "0.0.12",
-        "gulp-rollup": "2.2.0",
-        "gulp-sourcemaps": "^1.6.0",
-        "gulp-uglify": "^1.5.4",
-        "uglify-js": "^2.6.2",
-        "rollup": "^0.36.3"
-    },
-    "dependencies": {
-        "angular": "1.5.7",
-        "angular-websocket": "^2.0.1",
-        "bootstrap": "^3.3.6",
-        "jquery": "~>3.0.0",
-        "moment": "^2.13.0"
-    }
+  "name": "fgp-js-kit",
+  "version": "19.2.4",
+  "description": "Future Grid JavaScript Library.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "del": "^2.2.1",
+    "gulp": "^3.9.1",
+    "gulp-buble": "^0.7.0",
+    "gulp-clean-css": "^2.0.11",
+    "gulp-concat": "^2.6.0",
+    "gulp-less": "^3.1.0",
+    "gulp-minify": "0.0.12",
+    "gulp-rollup": "2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.4",
+    "uglify-js": "^2.6.2",
+    "rollup": "^0.36.3"
+  },
+  "dependencies": {
+    "angular": "1.5.7",
+    "angular-websocket": "^2.0.1",
+    "bootstrap": "^3.3.6",
+    "jquery": "~>3.0.0",
+    "moment": "^2.13.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "gulp default",
+    "release": "npm-github-release"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/future-grid/fgp-js-kit.git"
+  },
+  "author": "flexdeviser@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/future-grid/fgp-js-kit/issues"
+  },
+  "homepage": "https://github.com/future-grid/fgp-js-kit#readme"
 }

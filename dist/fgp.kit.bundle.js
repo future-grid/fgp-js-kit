@@ -6,12 +6,13 @@
  * @overview fgp.kit.js is a useful toolkit for future-grid's clients.
  */
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
-    typeof define === 'function' && define.amd ? define(['angular', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
-    (global.fgp_kit = factory(global.angular,global.$,global.Dygraph,global.ngmap,global.chartJS));
-}(this, (function (angular$1,jquery,Dygraph,ngmap,chart_js) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('angular'), require('moment'), require('jquery'), require('dygraphs'), require('ngmap'), require('chart.js')) :
+    typeof define === 'function' && define.amd ? define(['angular', 'moment', 'jquery', 'dygraphs', 'ngmap', 'chart.js'], factory) :
+    (global.fgp_kit = factory(global.angular,global.moment,global.$,global.Dygraph,global.ngmap,global.chartJS));
+}(this, (function (angular$1,moment$1,jquery,Dygraph,ngmap,chart_js) {
 
 angular$1 = 'default' in angular$1 ? angular$1['default'] : angular$1;
+moment$1 = 'default' in moment$1 ? moment$1['default'] : moment$1;
 Dygraph = 'default' in Dygraph ? Dygraph['default'] : Dygraph;
 
 /**
@@ -8073,22 +8074,22 @@ angular$1.module('fgp-kit', ['ngMap', 'ui.router', 'angular-cache'])
         }
     }).filter('df', function () {
         return function (date, format, tz) {
-            if (!moment) {
+            if (!moment$1) {
                 console.log('Error: momentJS is not loaded as a global');
                 return '!momentJS';
             }
             if (!format) {
                 if(!tz){
-                    return moment(date).tz(moment.tz.guess()).format();
+                    return moment$1(date).tz(moment$1.tz.guess()).format();
                 }else{
-                    return moment(date).tz(tz).format();
+                    return moment$1(date).tz(tz).format();
                 }
                 
             } else {
                 if(!tz){
-                    return moment(date).tz(moment.tz.guess()).format(format); //in absence of format parameter, return the relative time from the given date
+                    return moment$1(date).tz(moment$1.tz.guess()).format(format); //in absence of format parameter, return the relative time from the given date
                 }else{
-                    return moment(date).tz(tz).format(format);
+                    return moment$1(date).tz(tz).format(format);
                 }
             }
         }

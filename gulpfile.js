@@ -68,6 +68,7 @@ gulp.task('js', ['plugins'], () => {
                 dygraphs: "Dygraph",
                 "chart.js": "chartJS",
                 ngmap: "ngmap",
+                moment: "moment",
                 ws: "angular-websocket",
                 underscore: '_'
             },
