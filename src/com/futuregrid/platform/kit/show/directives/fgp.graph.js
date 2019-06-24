@@ -1423,6 +1423,7 @@ class fgpWidgetGraph {
         $scope.button_handlers = [];
         var initDeviceInteractions = function () {
             if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.buttons && $scope.interactions.graphs.buttons.device) {
+                $element.find("#buttons_area").empty();
                 if ($scope.interactions.graphs.buttons.device.dataFilter) {
                     var buttons = $scope.interactions.graphs.buttons.device.dataFilter;
                     angular.forEach(buttons, function (button) {
@@ -1463,29 +1464,118 @@ class fgpWidgetGraph {
                         $element.find("#buttons_area").append($compile(buttons_html)($scope));
                     });
                 }
-                // if($scope.interactions.graphs.buttons.device.extraData){
-                //     // 1. get current datewindow 
+                if($scope.interactions.graphs.buttons.device.extraData){
+                    
+                    var buttons = $scope.interactions.graphs.buttons.device.extraData;
+                    angular.forEach(buttons, function (button) {
+                        var buttons_html = '';
+                        // create an event handler
+                        var _func = '_' + (Math.random().toString(36).slice(2, 13));
+                        $scope.button_handlers[_func] = function () {
+                            //
+                            var _param = {
+                                "interval": $scope.currentDeviceViewInterval.interval,
+                                "name": $scope.currentDeviceViewInterval.name,
+                                "datetimeWindow": $scope.currentChart.getOption("dateWindow")
+                            };
 
-                //     var _func = $scope.interactions.graphs.buttons.device.extraData;
-                //     var _currentInterval = "";
-                //     var _currentDateWindow = ["",""];
-                //     // 
-                //     _func(interval).then(function(resp){
-                //         //
-                //         if(resp.data && Array.isArray(resp.data) ){
-                //             // [{time:3424234423,value:0343},{..}...]
-                            
-                //             // get current graph's data  then merge them to together
-                //             var _currentData = $scope.currentChart._file;
-                //             var _labels = $scope.currentChart._labels;
-                //             var _series = "";
+                            var _func = button._func;
 
-                //         }
-                //     }, function(error){
-                //         // something wrong then ignore
-                //         console.error(error);
-                //     });
-                // }
+                            // add data to graph
+                            var _g = $scope.currentChart;
+    
+                            var _data = _g.file_;
+    
+                            var _colors = _g.getColors();
+    
+                            var _labels = _g.getLabels();
+
+                            var _matchIndex = -1;
+                            _labels.forEach(function(_la, _index){
+                                //
+                                if(_la === button.series){
+                                    _matchIndex = _index;
+                                }
+                            });
+
+                            if(_matchIndex !=-1){
+                                // remove it from graph
+                                _labels.splice(_matchIndex, 1);
+
+                                //
+                                _data.forEach(function(_points){
+                                    // delete that column
+                                    _points.splice(_matchIndex, 1);
+                                });
+
+                                _g.updateOptions({
+                                    file: _data,
+                                    labels: _labels
+                                });
+                                
+                                button.checked = false;
+                            }else{
+                                // add it on graph
+                                // call func to get data
+                                _func(_param).then(function(newLine){
+                                    if(newLine){
+                                        if("span_y2" === _labels[_labels.length - 1]){
+                                            // add it before the last one
+                                            _labels[_labels.length - 1] = button.series;
+                                            _labels.push("span_y2");
+                                            _colors[_labels.length - 3] = button.color? button.color : $scope.defaultColors[Math.floor(Math.random() * (10))];
+                                        } else {
+                                            // add it to the end
+                                            _labels.push(button.series? button.series: button.label);
+                                            _colors.push(button.color? button.color : $scope.defaultColors[Math.floor(Math.random() * (10))]);
+                                        }
+                                        // data should be [{timestamp:, value: 4343}]
+                                        _data.forEach(function(_points){
+                                            var _found = false;
+                                            var _item = null;
+    
+                                            newLine.forEach(function(_newPoint){
+                                                if((_points[0].getTime()) == _newPoint.timestamp){
+                                                    _found = true;
+                                                    _item = _newPoint;
+                                                }   
+                                            });
+    
+                                            if(_found){
+                                                if("span_y2" === _labels[_labels.length - 1]){
+                                                    _points.splice(_labels.length - 2, 0, _item.value);
+                                                }else{
+                                                    _points.push(_item.value);
+                                                }
+                                            }else{
+                                                if("span_y2" === _labels[_labels.length - 1]){
+                                                    _points.splice(_labels.length - 2,0 , null);
+                                                }else{
+                                                    _points.push(null);
+                                                }
+                                            }
+                                            
+    
+                                        });
+    
+                                       // update graph
+                                       _g.updateOptions({
+                                           file: _data,
+                                           labels: _labels,
+                                           colors: _colors
+                                       });
+                                       button.checked = true;
+                                    }
+                                });
+                            }
+                        };
+
+                        // create click event handler for this button and put it into $scope
+                        buttons_html += '<span class="btn btn-xs btn-info badge" style="float:right;margin-right:10px;" ng-click="button_handlers.' + _func + '();">' + button.label + '</span>';
+                        // compile the html and add it into toolbar
+                        $element.find("#buttons_area").append($compile(buttons_html)($scope));
+                    });
+                }
             }
         };
 
@@ -4475,6 +4565,7 @@ class fgpWidgetGraph {
                             allLines.push([new Date(line.timestamp)]);
                         });
 
+                        $scope.currentDeviceViewInterval = collection;
                         // var yRange = {'min': null, 'max': null};
                         var showY2axis = false;
                         angular.forEach(collection.rows, function (row) {
