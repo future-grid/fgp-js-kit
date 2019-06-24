@@ -2479,7 +2479,14 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }else{
                             // add it on graph
                             // call func to get data
-                            _func(_param).then(function(newLine){
+                            _func(_param).then(function(resp){
+
+                                if(!resp){
+                                    return false;
+                                }
+                                //
+                                button.series = resp.series;
+                                var newLine = resp.data;
                                 if(newLine){
                                     if("span_y2" === _labels[_labels.length - 1]){
                                         // add it before the last one
