@@ -6515,8 +6515,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                 //
                     
                 url = url.replace("{0}", $scope.currentHighLightChildDevice);
-                // $window.open(url);
-                $window.location.href = url;
+                $window.open(url);
+                // $window.location.href = url;
             }
         };
         // function for show one
