@@ -3945,6 +3945,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
+                                $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                             }
                         }
 
@@ -4008,6 +4009,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             }
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
+                            $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                         }
 
                     }
@@ -5174,6 +5176,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
                             $scope.currentChart.updateOptions($scope.rangeConfig);
+                            $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                             // reset l & r axes window
                             var axesRight = $scope.currentChart.axes_[1];
                             var axesLeft = $scope.currentChart.axes_[0];
@@ -5209,6 +5212,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
 
 
                             $scope.currentChartOptions = $scope.rangeConfig;
+                                
                         }
                         //bind
                         $scope.loadingShow = false;

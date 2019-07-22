@@ -3023,6 +3023,7 @@ class fgpWidgetGraph {
                                     }
                                     $scope.currentChart.updateOptions($scope.rangeConfig);
                                     $scope.currentChartOptions = $scope.rangeConfig;
+                                    $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                                 }
                             }
 
@@ -3086,6 +3087,7 @@ class fgpWidgetGraph {
                                 }
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
+                                $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                             }
 
                         }
@@ -4252,6 +4254,7 @@ class fgpWidgetGraph {
                                     }
                                 }
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
+                                $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                                 // reset l & r axes window
                                 var axesRight = $scope.currentChart.axes_[1];
                                 var axesLeft = $scope.currentChart.axes_[0];
@@ -4287,6 +4290,7 @@ class fgpWidgetGraph {
 
 
                                 $scope.currentChartOptions = $scope.rangeConfig;
+                                
                             }
                             //bind
                             $scope.loadingShow = false;
