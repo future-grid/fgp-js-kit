@@ -2983,9 +2983,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     oldVisibility[_index] = false;
                                 }
                             });
+                            // reset user attrs
+                            $scope.currentChart.attrs_.visibility = oldVisibility;
                             $scope.currentChart.updateOptions({
                                 'visibility': oldVisibility
                             });
+
                         } else if ($scope.currentView == 1 && newValue && newValue.length == 0) {
                             $scope.highlights.onGraph = [];
 
@@ -2999,9 +3002,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 oldVisibility.forEach(function (item, _index) {
                                     oldVisibility[_index] = true;
                                 });
+                                $scope.currentChart.attrs_.visibility = oldVisibility;
                                 $scope.currentChart.updateOptions({
                                     'visibility': oldVisibility
-                                });
+                                }, false);
                             }
                         }
                     }, 1000);
