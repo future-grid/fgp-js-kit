@@ -2086,7 +2086,10 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             $scope.rangeConfig.dateWindow = [new Date(range[1] - interval.interval), range[1]];
             $scope.currentChart.updateOptions($scope.rangeConfig);
             $scope.currentIntervalChoosed = interval;
+            $scope.chartDateWindow = [new Date(range[1] - interval.interval), range[1]];
         }
+
+
     };
     if (widgetData.data && widgetData.from == "show") {
         $scope.loadingShow = false;
@@ -3981,7 +3984,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         }
                         $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                         // reset the datetime for current chart
-
+                        $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                         if ($scope.chartDateWindow && ($scope.chartDateWindow[0] != 1388495700000 || $scope.chartDateWindow[0] != 1388503800000) && ($scope.chartDateWindow[0] >= newLines[0][0] && $scope.chartDateWindow[1] <= newLines[newLines.length - 1][0])) {
                             // keep the current range bar refresh once.
                             $scope.chartDateTime = {
@@ -5303,8 +5306,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             } else {
                 range = yAxes[0].valueRange;
             }
-            yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-            yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            if($scope.basicInfo.panYaxis && $scope.basicInfo.panYaxis == true){
+                yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+                yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            }else{
+                yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+                yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            }
             g.drawGraph_(true);
         };
 
@@ -5318,8 +5326,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             } else {
                 range = yAxes[0].valueRange;
             }
-            yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-            yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            if($scope.basicInfo.panYaxis && $scope.basicInfo.panYaxis == true){
+                yAxes[0]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+                yAxes[0]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            }else{
+                yAxes[0]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+                yAxes[0]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            }
             g.drawGraph_(true);
         };
 
@@ -5333,8 +5346,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             } else {
                 range = yAxes[1].valueRange;
             }
-            yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
-            yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            if($scope.basicInfo.panYaxis && $scope.basicInfo.panYaxis == true){
+                yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+                yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            }else{
+                yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+                yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            }
             g.drawGraph_(true);
         };
 
@@ -5347,8 +5365,13 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             } else {
                 range = yAxes[1].valueRange;
             }
-            yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
-            yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            if($scope.basicInfo.panYaxis && $scope.basicInfo.panYaxis == true){
+                yAxes[1]['valueRange'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+                yAxes[1]['valueWindow'] = [range[0] + (range[1] - range[0]) * 0.2, range[1] + (range[1] - range[0]) * 0.2];
+            }else{
+                yAxes[1]['valueRange'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+                yAxes[1]['valueWindow'] = [range[0] - (range[1] - range[0]) * 0.2, range[1] - (range[1] - range[0]) * 0.2];
+            }
             g.drawGraph_(true);
         };
 
@@ -5375,7 +5398,18 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
             //split range to 20 pieces
-            var pan_delta = (panRange[1] - panRange[0]) / 20;
+            //split range to 20 pieces
+            var pan_delta = 0;
+
+            if ($scope.chartDateWindow[1] instanceof Date) {
+                pan_delta = $scope.chartDateWindow[1].getTime() - $scope.chartDateWindow[0].getTime();
+            } else {
+                pan_delta = $scope.chartDateWindow[1] - $scope.chartDateWindow[0];
+            }
+
+            if($scope.basicInfo.pan && "step" === $scope.basicInfo.pan){
+                pan_delta = (panRange[1] - panRange[0]) / 20;
+            }
             var startDate;
             var endDate;
             if ($scope.chartDateWindow[0] instanceof Date) {
@@ -5451,7 +5485,15 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
             }
 
             //split range to 20 pieces
-            var pan_delta = (panRange[1] - panRange[0]) / 20;
+            var pan_delta = 0;
+            if ($scope.chartDateWindow[1] instanceof Date) {
+                pan_delta = $scope.chartDateWindow[1].getTime() - $scope.chartDateWindow[0].getTime();
+            } else {
+                pan_delta = $scope.chartDateWindow[1] - $scope.chartDateWindow[0];
+            }
+            if($scope.basicInfo.pan && "step" === $scope.basicInfo.pan){
+                pan_delta = (panRange[1] - panRange[0]) / 20;
+            }
             var startDate;
             var endDate;
             if ($scope.chartDateWindow[0] instanceof Date) {
