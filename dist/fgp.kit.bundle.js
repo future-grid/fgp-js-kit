@@ -4951,6 +4951,9 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             // };
                             // $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
                             // } else {
+
+                                    
+
                                 $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                                 if (begin_path && end_path && !init_flag) {
                                      
@@ -4996,6 +4999,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
                                 $scope.currentChartOptions = $scope.rangeConfig;
+                                $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                             // }
                         }
 
@@ -5039,6 +5043,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         // };
                         // $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
                         // } else {
+                            // $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                             $scope.currentChart["xAxisZoomRange"] = [newLines[0][0], newLines[newLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
                                 // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
@@ -5081,6 +5086,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                             $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                             $scope.currentChart.updateOptions($scope.rangeConfig);
                             $scope.currentChartOptions = $scope.rangeConfig;
+                            $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                         // }
 
                     }
@@ -6390,6 +6396,7 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                         // };
                         // $scope.chartDateWindow = [$scope.chartDateTime.begin, $scope.chartDateTime.end];
                         // } else {
+                            // $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                             $scope.currentChart["xAxisZoomRange"] = [allLines[0][0], allLines[allLines.length - 1][0]];
                             if (begin_path && end_path && !init_flag) {
                                 // $scope.chartDateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
@@ -6446,6 +6453,8 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 }
                             }
                             $scope.currentChart.updateOptions($scope.rangeConfig);
+
+                            $scope.chartDateWindow = $scope.currentChart.dateWindow_;
                             // reset l & r axes window
                             var axesRight = $scope.currentChart.axes_[1];
                             var axesLeft = $scope.currentChart.axes_[0];
