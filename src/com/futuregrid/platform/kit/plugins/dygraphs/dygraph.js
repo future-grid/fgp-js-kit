@@ -9784,7 +9784,7 @@ rangeSelector.prototype.createZoomHandles_ = function() {
   var img = new Image();
   img.className = 'dygraph-rangesel-zoomhandle';
   img.style.position = 'absolute';
-  img.style.zIndex = 10;
+  img.style.zIndex = 15;
   img.style.visibility = 'hidden'; // Initially hidden so they don't show up in the wrong place.
   img.style.cursor = 'col-resize';
 
@@ -9809,8 +9809,11 @@ rangeSelector.prototype.createZoomHandles_ = function() {
     img.height *= 2;
   }
 
+  // change z-index 
   this.leftZoomHandle_ = img;
-  this.rightZoomHandle_ = img.cloneNode(false);
+  var tempImg = img.cloneNode(false);
+  tempImg.style.zIndex = 10;
+  this.rightZoomHandle_ = tempImg;
 };
 
 /**
