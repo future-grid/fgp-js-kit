@@ -4994,12 +4994,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                     $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                     init_flag = true;
                                 } else {
-                                    if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
-                                        $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
-                                    } else {
+                                    // if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
+                                    // $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
+                                    // } else {
                                         $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                                         $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
-                                    }
+                                    // }
                                 }
                                 $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                                 $scope.currentChart.updateOptions($scope.rangeConfig);
@@ -5081,12 +5081,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
                                 $scope.rangeConfig.dateWindow = [new Date(new Number(begin_path)).getTime(), new Date(new Number(end_path)).getTime()];
                                 init_flag = true;
                             } else {
-                                if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
-                                    $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
-                                } else {
+                                // if ($scope.currentIntervalChoosed && ((newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval) >= newLines[0][0].getTime())) {
+                                // $scope.rangeConfig.dateWindow = [newLines[newLines.length - 1][0].getTime() - $scope.currentIntervalChoosed.interval, newLines[newLines.length - 1][0].getTime()];
+                                // } else {
                                     $scope.chartDateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
                                     $scope.rangeConfig.dateWindow = [newLines[0][0].getTime(), newLines[newLines.length - 1][0].getTime()];
-                                }
+                                // }
                             }
                             $scope.rangeSelectorBar.updateOptions($scope.rangeConfig);
                             $scope.currentChart.updateOptions($scope.rangeConfig);
