@@ -1903,11 +1903,12 @@ fgpWidgetGraph.prototype.controller = function controller ($scope, $element, $wi
         console.debug("graphDataUpdated!");
         if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.dataCallback) {
             var callback = $scope.interactions.graphs.dataCallback;
+            var currentView = ($scope.currentView == 1 ? 'scatter' : 'device');
             if (angular$1.isFunction(callback)) {
                 //
-                callback(newVal);
+                callback(newVal, currentView, $scope.elementId);
             } else {
-                callback = newVal;
+                callback = {data: newVal, view: $currentView, id: $scope.elementId};
             }
         }
     });
