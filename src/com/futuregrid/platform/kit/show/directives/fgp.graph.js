@@ -984,9 +984,9 @@ class fgpWidgetGraph {
                 var currentView = ($scope.currentView == 1 ? 'scatter' : 'device');
                 if (angular.isFunction(callback)) {
                     //
-                    callback(newVal, currentView, $scope.elementId);
+                    callback(newVal, currentView, $scope.elementId, $scope.currentChart.dateWindow_);
                 } else {
-                    callback = {data: newVal, view: $currentView, id: $scope.elementId};
+                    callback = {data: newVal, view: $currentView, id: $scope.elementId, dateWindow: $scope.currentChart.dateWindow_};
                 }
             }
         });
