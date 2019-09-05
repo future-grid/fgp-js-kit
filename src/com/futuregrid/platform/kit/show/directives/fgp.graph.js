@@ -982,7 +982,7 @@ class fgpWidgetGraph {
             if ($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.dataCallback) {
                 var callback = $scope.interactions.graphs.dataCallback;
                 var currentView = ($scope.currentView == 1 ? 'scatter' : 'device');
-                if($scope.currentChart.dateWindow_){
+                if($scope.currentChart){
                     if (angular.isFunction(callback)) {
                         //
                         callback(newVal, currentView, $scope.elementId, $scope.currentChart.dateWindow_);
