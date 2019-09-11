@@ -2618,6 +2618,10 @@ class fgpWidgetGraph {
                 // fetchData(allData, rangeTree.tree);    only get first and last
                 // fix the problem of never seen the current data.
                 rangeTree.last.timestamp = rangeTree.last.timestamp + (rangeTree.frequency - 1);
+                if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.dateWindow && $scope.interactions.graphs.dateWindow.length == 2){
+                    // reset start
+                    rangeTree.first.timestamp = $scope.interactions.graphs.dateWindow[0]; 
+                }
                 allData = allData.concat([rangeTree.first, rangeTree.last]);
 
                 allData = allData.filter(function (obj) {
@@ -2738,6 +2742,14 @@ class fgpWidgetGraph {
                         var allData = [rangeTree.first, {
                             timestamp: moment().endOf('day').toDate().getTime()
                         }];
+
+                        // check interactions
+                        if($scope.interactions && $scope.interactions.graphs && $scope.interactions.graphs.dateWindow && $scope.interactions.graphs.dateWindow.length == 2 && allData[0]){
+                            // reset start
+                            allData[0].timestamp = $scope.interactions.graphs.dateWindow[0]; // 
+                        }
+
+
                         allData = allData.filter(function (obj) {
                             return obj != null;
                         });
